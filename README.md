@@ -161,4 +161,10 @@ downloads_dir="/path/to"
 part of the jsonlscript.js and jsonxscript.js files to point to the location of the Chrome Browser Downloads folder.
 The former script deals with the tiny json for general purpose and the latter with the Obsidian derived Bookmarklet output. These scripts will clear the folders and move each type of json into the correct places for further processing.
 
+### X.ai Live Search
+
+[Live Search](https://docs.x.ai/docs/guides/live-search)
+
+Try groxem.js for adding Live Search on X to the context of posts etc. on that platform.
+
 
