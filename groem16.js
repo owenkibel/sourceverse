@@ -726,7 +726,7 @@ textApiResults.forEach((res, index) => {
         : messageContent.substring(0, firstPromptIndex)).trim();
 
     toc += `- [Verse ${chunkNumber}](#verse-${chunkNumber})\n`;
-    combinedVerseOutput += `<h3 id="verse-${chunkNumber}">Verse ${chunkNumber}</h3>\n<pre><code class="language-text">${escapeHtml(sections.verse)}</code></pre>\n\n`;
+    combinedVerseOutput += `<h3 id="verse-${chunkNumber}">Verse ${chunkNumber}</h3>\n${escapeHtml(sections.verse)}\n\n`;
     if (sections.image) {
         combinedVerseOutput += `<h3 id="image-prompt-${chunkNumber}">Image Prompt ${chunkNumber}</h3>\n<pre><code class="language-text">${escapeHtml(sections.image)}</code></pre>\n\n`;
     }

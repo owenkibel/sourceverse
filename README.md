@@ -165,7 +165,7 @@ The former script deals with the tiny json for general purpose and the latter wi
 
 [Live Search](https://docs.x.ai/docs/guides/live-search)
 
-Try groxem.js for adding Live Search on X to the context of posts etc. on that platform.
+Try groem16.js for adding Live Search on X to the context of posts etc. on that platform.
 
 
 ### Gemini API TTS
