@@ -170,8 +170,13 @@ Try groem16.js for adding Live Search on X to the context of posts etc. on that 
 
 ### Gemini API TTS
 
-The latest goem script embeds an audio file using [Speech generation (text-to-speech)](https://ai.google.dev/gemini-api/docs/speech-generation). There are options to add audio effects to the generated voice audio.
+The latest goem script embeds an audio file using [Speech generation (text-to-speech)](https://ai.google.dev/gemini-api/docs/speech-generation). There are options to add audio effects to the generated voice audio. The ffmpeg binary is required for encoding a file with ping pong delay.
 
 ### Gemini API Video Audio Track Analysis
 
-Now the script goem25.js sends an additional API request for analysis of audio tracks in YouTube and YouTube Music videos. Transcripts including speaker types are extracted, including lyrics of songs. Also printed is a short AI Music Generation prompt aimed at creating original music with some of the instruments, voices, tempo, tone and style of the original music video. This style is information is rudimentary and current music generators usually do their own thing anyway, but the results although very different, can sometimes be interesting. Although some music generators offer APIs, the present situation with music generation, like video generation requires copy and paste into the generator.
+Now the script goem31.js sends an additional API request for analysis of audio tracks in YouTube and YouTube Music videos. Transcripts including speaker types are extracted, including lyrics of songs. Also printed is a short AI Music Generation prompt aimed at creating original music with some of the instruments, voices, tempo, tone and style of the original music video. This style is information is rudimentary and current music generators usually do their own thing anyway, but the results although very different, can sometimes be interesting. Although some music generators offer APIs, the present situation with music generation requires copy and paste into the generator.
+
+### Video Generation
+
+The latest script goem31.js sends prompts to Veo 3 for creating embedded videos with sound. If an error occurs such as encountering a daily generation quota, the script should then attempt to create 2 embedded silent videos with Veo 2.
+

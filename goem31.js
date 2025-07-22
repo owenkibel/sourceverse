@@ -1,17 +1,23 @@
 const path = require('path');
 const fs = require('fs/promises');
 const fss = require('fs');
-const { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } = require("@google/generative-ai");
+const os = require('os');
+const util = require('util');
+const { execFile } = require('child_process');
+const execFileAsync = util.promisify(execFile);
+
+const { GoogleGenerativeAI, GoogleGenerativeAIError, HarmCategory, HarmBlockThreshold } = require("@google/generative-ai");
 const axios = require('axios');
 
 const ffmpeg = require('fluent-ffmpeg');
 const streamifier = require('streamifier');
-const { GoogleGenAI, Modality } = require('@google/genai'); // Added Modality
+const { GoogleGenAI, Modality } = require('@google/genai');
+const { createWriteStream } = require("fs");
+const { Readable } = require("stream");
 const TTS_MODEL_NAME_FOR_API = "gemini-2.5-flash-preview-tts";
 const TTS_MODEL_DISPLAY_NAME = "Gemini TTS (gemini-2.5-flash-preview-tts, single speaker)";
 const MAX_TTS_CHARS = 1000;
 
-// ADDED: Array of Gemini TTS voice names
 const GEMINI_TTS_VOICE_NAMES = [
     "achernar", "achird", "algenib", "algieba", "alnilam", "aoede", "autonoe", "callirrhoe", "charon",
     "despina", "enceladus", "erinome", "fenrir", "gacrux", "iapetus", "kore", "laomedeia", "leda",
@@ -35,11 +41,13 @@ if (!apiKey) {
     console.error("FATAL: API_KEY environment variable for Google AI is not set.");
     process.exit(1);
 }
-const genAI = new GoogleGenerativeAI(apiKey); // Client for text and vision models
+const genAI = new GoogleGenerativeAI(apiKey);
 
-const TEXT_MODEL_NAME = "gemini-2.5-flash-lite-preview-06-17";
-const IMAGE_GEN_MODEL_NAME = "gemini-2.0-flash-preview-image-generation"; // Updated model name
-const VISION_MODEL_NAME = "gemini-2.5-flash-lite-preview-06-17";
+const TEXT_MODEL_NAME = "gemini-2.5-flash";
+const IMAGE_GEN_MODEL_NAME = "imagen-4.0-generate-preview-06-06";
+const VISION_MODEL_NAME = "gemini-2.5-flash";
+const VEO_2_MODEL_NAME = "veo-2.0-generate-001";
+const VEO_3_MODEL_NAME = "veo-3.0-generate-preview";
 
 const safetySettings = [
     { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
@@ -48,15 +56,16 @@ const safetySettings = [
     { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
 ];
 
-let textModel, visionModel; // imageGenModel removed
-let googleGenAIClient; // Renamed from ttsAI, will be used for TTS and Image Gen
-let logMessage; // ADDED: For FFMPEG logging messages
+let textModel, visionModel;
+let googleGenAIClient;
+let logMessage;
 
 try {
     textModel = genAI.getGenerativeModel({ model: TEXT_MODEL_NAME, safetySettings });
     visionModel = genAI.getGenerativeModel({ model: VISION_MODEL_NAME, safetySettings });
     console.log(`Models initialized (via @google/generative-ai): Text (${TEXT_MODEL_NAME}), Vision (${VISION_MODEL_NAME})`);
     console.log(`Image Gen will use ${IMAGE_GEN_MODEL_NAME} (via @google/genai client).`);
+    console.log(`Video Gen will default to ${VEO_3_MODEL_NAME} with a fallback to ${VEO_2_MODEL_NAME}.`);
 } catch (modelError) {
     console.error("FATAL: Error initializing Google AI models (@google/generative-ai):", modelError.message);
     process.exit(1);
@@ -65,7 +74,10 @@ try {
 let currentInputFile = '';
 let currentInputPath = '';
 let availablePrompts = [];
-let selectedTtsVoice = ''; // Global variable to store the selected TTS voice
+let selectedTtsVoice = '';
+let useLocalAudioProcessing = false;
+let localAudioStartTime = '0';
+
 
 async function loadPromptFile(filePath) {
     try {
@@ -143,6 +155,164 @@ function transformInputJson(input) {
     return newObject;
 }
 
+async function generateAndEmbedVideoVeo2(videoPromptContent, baseFilename) {
+    const trimmedPrompt = videoPromptContent.trim();
+    console.log(`Generating video with prompt: "${trimmedPrompt.substring(0, 150)}..." (using ${VEO_2_MODEL_NAME})`);
+    try {
+        let operation = await googleGenAIClient.models.generateVideos({
+            model: VEO_2_MODEL_NAME,
+            prompt: trimmedPrompt,
+            config: {
+                numberOfVideos: 2,
+                durationSeconds: 8,
+                personGeneration: "allow_all",
+                aspectRatio: "16:9",
+            },
+        });
+
+        while (!operation.done) {
+            console.log("Waiting for Veo 2 generation to complete...");
+            await new Promise((resolve) => setTimeout(resolve, 10000));
+            operation = await googleGenAIClient.operations.getVideosOperation({ operation });
+        }
+        
+        console.log("Veo 2 operation complete. Full response:", JSON.stringify(operation.response, null, 2));
+        const generatedVideos = operation.response?.generatedVideos;
+
+        if (!generatedVideos || generatedVideos.length === 0) {
+            const refusalReason = operation.response?.promptFeedback?.blockReason || 'No video data or candidates were returned from the API.';
+            const errorMsg = `Video generation failed: No videos were generated. Reason: ${refusalReason}`;
+            console.error(errorMsg);
+            return { success: false, error: errorMsg, markdown: `<!-- ${escapeHtml(errorMsg)} -->` };
+        }
+
+        let markdown = "";
+        await Promise.all(generatedVideos.map(async (generatedVideo, i) => {
+             if (!generatedVideo.video?.uri) {
+                console.warn(`Skipping Veo 2 video index ${i}: No URI found.`);
+                return;
+            }
+            const videoName = `gemini-video-veo2-${Date.now()}-${baseFilename}-${i}.mp4`;
+            const videoPath = path.join(OUTPUT_IMAGES_DIR, videoName);
+            const relativeVideoPathForMarkdown = `/${path.basename(OUTPUT_IMAGES_DIR)}/${videoName}`.replace(/\\/g, '/');
+            
+            const resp = await fetch(`${generatedVideo.video.uri}&key=${apiKey}`);
+            if (!resp.ok) {
+                 console.error(`Failed to download video (Veo 2). Status: ${resp.status} ${resp.statusText}`);
+                return;
+            }
+
+            const writer = createWriteStream(videoPath);
+            await new Promise((resolve, reject) => {
+                Readable.fromWeb(resp.body).pipe(writer);
+                writer.on('finish', resolve);
+                writer.on('error', (err) => { console.error(`Error writing video file ${videoPath}:`, err); reject(err); });
+            });
+            console.log(`Veo 2 video successfully saved as ${videoPath}`);
+            markdown += `\n\n<video controls width="100%"><source src="${relativeVideoPathForMarkdown}" type="video/mp4">Your browser does not support the video tag.</video>\n\n`;
+        }));
+
+        if (markdown.length === 0) return { success: false, error: "Veo 2 processing completed, but no videos were successfully saved.", markdown: "<!-- No videos saved -->" };
+        return { success: true, markdown: markdown.trim() };
+
+    } catch (error) {
+        console.error(`Error in generateAndEmbedVideoVeo2 for prompt "${trimmedPrompt.substring(0, 100)}...":`, error.message);
+        return { success: false, error: error.message, markdown: `\n\n<!-- Veo 2 Generation Exception: ${escapeHtml(error.message)} -->\n\n` };
+    }
+}
+
+async function generateAndEmbedVideoVeo3(videoPromptContent, baseFilename) {
+    const trimmedPrompt = videoPromptContent.trim();
+    console.log(`Generating video with prompt: "${trimmedPrompt.substring(0, 150)}..." (using ${VEO_3_MODEL_NAME})`);
+    try {
+        let operation = await googleGenAIClient.models.generateVideos({
+            model: VEO_3_MODEL_NAME,
+            prompt: trimmedPrompt,
+            config: {
+                personGeneration: "allow_all",
+                aspectRatio: "16:9",
+            },
+        });
+
+        while (!operation.done) {
+            console.log("Waiting for Veo 3 generation to complete...");
+            await new Promise((resolve) => setTimeout(resolve, 10000));
+            operation = await googleGenAIClient.operations.getVideosOperation({ operation });
+        }
+
+        console.log("Veo 3 operation complete. Full response:", JSON.stringify(operation.response, null, 2));
+        const generatedVideos = operation.response?.generatedVideos;
+
+        if (!generatedVideos || generatedVideos.length === 0) {
+            const refusalReason = operation.response?.promptFeedback?.blockReason || 'No video data or candidates were returned from the API.';
+            const errorMsg = `Video generation failed: No videos were generated. Reason: ${refusalReason}`;
+            console.error(errorMsg);
+            return { success: false, error: errorMsg, markdown: `<!-- ${escapeHtml(errorMsg)} -->` };
+        }
+        
+        let markdown = "";
+        await Promise.all(generatedVideos.map(async (generatedVideo, i) => {
+            if (!generatedVideo.video?.uri) {
+                console.warn(`Skipping Veo 3 video index ${i}: No URI found.`);
+                return;
+            }
+            const videoName = `gemini-video-veo3-${Date.now()}-${baseFilename}-${i}.mp4`;
+            const videoPath = path.join(OUTPUT_IMAGES_DIR, videoName);
+            const relativeVideoPathForMarkdown = `/${path.basename(OUTPUT_IMAGES_DIR)}/${videoName}`.replace(/\\/g, '/');
+            
+            const resp = await fetch(`${generatedVideo.video.uri}&key=${apiKey}`);
+            if (!resp.ok) {
+                 console.error(`Failed to download video (Veo 3). Status: ${resp.status} ${resp.statusText}`);
+                return;
+            }
+            const writer = createWriteStream(videoPath);
+            await new Promise((resolve, reject) => {
+                Readable.fromWeb(resp.body).pipe(writer);
+                writer.on('finish', resolve);
+                writer.on('error', (err) => { console.error(`Error writing video file ${videoPath}:`, err); reject(err); });
+            });
+            console.log(`Veo 3 video successfully saved as ${videoPath}`);
+            markdown += `\n\n<video controls width="100%"><source src="${relativeVideoPathForMarkdown}" type="video/mp4">Your browser does not support the video tag.</video>\n\n`;
+        }));
+
+        if (markdown.length === 0) return { success: false, error: "Veo 3 processing completed, but no videos were successfully saved.", markdown: "<!-- No videos saved -->" };
+        return { success: true, markdown: markdown.trim() };
+
+    } catch (error) {
+        console.error(`Error in generateAndEmbedVideoVeo3 for prompt "${trimmedPrompt.substring(0, 100)}...":`, error.message);
+        return { success: false, error: error.message, markdown: `\n\n<!-- Veo 3 Generation Exception: ${escapeHtml(error.message)} -->\n\n` };
+    }
+}
+
+async function generateAndEmbedVideo(videoPromptContent, baseFilename) {
+    if (!googleGenAIClient) {
+        console.warn("Skipping video generation: GoogleGenAI client not initialized.");
+        return { success: false, error: "Video generation client not initialized.", markdown: "<!-- Video generation skipped: Client not initialized -->", modelUsed: "N/A" };
+    }
+    if (!videoPromptContent || typeof videoPromptContent !== 'string' || videoPromptContent.trim().length === 0) {
+        console.warn("Skipping video generation: Received empty or invalid prompt.");
+        return { success: false, error: "No valid prompt provided for video generation.", markdown: "<!-- Video generation skipped: No valid prompt provided -->", modelUsed: "N/A" };
+    }
+
+    console.log("Attempting video generation with Veo 3...");
+    try {
+        const veo3Result = await generateAndEmbedVideoVeo3(videoPromptContent, baseFilename);
+        if (veo3Result.success) {
+            console.log("Veo 3 video generation successful.");
+            veo3Result.modelUsed = VEO_3_MODEL_NAME;
+            return veo3Result;
+        }
+        console.warn(`Veo 3 generation failed: ${veo3Result.error}. Falling back to Veo 2.`);
+    } catch (error) {
+        console.error(`An exception occurred during Veo 3 generation: ${error.message}. Falling back to Veo 2.`);
+    }
+
+    console.log("Attempting video generation with Veo 2 as a fallback...");
+    const veo2Result = await generateAndEmbedVideoVeo2(videoPromptContent, baseFilename);
+    veo2Result.modelUsed = VEO_2_MODEL_NAME;
+    return veo2Result;
+}
+
 async function generateAndEmbedImage(imagePromptContent, baseFilename) {
     if (!googleGenAIClient) {
         console.warn("Skipping image generation: GoogleGenAI client not initialized.");
@@ -155,65 +325,37 @@ async function generateAndEmbedImage(imagePromptContent, baseFilename) {
     const trimmedPrompt = imagePromptContent.trim();
     console.log(`Generating image with prompt: "${trimmedPrompt.substring(0, 150)}..." (using ${IMAGE_GEN_MODEL_NAME})`);
     try {
-        const apiResponse = await googleGenAIClient.models.generateContent({
+        const apiResponse = await googleGenAIClient.models.generateImages({
             model: IMAGE_GEN_MODEL_NAME,
-            contents: trimmedPrompt,
-            safetySettings: safetySettings,
-            config: { responseModalities: [Modality.TEXT, Modality.IMAGE] },
+            prompt: trimmedPrompt,
+            config: {
+                numberOfImages: 1,
+            },
         });
-        if (!apiResponse || !apiResponse.candidates || apiResponse.candidates.length === 0) {
-            const blockReasonFromFeedback = apiResponse?.promptFeedback?.blockReason || 'N/A';
-            const errorMsg = `Image generation failed: No candidates returned from API. Block Reason: ${blockReasonFromFeedback}`;
-            console.error(errorMsg, "Prompt Feedback:", apiResponse?.promptFeedback);
-            return { success: false, error: errorMsg, markdown: `<!-- ${escapeHtml(errorMsg)} -->`, refusalReason: `API Error: No candidates. Block Reason from promptFeedback: ${blockReasonFromFeedback}`, detailedErrorInfo: { type: "NoCandidatesReturned", promptFeedback: apiResponse?.promptFeedback || null, fullApiResponseCandidateCount: apiResponse?.candidates?.length || 0, } };
+
+        if (!apiResponse || !apiResponse.generatedImages || apiResponse.generatedImages.length === 0) {
+            const refusalReason = apiResponse?.promptFeedback?.blockReason || 'No image data or candidates returned.';
+            const errorMsg = `Image generation failed: No images generated. Reason: ${refusalReason}`;
+            console.error(errorMsg, "API Response:", JSON.stringify(apiResponse, null, 2));
+            return { success: false, error: errorMsg, markdown: `<!-- ${escapeHtml(errorMsg)} -->`, refusalReason: refusalReason, detailedErrorInfo: { type: "NoImagesReturned", apiResponse: apiResponse || null } };
         }
-        const candidate = apiResponse.candidates[0];
-        let refusalText = null;
-        let imagePartPayload = null;
-        const filteredContentParts = candidate.content?.parts?.map(part => {
-            if (part.inlineData) { return { inlineData: { mimeType: part.inlineData.mimeType, dataLength: part.inlineData.data?.length || 0, note: "Base64 data omitted for brevity" } }; }
-            else if (part.fileData) { return { fileData: { mimeType: part.fileData.mimeType, fileUri: part.fileData.fileUri, note: "File URI data" } }; }
-            return part;
-        }) || null;
-        if (candidate.content && candidate.content.parts) {
-            for (const part of candidate.content.parts) {
-                if (part.text) { refusalText = part.text; }
-                else if (part.inlineData && part.inlineData.mimeType?.startsWith('image/')) { imagePartPayload = part.inlineData; }
-                else if (part.fileData && part.fileData.mimeType?.startsWith('image/')) { if (!imagePartPayload) imagePartPayload = part.fileData; }
-            }
-        }
-        if (refusalText && !imagePartPayload) {
-            const finishReason = candidate.finishReason || 'N/A';
-            const safetyRatingsString = candidate.safetyRatings ? JSON.stringify(candidate.safetyRatings) : 'N/A';
-            console.warn(`Image generation model returned a text response (policy refusal): "${refusalText.substring(0, 200)}..." Finish Reason: ${finishReason}`);
-            return { success: false, error: `Image generation refused by model policy. Finish Reason: ${finishReason}. Safety: ${safetyRatingsString}`, markdown: `<!-- Image Generation Refused by Model Policy. Finish Reason: ${escapeHtml(finishReason)}. Safety: ${escapeHtml(safetyRatingsString)} -->`, refusalReason: refusalText, detailedErrorInfo: { type: "ModelPolicyRefusal", candidateFinishReason: candidate?.finishReason || null, candidateSafetyRatings: candidate?.safetyRatings || null, promptFeedback: apiResponse?.promptFeedback || null, filteredCandidateContentParts: filteredContentParts } };
-        }
-        if (!imagePartPayload) {
-            const blockReason = apiResponse.promptFeedback?.blockReason || candidate.finishReason || 'Unknown reason';
-            const safetyRatingsString = candidate.safetyRatings ? JSON.stringify(candidate.safetyRatings) : 'N/A';
-            const errorMsg = `Image generation failed: No image data found in response parts. Reason: ${blockReason}. Safety: ${safetyRatingsString}`;
-            console.error(errorMsg, "Full Candidate (condensed):", { finishReason: candidate.finishReason, safetyRatings: candidate.safetyRatings }, "Prompt Feedback:", apiResponse.promptFeedback);
-            return { success: false, error: errorMsg, markdown: `<!-- Image Generation Failed: No image data. Reason: ${escapeHtml(blockReason)}. Safety: ${escapeHtml(safetyRatingsString)} -->`, refusalReason: `Model Error: No image data. Reason: ${blockReason}. Safety Ratings: ${safetyRatingsString}`, detailedErrorInfo: { type: "NoImageDataInResponse", promptFeedback: apiResponse?.promptFeedback || null, candidateFinishReason: candidate?.finishReason || null, candidateSafetyRatings: candidate?.safetyRatings || null, filteredCandidateContentParts: filteredContentParts } };
-        }
+
+        const generatedImage = apiResponse.generatedImages[0];
         let imageDataBuffer;
         let imageExt = '.png';
-        if (imagePartPayload.data) {
-            imageDataBuffer = Buffer.from(imagePartPayload.data, 'base64');
-            const mimeType = imagePartPayload.mimeType;
-            if (mimeType === 'image/jpeg') imageExt = '.jpg';
-            else if (mimeType === 'image/webp') imageExt = '.webp';
-            else imageExt = `.${mimeType.split('/')[1] || 'png'}`;
-        } else if (imagePartPayload.fileUri) {
-             const errorMsg = `Image generation returned a file URI (${imagePartPayload.fileUri}), which requires separate download logic not implemented. Expected inline image data.`;
-             console.error(errorMsg);
-             return { success: false, error: errorMsg, markdown: `<!-- Image Generation Failed: ${escapeHtml(errorMsg)} -->`, refusalReason: errorMsg, detailedErrorInfo: { type: "FileURIUnsupported", fileUri: imagePartPayload.fileUri } };
-        } else { throw new Error("Unrecognized image data format in Gemini response part."); }
+
+        if (generatedImage.image?.imageBytes) {
+            imageDataBuffer = Buffer.from(generatedImage.image.imageBytes, 'base64');
+        } else {
+            const errorMsg = "Image generation failed: No imageBytes found in the response.";
+            console.error(errorMsg, "Generated Image Object:", generatedImage);
+            return { success: false, error: errorMsg, markdown: `<!-- Image Generation Failed: ${escapeHtml(errorMsg)} -->`, refusalReason: errorMsg, detailedErrorInfo: { type: "NoImageBytesInResponse", generatedImage: generatedImage } };
+        }
         const imageName = `gemini-img-${Date.now()}-${baseFilename}${imageExt}`;
         const imagePath = path.join(OUTPUT_IMAGES_DIR, imageName);
         const relativeImagePathForMarkdown = `/${path.basename(OUTPUT_IMAGES_DIR)}/${imageName}`.replace(/\\/g, '/');
         await fs.writeFile(imagePath, imageDataBuffer);
         console.log(`Image successfully saved as ${imagePath}`);
-        // The markdown already includes the leading/trailing newlines.
         return { success: true, markdown: `\n\n![Generated Image](${relativeImagePathForMarkdown})\n\n`, refusalReason: null, detailedErrorInfo: null };
     } catch (error) {
         console.error(`Error in generateAndEmbedImage for prompt "${trimmedPrompt.substring(0,100)}...":`, error.message, error.stack);
@@ -232,9 +374,6 @@ async function generateAndEmbedImage(imagePromptContent, baseFilename) {
     }
 }
 
-/**
- * Encodes PCM audio buffer to WebM Opus format, with optional audio enhancements.
- */
 async function encodePcmToWebmOpus(
    outputFilename, pcmAudioBuffer, inputChannels = 1, inputSampleRate = 24000, inputSampleFormat = 's16le',
    options = {}
@@ -253,70 +392,47 @@ async function encodePcmToWebmOpus(
 
       let finalOutputChannels = inputChannels;
       let filterGraph = [];
-      let currentAudioStreamLabel = '[0:a]'; // Input stream label
+      let currentAudioStreamLabel = '[0:a]';
 
-      // If input is mono and effect needs stereo, create a basic stereo stream first.
-      // This is a common pattern to ensure effects have left/right channels to work with.
       const needsStereo = ['pseudoStereo', 'pingPongEcho'].includes(audioEnhancement.type);
       if (inputChannels === 1 && needsStereo) {
-          // asplit to duplicate mono to two identical mono streams, then amerge to stereo
           filterGraph.push(`${currentAudioStreamLabel}asplit[l][r]`);
           filterGraph.push(`[l][r]amerge=inputs=2[stereo_pre_effect]`);
           currentAudioStreamLabel = '[stereo_pre_effect]';
           finalOutputChannels = 2;
       } else if (inputChannels >= 2) {
-          finalOutputChannels = 2; // Assume stereo output for effects, if input is already stereo
+          finalOutputChannels = 2;
       }
 
       switch (audioEnhancement.type) {
         case 'pseudoStereo':
-            // Simple stereo widening by delaying one channel. Assumes stereo input.
-            // If original was mono, it's now a basic stereo stream from 'stereo_pre_effect'.
             const delayMs = audioEnhancement.delayMs || 25;
             filterGraph.push(`${currentAudioStreamLabel}channelsplit=channel_layout=stereo[L][R]`);
-            filterGraph.push(`[R]adelay=${delayMs}|${delayMs}[Rd]`); // Delay the right channel
+            filterGraph.push(`[R]adelay=${delayMs}|${delayMs}[Rd]`);
             filterGraph.push(`[L][Rd]amerge=inputs=2[aout]`);
             currentAudioStreamLabel = '[aout]';
             logMessage = `FFMPEG: Pseudo-stereo audio encoded to ${outputFilename}`;
             break;
         
         case 'pingPongEcho':
-            // True ping-pong echo: Sound bounces between left and right channels.
-            // Assumes mono input from TTS, creates stereo output.
-            const pingPongDelay = audioEnhancement.delayMs || 400; // ms
-            const pingPongDecay = audioEnhancement.decay || 0.6; // 60% volume decay per bounce
-
-            // The 'currentAudioStreamLabel' is the mono source from TTS.
-            // Use asplit to create multiple mono branches from the single source.
+            const pingPongDelay = audioEnhancement.delayMs || 400;
+            const pingPongDecay = audioEnhancement.decay || 0.6;
             filterGraph.push(`${currentAudioStreamLabel}asplit=4[orig][delay1_src][delay2_src][delay3_src]`);
-
-            // Direct sound: From 'orig' stream, goes primarily to the left channel.
-            filterGraph.push(`[orig]pan=stereo|c0=c0|c1=0.1*c0[L_direct]`); // Original sound mostly on Left
-
-            // First bounce: From 'delay1_src', delayed, goes primarily to the right channel.
+            filterGraph.push(`[orig]pan=stereo|c0=c0|c1=0.1*c0[L_direct]`);
             filterGraph.push(`[delay1_src]adelay=${pingPongDelay}[d1]`);
             filterGraph.push(`[d1]volume=${pingPongDecay}[v1]`);
-            filterGraph.push(`[v1]pan=stereo|c0=0.1*c0|c1=c0[R_bounce1]`); // First echo mostly on Right
-
-            // Second bounce: From 'delay2_src', more delayed, goes primarily to the left channel.
+            filterGraph.push(`[v1]pan=stereo|c0=0.1*c0|c1=c0[R_bounce1]`);
             filterGraph.push(`[delay2_src]adelay=${2 * pingPongDelay}[d2]`);
             filterGraph.push(`[d2]volume=${pingPongDecay * pingPongDecay}[v2]`);
-            filterGraph.push(`[v2]pan=stereo|c0=c0|c1=0.1*c0[L_bounce2]`); // Second echo mostly on Left
-
-            // Third bounce: From 'delay3_src', even more delayed, goes primarily to the right channel.
+            filterGraph.push(`[v2]pan=stereo|c0=c0|c1=0.1*c0[L_bounce2]`);
             filterGraph.push(`[delay3_src]adelay=${3 * pingPongDelay}[d3]`);
             filterGraph.push(`[d3]volume=${pingPongDecay * pingPongDecay * pingPongDecay}[v3]`);
-            filterGraph.push(`[v3]pan=stereo|c0=0.1*c0|c1=c0[R_bounce3]`); // Third echo mostly on Right
-
-            // Mix all the individual stereo streams together.
-            // REMOVED `dropout_mode=resampler` for broader FFmpeg version compatibility
+            filterGraph.push(`[v3]pan=stereo|c0=0.1*c0|c1=c0[R_bounce3]`);
             filterGraph.push(`[L_direct][R_bounce1][L_bounce2][R_bounce3]amix=inputs=4[aout]`);
             currentAudioStreamLabel = '[aout]';
-            finalOutputChannels = 2; // Output will always be stereo for this effect
+            finalOutputChannels = 2;
             logMessage = `FFMPEG: True ping-pong stereo echo applied to ${outputFilename}`;
             break;
-
-        // No 'convolver' case, as per instructions.
       }
 
       if (filterGraph.length > 0) {
@@ -366,30 +482,10 @@ async function generateAndEmbedAudio(ttsText, baseFilename, sourcePromptText = "
         const inputChannelsFromTTS = 1;
         const inputSampleFormatFromTTS = 's16le';
 
-        // --- Select Audio Enhancement Option ---
-        // Uncomment one of the following options:
-
-        // OPTION 1: Ping-Pong Echo (Default)
         await encodePcmToWebmOpus(
             audioPath, pcmAudioBuffer, inputChannelsFromTTS, inputSampleRateFromTTS, inputSampleFormatFromTTS,
             { audioEnhancement: { type: 'pingPongEcho', delayMs: 400, decay: 0.6 }, outputSampleRate: 48000 }
         );
-
-        // OPTION 2: Pseudo-Stereo / Stereo Widening
-        /*
-        await encodePcmToWebmOpus(
-            audioPath, pcmAudioBuffer, inputChannelsFromTTS, inputSampleRateFromTTS, inputSampleFormatFromTTS,
-            { audioEnhancement: { type: 'pseudoStereo', delayMs: 25 }, outputSampleRate: 48000 }
-        );
-        */
-
-        // OPTION 3: No Audio Enhancement (Plain Stereo WebM Opus)
-        /*
-        await encodePcmToWebmOpus(
-            audioPath, pcmAudioBuffer, inputChannelsFromTTS, inputSampleRateFromTTS, inputSampleFormatFromTTS,
-            { audioEnhancement: { type: 'none' }, outputSampleRate: 48000 } // Often 48k is good for web
-        );
-        */
 
         const markdown = `\n<audio controls src="/${path.basename(OUTPUT_IMAGES_DIR)}/${audioName}"></audio>\n*Audio from text:*\n<pre><code class="language-text">${escapeHtml(sourcePromptText)}</code></pre>`;
         return { success: true, markdown: markdown.trim(), audioFilePath: audioPath };
@@ -415,7 +511,7 @@ async function processOriginalImage(imageUrl) {
     let imagePart = null;
     try {
         let mimeType = "image/jpeg";
-        const ext = path.extname(new URL(imageUrl).pathname).toLowerCase(); // Corrected for URL query params
+        const ext = path.extname(new URL(imageUrl).pathname).toLowerCase();
         if (ext === '.png') mimeType = "image/png"; else if (ext === '.webp') mimeType = "image/webp";
         imagePart = await urlToGenerativePart(imageUrl, mimeType);
         if (!imagePart) throw new Error("Failed to download/prepare image part.");
@@ -431,44 +527,130 @@ async function processOriginalImage(imageUrl) {
     }
 }
 
-// ADDED: Function to analyze YouTube audio
-async function analyzeYouTubeAudio(youtubeUrl) {
-    console.log(`Analyzing YouTube audio from: ${youtubeUrl}`);
-    const prompt = `
-Analyze the audio from the provided video and perform two distinct tasks. Format the entire response as plain text without any surrounding markdown.
+const YOUTUBE_PROMPT = `
+Use primarily the audio from the provided video to extract special and detailed information from it that would not be provided by normal transcripts.
 
-### Music Generation Prompt
-Generate a comma-delimited list of keywords suitable for an AI music generation model. The list should describe the music's most prominent characteristics.
-- Start with the most generic and important terms (e.g., genre, mood, era) and progress to more specific details (e.g., specific instruments, vocal style).
-- Do NOT use category labels like "Style:", "Tempo:", "Instruments:", etc.
-- The entire output for this section must be a single line of text containing only the keywords separated by commas.
-- Example: cinematic, orchestral, epic, dramatic, fast-tempo, strings, brass, timpani, choral.
+### Video
 
-### Transcript
-Transcribe all spoken words and song lyrics from the audio.
-- If multiple speakers are present, attempt to identify and differentiate them.
-- Assign each speaker an inferred name based on the video's context (e.g., "Narrator", "David Attenborough") or a generic but consistent label (e.g., "Interviewer", "Female Voice", "Speaker 1").
-- Format the transcript with the speaker's name or label before their lines.
-- If no speech or lyrics are detected, state "No speech or lyrics detected."
-  `;
+Give a concise synopsis of the message, imagery and techniques used in the video.
+
+### Audio
+
+Extract detailed information from the audio track, such as natural sounds, bird song, music, human song lyrics, conversations, individual speaker voice quality, and emotional tone of dialogue. Prioritize making a detailed transcript.
+
+#### Speech and Song
+
+Pay special attention to speech and music. Make a comprehensive transcript of all speeches and conversations. If there are lyrics performed by an artist, transcribe them. Try to differentiate and label segments of each based on their origin such as Female, Male, Young, Old - Mezzo-Soprano, American or British Accents etc. Use the context of the YouTube url to help you understand the flow of the conversations, but transcribe them accurately without editorializing.
+
+#### Music Description
+
+Describe music in a detailed, interesting and historical way, paying attention to the techniques of delivery and composition.
+
+#### Music Generation Prompt
+
+Where there is music output in addition to a concise description, a Music Generation Prompt. This Prompt should be effective at getting good AI music generators to create new music with in the genre and spirit of the music that you are analysing. 
+
+Generate a highly detailed, plain text, comma-delimited, single-line text prompt suitable for an AI music generation model, approximately 150 words in length. The prompt must begin with the most generic and essential terms (era, genre, overall mood) and progressively add more specific details. It should evolve from single keywords into more descriptive phrases. Include a rich description covering: musical era, genre, instrumentation (from broad families to specific instruments), vocal characteristics (soloists, choirs, style), tempo, dynamics, and the overall tone or theme. Do NOT use category labels like "Instruments:" or "Tempo:". Crucially, if a specific composer or artist is clearly identifiable, their name must only be mentioned at the very end of the prompt.
+Example: baroque, sacred music, choral, dramatic, powerful, allegro, full orchestra, string section, basso continuo, harpsichord, oboe, trumpets, timpani, large mixed choir (SATB), soprano and alto soloists, intricate polyphony, fugal passages, majestic and solemn tone, powerful dynamic contrasts, intricate counterpoint between voices and instruments, a sense of divine grandeur and authority, reminiscent of the work of George Frideric Handel.
+`;
+
+/**
+ * REWRITTEN AND CORRECTED
+ */
+async function analyzeYouTubeAudioLocally(youtubeUrl, startTime = '0') {
+    console.log(`Performing local audio analysis for: ${youtubeUrl} starting at ${startTime}.`);
+    const tempFileName = `temp-audio-${Date.now()}.opus`;
+    const tempFilePath = path.join(os.tmpdir(), tempFileName);
+
     try {
-        // fileData requires a direct URL which the model can access, and a mimeType
-        const result = await textModel.generateContent([ prompt, { fileData: { fileUri: youtubeUrl, mimeType: "video/mp4" } } ]);
+        let ffmpegArgs = '-t 3000'; // Duration of 50 minutes
+        if (startTime && startTime !== '0') {
+            ffmpegArgs = `-ss ${startTime} ${ffmpegArgs}`;
+        }
+
+        const args = [
+            '-x',
+            '--audio-format', 'opus',
+            '--ppa', `ffmpeg:${ffmpegArgs}`,
+            '-o', tempFilePath,
+            youtubeUrl,
+        ];
+
+        console.log(`Executing command: yt-dlp ${args.join(' ')}`);
+        const { stdout, stderr } = await execFileAsync('yt-dlp', args);
+
+        if (stderr) {
+            console.warn('yt-dlp stderr output (this is usually download progress):\n', stderr);
+        }
+        console.log('yt-dlp stdout output:\n', stdout);
+        console.log(`yt-dlp successfully created temporary file: ${tempFilePath}`);
+
+        // --- THE FIX: Read the file into a buffer and send as inline data ---
+        console.log(`Reading file into buffer and sending to Google...`);
+        const audioFileBuffer = await fs.readFile(tempFilePath);
+
+        const result = await textModel.generateContent([
+            YOUTUBE_PROMPT,
+            {
+                inlineData: {
+                    data: audioFileBuffer.toString("base64"),
+                    mimeType: "audio/opus",
+                },
+            },
+        ]);
+        // --- END OF FIX ---
+
         const analysisText = result.response.text();
-        return { success: true, markdown: `\n### YouTube Audio Analysis\n<pre><code>${escapeHtml(analysisText)}</code></pre>\n` };
+        return { success: true, markdown: `\n### YouTube Audio Analysis (Local, from ${startTime})\n<pre><code>${escapeHtml(analysisText)}</code></pre>\n` };
+
     } catch (error) {
-        console.error(`An error occurred during YouTube audio analysis for ${youtubeUrl}:`, error);
+        if (error instanceof GoogleGenerativeAIError) {
+             console.error(`An error occurred during Google AI processing for ${youtubeUrl}:`, error);
+        } else {
+             console.error(`An error occurred during local YouTube audio analysis via yt-dlp for ${youtubeUrl}:`, error);
+        }
+        return { success: false, error: error.message };
+    } finally {
+        try {
+            await fs.unlink(tempFilePath);
+            console.log(`Successfully deleted temporary file: ${tempFilePath}`);
+        } catch (cleanupError) {
+            if (cleanupError.code !== 'ENOENT') {
+                console.error(`Failed to delete temporary file ${tempFilePath}:`, cleanupError);
+            }
+        }
+    }
+}
+
+
+/**
+ * MODIFIED: Main function to analyze YouTube audio.
+ */
+async function analyzeYouTubeAudio(youtubeUrl) {
+    if (useLocalAudioProcessing) {
+        console.log("`--local-audio` flag detected. Using yt-dlp for YouTube analysis.");
+        return analyzeYouTubeAudioLocally(youtubeUrl, localAudioStartTime);
+    }
+
+    console.log(`Analyzing YouTube audio directly from URL: ${youtubeUrl}`);
+    try {
+        const result = await textModel.generateContent([
+            YOUTUBE_PROMPT,
+            { fileData: { fileUri: youtubeUrl, mimeType: "video/mp4" } }
+        ]);
+        const analysisText = result.response.text();
+        return { success: true, markdown: `\n### YouTube Audio Analysis (Direct)\n<pre><code>${escapeHtml(analysisText)}</code></pre>\n` };
+    } catch (error) {
+        console.error(`An error occurred during direct YouTube audio analysis for ${youtubeUrl}:`, error);
         return { success: false, error: error.message };
     }
 }
 
-// ADDED: Function to unescape HTML entities
 function unescapeHtml(text) {
     if (typeof text !== 'string') return text == null ? '' : String(text);
     return text.replace(/&/g, "&").replace(/</g, "<").replace(/>/g, ">").replace(/"/g, "\"").replace(/'/g, "'").replace(/ /g, ' ');
 }
 
-// ADDED: Function to clean text for TTS
 function cleanTextForTTS(text) {
     if (typeof text !== 'string') return '';
     let cleaned = unescapeHtml(text);
@@ -503,7 +685,7 @@ async function processSingleFile(inputFile, selectedPrompt) {
         fullTextContent = fullTextContent.trim();
         if (!fullTextContent) { console.warn(`Skipping ${inputFile}: No text content.`); return; }
 
-        let youtubeAnalysisPromise = Promise.resolve(null); // Initialize with null promise
+        let youtubeAnalysisPromise = Promise.resolve(null);
         const sourceUrl = inputData.ogResult.ogUrl;
         if (sourceUrl && (sourceUrl.includes('youtube.com/') || sourceUrl.includes('music.youtube.com/'))) {
             const cleanYoutubeUrl = sourceUrl.replace('music.youtube.com', 'youtube.com');
@@ -521,7 +703,6 @@ async function processSingleFile(inputFile, selectedPrompt) {
             return textModel.generateContent({ contents: [{ role: "user", parts: [{ text: fullApiPrompt }] }], generationConfig: { maxOutputTokens: 8192, temperature: 1.0 }, tools: [{ googleSearch: {} }] }).catch(err => ({ error: true, message: err.message, feedback: err.promptFeedback }));
         });
 
-        // MODIFIED: Added youtubeAnalysisPromise to Promise.all
         const [imageSonnetResult, youtubeAnalysisResult, ...textApiResults] = await Promise.all([ processOriginalImage(originalImageUrl), youtubeAnalysisPromise, ...textApiPromises ]);
 
         let combinedVerseOutput = "", toc = "## Table of Contents\n";
@@ -553,7 +734,6 @@ async function processSingleFile(inputFile, selectedPrompt) {
             const promptUsedForImage = extractedImagePrompts[Math.floor(Math.random() * extractedImagePrompts.length)];
             const imgGenRes = await generateAndEmbedImage(promptUsedForImage, baseFilename);
             if (imgGenRes.success) {
-                 // FIX: Removed .trim() here to preserve leading/trailing newlines
                  figureWithGeneratedImage = `### Generated Image\n${imgGenRes.markdown}\n*Prompt:*\n<pre><code class="language-text">${escapeHtml(promptUsedForImage)}</code></pre>`;
             } else {
                 let errorDisplay = `<p><strong>Image Generation Failed.</strong></p><p><em>Error Summary:</em> ${escapeHtml(imgGenRes.error || 'Unknown error')}</p>`;
@@ -563,20 +743,28 @@ async function processSingleFile(inputFile, selectedPrompt) {
                 figureWithGeneratedImage = `### Generated Image\n${errorDisplay}`;
             }
         }
-        let figureWithSelectedVideoPrompt = "<!-- No video prompts found -->";
+        
+        let generatedVideoOutput = "<!-- No video prompts found or video generation not attempted -->";
+        let videoModelUsed = "N/A";
+
         if (extractedVideoPrompts.length > 0) {
-            const selectedVideoPrompt = extractedVideoPrompts[Math.floor(Math.random() * extractedVideoPrompts.length)];
-            figureWithSelectedVideoPrompt = `\n### Selected Video Prompt\n<pre><code class="language-text">${escapeHtml(selectedVideoPrompt)}</code></pre>\n*Note: This is an extracted prompt for potential future video generation. Actual video generation is not performed by this script.*\n`;
+            const promptUsedForVideo = extractedVideoPrompts[Math.floor(Math.random() * extractedVideoPrompts.length)];
+            const videoGenRes = await generateAndEmbedVideo(promptUsedForVideo, baseFilename);
+            videoModelUsed = videoGenRes.modelUsed || "N/A";
+
+            if (videoGenRes.success) {
+                generatedVideoOutput = `### Generated Video\n${videoGenRes.markdown}\n*Prompt:*\n<pre><code class="language-text">${escapeHtml(promptUsedForVideo)}</code></pre>`;
+            } else {
+                generatedVideoOutput = `### Generated Video\n<p><strong>Video Generation Failed (Both Veo 3 and Veo 2).</strong></p><p><em>Error Summary:</em> ${escapeHtml(videoGenRes.error || 'Unknown error')}</p>\n<p><em>Attempted prompt:</em></p>\n<pre><code class="language-text">${escapeHtml(promptUsedForVideo)}</code></pre>`;
+            }
         }
 
-        // ADDED: YouTube audio analysis integration
         let youtubeAnalysisOutput = "<!-- Source was not a YouTube video -->";
         if (youtubeAnalysisResult) {
             if (youtubeAnalysisResult.success) { youtubeAnalysisOutput = youtubeAnalysisResult.markdown; }
             else { youtubeAnalysisOutput = `\n### YouTube Audio Analysis\n<p><strong>Audio analysis failed.</strong></p>\n<p><em>Error:</em> ${escapeHtml(youtubeAnalysisResult.error)}</p>\n`; }
         }
 
-        // --- REFINED TTS TEXT SELECTION AND GENERATION LOGIC ---
         let figureWithGeneratedAudio = "<!-- No suitable text found for TTS -->";
         let textToSynthesize = "";
         let rawTextForTTS = "";
@@ -588,17 +776,14 @@ async function processSingleFile(inputFile, selectedPrompt) {
         }
 
         if (lastVerseContent) {
-            // Filter out analysis-like lines from the raw verse text.
             const verseOnlyText = lastVerseContent.split(/<br\s*\/?>/i)
                 .filter(line => !/^\s*rhyme scheme|iambic pentameter|meter:|analysis:|style:/i.test(line.trim()))
                 .join(' ');
             rawTextForTTS = cleanTextForTTS(verseOnlyText);
             console.log("TTS: Selected last verse snippet for audio.");
         } else {
-            // Fallback if no last verse content found
             let fallbackCandidateText = extractedImagePrompts[0] || firstVerseContentForTTS.text;
             if (fallbackCandidateText) {
-                // Apply the same filtering to the fallback text.
                 const filteredFallbackText = fallbackCandidateText.split('\n')
                     .filter(line => !/^\s*rhyme scheme|iambic pentameter|meter:|analysis:|style:|prompt:/i.test(line.trim()))
                     .join(' ');
@@ -614,14 +799,12 @@ async function processSingleFile(inputFile, selectedPrompt) {
             
             let candidateForTTS = rawTextForTTS;
 
-            // If the cleaned text is long, try to slice a readable chunk from the end
             if (candidateForTTS.length > TARGET_TTS_LENGTH) {
                 let tempSlice = candidateForTTS.slice(Math.max(0, candidateForTTS.length - (TARGET_TTS_LENGTH + SLICE_BUFFER_CHARS)));
                 const firstSpaceIndex = tempSlice.indexOf(' ');
                 candidateForTTS = (firstSpaceIndex !== -1) ? tempSlice.substring(firstSpaceIndex + 1) : tempSlice;
             }
             
-            // Final truncation to the model's hard limit
             if (candidateForTTS.length > MAX_TTS_CHARS) {
                 candidateForTTS = candidateForTTS.substring(0, MAX_TTS_CHARS);
             }
@@ -632,12 +815,11 @@ async function processSingleFile(inputFile, selectedPrompt) {
                 console.warn(`[TTS WARNING] Final text for TTS is too short (length: ${textToSynthesize.length}). Skipping audio generation.`);
                 figureWithGeneratedAudio = `<p><strong>Audio generation skipped.</strong> Selected text was too short after processing.</p>\n` +
                                            `*Attempted text for audio:*\n<pre><code class="language-text">${escapeHtml(rawTextForTTS)}</code></pre>`;
-                textToSynthesize = ""; // Ensure we don't try to generate
+                textToSynthesize = "";
             }
         }
         
         if (textToSynthesize) {
-            // Pass the final, processed text to the audio generator for both synthesis and display.
             const audioGenResult = await generateAndEmbedAudio(textToSynthesize, baseFilename, textToSynthesize);
             figureWithGeneratedAudio = audioGenResult.markdown;
         }
@@ -656,7 +838,7 @@ Source: [${inputData.ogResult.ogUrl || 'N/A'}](${inputData.ogResult.ogUrl || '#'
 ${toc}<hr>${combinedVerseOutput}<hr>${imageSonnetResult}<hr>
 ${figureWithGeneratedImage}
 <hr>
-${figureWithSelectedVideoPrompt}
+${generatedVideoOutput}
 <hr>
 ${youtubeAnalysisOutput}
 <hr>
@@ -665,7 +847,7 @@ ${youtubeAnalysisOutput}
 ${figureWithGeneratedAudio}<hr>
 ### Generation Details
 <details><summary>Models & Prompt</summary>
-<p><strong>Text:</strong> ${TEXT_MODEL_NAME}<br><strong>Vision:</strong> ${VISION_MODEL_NAME}<br><strong>Image Gen:</strong> ${IMAGE_GEN_MODEL_NAME}<br><strong>TTS:</strong> ${TTS_MODEL_DISPLAY_NAME}</p>
+<p><strong>Text:</strong> ${TEXT_MODEL_NAME}<br><strong>Vision:</strong> ${VISION_MODEL_NAME}<br><strong>Image Gen:</strong> ${IMAGE_GEN_MODEL_NAME}<br><strong>TTS:</strong> ${TTS_MODEL_DISPLAY_NAME}<br><strong>Video:</strong> ${videoModelUsed}</p>
 <p><strong>Prompt (${selectedPrompt.name}):</strong></p><strong>System:</strong><pre><code>${escapeHtml(selectedPrompt.system)}</code></pre><strong>Chat:</strong><pre><code>${escapeHtml(selectedPrompt.chat)}</code></pre></details><hr>
 <button onclick="window.open('/js${relJsonPath}', '_blank');">Load Input JSON</button>`;
         await fs.writeFile(outputPath, mdOutput);
@@ -688,13 +870,25 @@ function generatePromptHash(promptText, length = 8) {
 }
 
 async function main() {
-    console.log("Starting Gemini script with TTS and new Image Gen...");
+    console.log("Starting Gemini script with TTS, Image Gen, and Video Gen...");
+
+    const localAudioIndex = process.argv.indexOf('--local-audio');
+    if (localAudioIndex > -1) {
+        useLocalAudioProcessing = true;
+        if (process.argv.length > localAudioIndex + 1 && !process.argv[localAudioIndex + 1].startsWith('--')) {
+            localAudioStartTime = process.argv[localAudioIndex + 1];
+        }
+        console.log(`>> Local YouTube audio processing is ENABLED. Starting at: ${localAudioStartTime}.`);
+    } else {
+        console.log(">> Local YouTube audio processing is DISABLED. Use '--local-audio [time]' to enable.");
+    }
+
     try {
         if (apiKey) {
             googleGenAIClient = new GoogleGenAI({ apiKey: apiKey });
-            console.log("GoogleGenAI Client (for TTS & Image Gen) initialized using @google/genAI.");
+            console.log("GoogleGenAI Client (for TTS, Image & Video Gen) initialized using @google/genai.");
         } else {
-            console.error("GoogleGenAI Client NOT initialized: API_KEY missing. TTS & Image Gen will fail.");
+            console.error("GoogleGenAI Client NOT initialized: API_KEY missing. TTS, Image & Video Gen will fail.");
         }
         await fs.mkdir(OUTPUT_POSTS_DIR, { recursive: true });
         await fs.mkdir(OUTPUT_IMAGES_DIR, { recursive: true });
