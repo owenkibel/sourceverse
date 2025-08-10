@@ -44,6 +44,6 @@
     "sanitize-html": "^2.14.0",
     "streamifier": "^0.1.1",
     "yargs": "^17.7.2",
-    "youtube-caption-extractor": "^1.4.3"
+    "youtube-caption-extractor": "^1.8.2"
   }
 }
