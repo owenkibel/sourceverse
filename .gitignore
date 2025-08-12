@@ -6,7 +6,7 @@ allfscript
 allscript
 allscript1
 annotate_and_map5.js
-annotate_and_mm2.js
+annotate_and_mm*
 bashscript
 bashscripts
 bookmarksgrok3.js
@@ -14,9 +14,11 @@ bookmarksimage*
 bookmarks.js
 *(copy)*
 *(Copy*
+create-grok-video*
 create-grok-video-post.js
 dataIndex.txt
 embed.js
+*.fish
 gemini.txt
 ginitf2script
 ginitfscript
@@ -61,6 +63,8 @@ rsyncscript
 script1.sh
 script2.sh
 script.sh
+*.sh
+sync_videos.sh
 text
 theme-simple-blog
 theme-simple-blog-orig

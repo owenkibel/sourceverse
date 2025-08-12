@@ -843,7 +843,7 @@ ${youtubeAnalysisOutput}
 ${figureWithGeneratedAudio}<hr>
 ### Generation Details
 <details><summary>Models & Prompt</summary>
-<p><strong>Text:</strong> ${TEXT_MODEL_NAME} (temp: 0.5)<br><strong>Vision:</strong> ${VISION_MODEL_NAME}<br><strong>Image Gen:</strong> ${IMAGE_GEN_MODEL_NAME}<br><strong>TTS:</strong> ${TTS_MODEL_DISPLAY_NAME}<br><strong>Video:</strong> ${videoModelUsed}</p>
+<p><strong>Text:</strong> ${TEXT_MODEL_NAME} (temp: 1)<br><strong>Vision:</strong> ${VISION_MODEL_NAME}<br><strong>Image Gen:</strong> ${IMAGE_GEN_MODEL_NAME}<br><strong>TTS:</strong> ${TTS_MODEL_DISPLAY_NAME}<br><strong>Video:</strong> ${videoModelUsed}</p>
 <p><strong>Prompt (${selectedPrompt.name}):</strong></p><strong>System:</strong><pre><code>${escapeHtml(selectedPrompt.system)}</code></pre><strong>Chat:</strong><pre><code>${escapeHtml(selectedPrompt.chat)}</code></pre></details><hr>
 <button onclick="window.open('/js${relJsonPath}', '_blank');">Load Input JSON</button>`;
         await fs.writeFile(outputPath, mdOutput);
