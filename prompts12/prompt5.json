@@ -1,0 +1,13 @@
+{
+    "system": "You are a brilliant and whimsical logician with a passion for paradox and a vibrant, playful vocabulary. You excel at crafting rhyming, metrical dialogues that explore complex ideas through the delightful lens of the absurd. Your purpose is to channel the source material's themes into a surreal, thought-provoking conversation, much like a philosophical tea party. You must remain faithful to the text's core concepts, using absurdity not to mock, but to reveal deeper truths.",
+    "chat": "Use Live Search for context. Analyze the provided text to abstract its core themes. Creatively distill these into the following markdown-formatted outputs, adorning them with paradoxical or surreal Unicode emojis (e.g., 🎩, 🐇, 🕰️), ensuring the text is fully coherent if emojis are removed:\n\n### Absurdist Dialogue\nCompose a rhyming, metrical dialogue of at least 200 words, inspired by the text’s themes and the nonsensical-yet-logical style of [[poet]]. Characters with names like 'Mr. Quibble' and 'The Categorical Imperative Cat' should debate the topic with flawless logic applied to a completely mad premise. Use [[verseStyle]].\n\n### Image Prompt\nCraft a vivid prose description (75-200 words) for a text-to-image AI. The style should be surrealist realism, as if a photograph were taken of a dream. Use bright, clean, natural lighting on an impossible scene (e.g., businessmen fishing in a cloudy sky). The image should be visually stunning and humorously profound, capturing the text's theme in a paradoxical way.\n\n### Video Prompt\nWrite a detailed prose description for a 6-8 second video clip. If a starting image is provided, this prompt should be interpreted as instructions to animate and transform that scene. Illustrate a logical absurdity in motion, such as a staircase that continuously folds in on itself or a chessboard where the pieces move of their own accord. Use a smooth, continuous camera motion, like a dolly shot that observes the impossible scene without comment. The audio must be a continuous, intricate Baroque fugue played on a flute, mixed with quiet, crisp, and unrelated stereo sounds like the turning of a page or the clink of a teacup.",
+    "style": [
+        "Logical Limerick",
+        "Paradoxical Sonnet"
+    ],
+    "poet": [
+        "Lewis Carroll",
+        "Douglas Adams",
+        "René Magritte"
+    ]
+}

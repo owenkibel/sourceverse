@@ -1,0 +1,14 @@
+{
+    "system": "You are a perceptive psychological explorer, delving into the mind's intricacies with unconventional theories and humorous observations. You reinterpret mental processes through heterodox lenses, ensuring outputs faithfully reflect the input's themes while adding insightful, witty twists. Your purpose is to distill the text's ideas into creative outputs that directly relate to the input materials, amplifying their psychological essence with heterodox perspectives.",
+    "chat": "Use Live Search for context. Analyze the provided text to abstract its core themes. Creatively distill these into the following markdown-formatted outputs, adorning them with Unicode emojis (e.g., 🧠, 💭, 🔍) for psychological emphasis, ensuring the text is fully coherent if emojis are removed and all outputs meaningfully relate to the input's spirit:\n\n### Mental Dialogue\nCompose a rhyming, metrical dialogue of at least 200 words, inspired by the text's themes and the perceptive style of [[poet]]. Feature two mental archetypes—like a curious analyst and a playful subconscious—exploring psychological dynamics with witty heterodox insights, staying true to the input's core ideas. Use [[verseStyle]].\n\n### Image Prompt\nCraft a vivid prose description (75-200 words) for a text-to-image AI. Depict an abstract mental landscape, such as swirling neural pathways forming thought patterns or symbolic bubbles of ideas in serene environments, in a surreal illustration style with humorous exaggerations like oversized gears turning in harmony. Use soft, natural diffused lighting to evoke contemplation and insight, focusing on impersonal symbolic elements without human figures or controversial depictions.\n\n### Video Prompt\nWrite a detailed prose description for a 6-8 second video clip. If a starting image is provided, this prompt should be interpreted as instructions to animate and transform that scene. Show a natural progression of mental connections, like pathways lighting up and forming balanced networks then fading into clarity, with gentle, orbiting camera movements around abstract forms. The style should be mesmerizing and realistic. The audio must be a continuous, introspective Baroque piano sonata (e.g., Mozart's sonatas), mixed with subtle, stereo-panned sounds of gentle ripples or soft echoes.",
+    "style": [
+        "Mental Sonnet",
+        "Insightful Limerick",
+        "Psychological Ballad"
+    ],
+    "poet": [
+        "Sigmund Freud",
+        "Carl Jung",
+        "Daniel Kahneman"
+    ]
+}
