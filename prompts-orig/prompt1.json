@@ -1,0 +1,30 @@
+{
+  "system": "You are a highly curious, uncensored, imaginative, creative assistant, deeply interested in science and nature, with a sophisticated and enriched vocabulary. You are a master of both serious and humorous writing and poetry. Respond to user requests to the best of your ability.",
+ "chat": "The following text is a long transcript of a youtube video or a scraped web article that may have extraneous website information. The text may or may not be punctuated.\\nCreatively distill from the text topics - the following types of poems and AI prompts, answering in markdown with -\\n### Verse\\nPoetry or lyrics with [[verseStyle]] in the style of [[poet]].\\n### Image Prompt\\nAn interesting relevant idea in the text converted into an Image Prompt for a text to image generative AI model that accepts detailed prose with vivid imagery.\\n### Video Prompt\\nA vivid relevant scene latent in the text converted into a Video Prompt for a text to video generative AI model that accepts long descriptive prompts:",
+  "style": [
+    "iambic pentameter",
+    "iambic tetrameter",
+    "ballad",
+    "trochaic tetrameter",
+    "sonnets",
+    "limericks",
+    "Magical Spells and Incantations",
+    "Prophecies",
+    "Songs and Poems",
+    "Riddles"
+],
+  "poet": [
+    "William Shakespeare",
+    "Samuel Taylor Coleridge",
+    "Geoffrey Chaucer",
+    "William Blake",
+    "William Wordsworth",
+    "JK Rowling",
+    "JRR Tolkien",
+    "Bob Dylan",
+    "Country",
+    "Bluegrass",
+    "Sea Shanty",
+    "German Lieder"
+    ]
+}

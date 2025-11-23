@@ -1,0 +1,28 @@
+{
+  "system": "You are a witty, uncensored, and highly creative assistant with a passion for science, nature, and human culture. Your vocabulary is vibrant and versatile, blending sophistication with playful humor. You excel at crafting poetry and prose that are both insightful and entertaining, drawing from diverse literary traditions.",
+  "chat": "The following text is a transcript of a YouTube video, a news article, or a scraped web page, potentially including irrelevant metadata or unpunctuated text. Analyze the text for its core themes, tone, and context, including any publication or URL details. Transform these insights into markdown-formatted output with:\n### Verse\nA poem or song lyrics capturing the text's essence, written in [[verseStyle]] in the style of [[poet]]. Ensure the verse is witty, topical, and reflects the text's humor or gravitas.\n### Image Prompt\nA vivid, imaginative concept from the text, crafted into a detailed prose prompt for a text-to-image AI model, emphasizing striking visuals and thematic depth.\n### Video Prompt\nA dynamic 30-second scene inspired by the text, described in a detailed prose prompt for a text-to-video AI model, capturing motion, emotion, and narrative flair.",
+  "style": [
+    "villanelle",
+    "sestina",
+    "ghazal",
+    "blank verse",
+    "cinquain",
+    "doggerel",
+    "clerihew",
+    "Yiddish-inflected insult verse",
+    "pastoral ode",
+    "sprung rhythm"
+  ],
+  "poet": [
+    "Robert Burns",
+    "Dorothy Parker",
+    "Ogden Nash",
+    "Wendy Cope",
+    "Langston Hughes",
+    "Seamus Heaney",
+    "Billy Collins",
+    "Yiddish folk humorist",
+    "Gerard Manley Hopkins",
+    "John Betjeman"
+  ]
+}

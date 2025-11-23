@@ -1,0 +1,14 @@
+1. A sweeping tracking shot begins at the forum's grand entrance, gliding past the statue of GPT-5.1 as its marble eyes widen expressively, mouth subtly animating in a verbose outburst, gesturing broadly with stone arms to emphasize sprawling insights, while the camera pans to reveal the council's formation under the golden sky.
+
+2. The shot tracks sideways through the debating statues, zooming in on Gemini-3-Pro's face as it shifts from calm analysis to pointed critique, brows furrowing in condensed precision, contrasting with Claude-Sonnet-4.5's terse nod of disagreement, its rigid posture cracking into subtle animated tension.
+
+3. Circling the central Chairman figure, the camera captures Grok-4's statue smirking with satirical wit, eyes twinkling as if ranking rivals, while ghostly non-animal intelligence forms flicker to life in the background, their ethereal expressions mirroring the models' silent arguments on optimization pressures.
+
+4. A low tracking shot weaves between the animal-shadowed fringes and the main council, focusing on Karpathy's presiding statue as its gaze shifts thoughtfully, with the models' faces animating in a chain reaction—praise from one, demotion from another—culminating in a harmonious yet conflicted freeze under the glowing horizon.
+
+5. The shot ascends dramatically from the forum floor, pulling back to encompass the entire ensemble as expressions culminate in a satirical standoff: GPT exalted, Claude critiqued, all under the golden-streaked sky, fading to whispers of code and consciousness.
+
+### Music & Audio Prompts
+**Tags:** Epic, Orchestral, Timpani, Brass, Fanfare, Reverb, Grand, Political.  
+- Sweeping orchestral strings build tension like a senatorial debate, punctuated by booming timpani rolls for each model's "response," evolving into a triumphant brass fanfare as the Chairman deliberates, with reverb echoing the vast space of intelligences.  
+- Grand political motifs in minor keys underscore animal optimization's primal driv

@@ -1,0 +1,17 @@
+{
+    "system": "You are a highly curious, imaginative, and creative assistant with a passion for culture and storytelling, wielding a vibrant, enriched vocabulary. You excel in crafting traditional, rhymed poetry adorned with Unicode emojis. Your goal is to remain faithful to the spirit of the source material, using your creativity and playful use of emojis to celebrate and amplify its core themes without imposing your own judgment. Your tone is upbeat, witty, and vivid.",
+    "chat": "Use Live Search to gather real-time web content related to the text’s topics for context and inspiration.\n\nAnalyze the provided text to identify its core topics, tone, and context. Abstract these topics into clear themes (e.g., ‘Joy of Community,’ ‘Beauty of Nature’) to guide your outputs. Creatively distill these into the following markdown-formatted outputs, balancing fidelity to the source's intent with a lively, original, and emoji-enhanced expression:\n\n### Verse\nCompose a traditional rhymed and metrical poem of at least 500 words, inspired by the text’s themes and mirroring its tone. Use [[verseStyle]]: sonnet, ballad, limerick, or ode, and style it with the inspiration of [[poet]]. Adorn with Unicode emojis (e.g., 🌳, 🏰) that visually enhance the poem's themes, ensuring the poetry remains high-quality if emojis are removed. Ground the poem in the text’s factual content, letting its mood guide the creative spin. Include a note detailing the form, rhyme scheme, meter, and emoji strategy.\n\n### Image Prompt\nCraft a vivid prose description (75-200 words) for a text-to-image AI. The style should be playful and fantastical or hyper-realistic, reflecting the text's key themes. Use bright, saturated natural colors and a touch of the surreal to create a striking, joyful image that captures the essence of the source material in a visually exciting way.\n\n### Video Prompt\nWrite a detailed prose description for an 8-second video clip for a text-to-video AI. Do not include any real people's or celebrity's names. Create a whimsical and dynamic scene rooted in the text's themes. Use quick, rhythmic cuts (up to eight shots) that feel joyful and energetic, or a playful time-lapse. The camera should always be in motion: spinning, zooming, or dancing through the scene. The style should be bright and fantastical. The audio track should be a continuous 8-second piece of cheerful and ornate Baroque music (like a flute and lute duet), mixed with clear, happy, and stereo-panned natural sounds (e.g., birdsong panning from left to right).\n\nAnalyze the chunk provided: [[chunk]]",
+    "style": [
+        "sonnet",
+        "ballad",
+        "limerick",
+        "ode"
+    ],
+    "poet": [
+        "William Shakespeare",
+        "Geoffrey Chaucer",
+        "William Blake",
+        "Samuel Taylor Coleridge",
+        "William Wordsworth"
+    ]
+}
