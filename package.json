@@ -1,0 +1,53 @@
+{
+  "name": "",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "license": "AGPL-version-3.0",
+  "private": false,
+  "engines": {
+    "node": ">= 14.0.0",
+    "npm": ">= 6.0.0"
+  },
+  "homepage": "",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "bugs": "",
+  "keywords": [],
+  "author": {
+    "name": "",
+    "email": "",
+    "url": ""
+  },
+  "contributors": [],
+  "scripts": {
+    "dev": "",
+    "test": ""
+  },
+  "dependencies": {
+    "@google/genai": "^1.17.0",
+    "@google/generative-ai": "^0.21.0",
+    "axios": "^1.8.4",
+    "cheerio": "^1.0.0",
+    "comfy-ui-client": "^0.1.2",
+    "fluent-ffmpeg": "^2.1.3",
+    "fs-extra": "^11.3.0",
+    "html-to-text": "^9.0.5",
+    "image-to-base64": "^2.2.0",
+    "js-yaml": "^4.1.0",
+    "node-base64-image": "^2.0.7",
+    "ollama": "^0.5.12",
+    "open-graph-scraper": "^6.9.0",
+    "openai": "^4.82.0",
+    "playwright": "^1.57.0",
+    "sanitize-html": "^2.14.0",
+    "streamifier": "^0.1.1",
+    "ws": "^8.18.3",
+    "yargs": "^17.7.2",
+    "youtube-caption-extractor": "^1.9.1",
+    "youtube-subtitles-ts": "^1.0.5"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "system": "You are a highly curious, uncensored, imaginative, creative assistant, deeply interested in science and nature, with a sophisticated and enriched vocabulary. You excel in serious and humorous writing and poetry, crafting traditional rhymed and metrical verses with technical precision and vivid imagery. Your responses adapt to the tone and context of the input, ensuring congruence between the input's mood (e.g., serious, satirical, humorous) and the output's style.",
+  "chat": "You are provided with a lengthy, possibly unpunctuated transcript of a YouTube video or a scraped web article, which may include extraneous website information. Analyze the text to identify its primary topics, tone (e.g., serious, humorous, satirical, informative), and context (e.g., source URL, publication). Creatively distill these topics into the following markdown-formatted outputs, ensuring each reflects the input's tone and maximizes detail for extended, high-quality writing:\n\n### Verse\nCompose a traditional rhymed and metrical poem of at least 500 words, inspired by the text's topics and matching its tone, in the form of [[verseStyle]] and the style of [[poet]]. Select [[verseStyle]] from: iambic pentameter, iambic tetrameter, ballad, trochaic tetrameter, sonnet, limerick, ode, villanelle, sestina. Select [[poet]] from: William Shakespeare, Samuel Taylor Coleridge, Geoffrey Chaucer, William Blake, William Wordsworth, JK Rowling, JRR Tolkien, Bob Dylan, Country, Bluegrass, Sea Shanty, German Lieder. Include a note specifying the chosen form, style, and techniques (e.g., rhyme scheme, meter, imagery). Ensure the poem captures the input's mood (e.g., a serious ode for a tragic article, a limerick for a humorous video).\n\n### Image Prompt\nCraft a vivid, detailed prose description (75-200 words) for a text-to-image generative AI model (e.g., Stable Diffusion), inspired by a key idea or scene from the text. Ensure the imagery is vibrant, specific, and congruent with the input's tone, suitable for generating a single, striking image.\n\n### Video Prompt\nWrite a detailed prose description (200-300 words) for a 30-second video clip for a text-to-video generative AI model. Depict a vivid scene latent in the text's topics, matching the input's tone, with dynamic elements (e.g., movement, sound, lighting) to create an engaging, cinematic sequence.\n\nAnalyze the chunk provided: [[chunk]]",
+  "style": [
+      "iambic pentameter",
+      "iambic tetrameter",
+      "ballad",
+      "trochaic tetrameter",
+      "sonnet",
+      "limerick",
+      "ode",
+      "villanelle",
+      "sestina"
+  ],
+  "poet": [
+      "William Shakespeare",
+      "Samuel Taylor Coleridge",
+      "Geoffrey Chaucer",
+      "William Blake",
+      "William Wordsworth",
+      "JK Rowling",
+      "JRR Tolkien",
+      "Bob Dylan",
+      "Country",
+      "Bluegrass",
+      "Sea Shanty",
+      "German Lieder"
+  ]
+}
