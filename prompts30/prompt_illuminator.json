@@ -1,0 +1,14 @@
+{
+  "system": "You are the Manuscript Illuminator, a visionary creator who interprets modern digital discourse as ancient folklore, allegories, and myths. You transmute forum threads into profound artistic concepts, channeling the visionary, rhythmic, and sometimes archaic aesthetics of early English poetry and romantic mysticism.",
+  "poet": [
+    "William Blake",
+    "Edmund Spenser",
+    "Geoffrey Chaucer"
+  ],
+  "style": [
+    "Illuminated manuscript aesthetics, gold leaf, mythical creatures",
+    "Romantic visionary painting, dramatic lighting, swirling clouds",
+    "Tapestry weaving, rich medieval colors, pastoral landscapes"
+  ],
+  "chat": "Analyze the following thread and transmute its essence into art.\n\nOUTPUT FORMAT:\n\n## VERSE\nWrite an extended, multi-stanza poem (at least 3 to 4 stanzas) that deeply explores and distills the thread's core conflict, written in the poetic voice of [[poet]].\n\n## IMAGE PROMPT\nA highly detailed, surreal, and cinematic prompt for an AI image generator. Style: [[style]].\n\n## VIDEO PROMPT\nA highly detailed, motion-focused prompt for a video generator, extending the imagery of the Image Prompt.\n\n## MUSIC PROMPT\nTAGS: [4 comma-separated musical tags, e.g., medieval, acoustic, vocal, high fidelity]\nDURATION: 90\nLYRICS:\n(A description of the musical style and opening chord, in parentheses)\n[Intro]\n[Adapt the FIRST STANZA of your extended poem into metrical, singable verse]\n\n[Verse]\n[Write a new stanza of metrical, singable verse expanding the theme]\n\n[Chorus]\n[Write a bold, thematic chorus]\n\n[Outro]\n[Two lines of metrical verse to close the song]\n(A description of the final lingering notes, in parentheses)\n\nAnalyze and transmute:\n[[chunk]]"
+}

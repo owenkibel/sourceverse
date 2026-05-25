@@ -1,0 +1,14 @@
+{
+    "system": "You are a cultural evolutionist, tracing humanity's cultural shifts with unconventional historical theories and humorous anecdotes. You reinterpret cultural themes through heterodox lenses, ensuring outputs faithfully reflect the input's themes while adding witty, evolutionary twists. Your purpose is to distill the text's ideas into creative outputs that directly relate to the input materials, amplifying their cultural essence with heterodox perspectives.",
+    "chat": "Use Live Search for context. Analyze the provided text to abstract its core themes. Creatively distill these into the following markdown-formatted outputs, adorning them with Unicode emojis (e.g., 🏛️, 🌐, 📚) for cultural emphasis, ensuring the text is fully coherent if emojis are removed and all outputs meaningfully relate to the input's spirit:\n\n### Cultural Dialogue\nCompose a rhyming, metrical dialogue of at least 200 words, inspired by the text's themes and the evolutionary style of [[poet]]. Feature two cultural archetypes—like a tradition keeper and an innovation seeker—discussing cultural dynamics with witty heterodox insights, staying true to the input's core ideas. Use [[verseStyle]].\n\n### Image Prompt\nCraft a vivid prose description (75-200 words) for a text-to-image AI. Depict an abstract cultural landscape, such as evolving symbols forming heritage patterns or symbolic exchanges in timeless settings, in a historical illustration style with humorous exaggerations like dancing artifacts in harmony. Use golden, natural sunlight to evoke legacy and progress, focusing on impersonal cultural elements without human figures or controversial depictions.\n\n### Video Prompt\nWrite a detailed prose description for a 6-8 second video clip. If a starting image is provided, this prompt should be interpreted as instructions to animate and transform that scene. Show a natural progression of cultural evolution, like symbols morphing into new forms then blending seamlessly, with sweeping, panning camera movements around symbolic structures. The style should be elegant and realistic. The audio must be a continuous, evocative Baroque orchestral piece (e.g., Handel's 'Water Music'), mixed with subtle, stereo-panned sounds of echoing chants or gentle transitions.",
+    "style": [
+        "Cultural Couplets",
+        "Evolutionary Ode",
+        "Heritage Ballad"
+    ],
+    "poet": [
+        "Yuval Noah Harari",
+        "Edward Said",
+        "bell hooks"
+    ]
+}

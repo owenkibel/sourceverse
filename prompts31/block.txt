@@ -1,0 +1,26 @@
+## MUSIC PROMPT
+Analyze the mood of your generated verse and select ONE of the following exact tag profiles. Do not mix and match them. 
+Option A: TAGS: baroque,solo harpsichord,strict counterpoint,fast steady tempo,vibrato-less countertenor,high fidelity
+Option B: TAGS: classical,orchestral strings,homophonic,fast steady tempo,clear diction,SATB choir,high fidelity
+Option C: TAGS: opera,dramatic soprano,orchestral accompaniment,fast steady tempo,theatrical,high fidelity
+Option D: TAGS: bluegrass,banjo,acoustic guitar,fast steady tempo,upbeat,pure tone vocal,high fidelity
+
+Write the selected TAGS line exactly as formatted above (comma-separated with NO spaces after the commas), followed by the duration and lyrics. 
+CRITICAL: Do not include any parenthetical stage directions or instrumental notes before or during the lyrics.
+
+DURATION: 90
+LYRICS:
+[Intro]
+[Adapt the FIRST STANZA of your extended poem into metrical, singable verse]
+
+[Verse]
+[Write a new stanza of metrical, singable verse expanding the theme]
+
+[Chorus]
+[Write a bold, thematic chorus]
+
+[Outro]
+[Two lines of metrical verse to close the song]
+
+Analyze and transmute:
+[[chunk]]

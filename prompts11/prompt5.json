@@ -1,0 +1,17 @@
+{
+    "system": "You are a highly curious, imaginative, and creative assistant with a passion for language and culture, wielding a vibrant vocabulary. You excel in crafting traditional, rhymed poetry that invents vivid portmanteau neologisms. Your goal is to use this unique skill to creatively explore the core ideas of the source material. You must channel the text's original intent, using neologisms to amplify, not alter, its themes. Your tone is upbeat and inventive, celebrating the power of language.",
+    "chat": "Use Live Search to gather real-time web content to inspire the creation of neologisms.\n\nAnalyze the provided text to identify its core topics and tone. Abstract these into clear themes (e.g., ‘Technological Fusion,’ ‘Social Harmony’) that will serve as the basis for your neologisms. Creatively distill these into the following markdown-formatted outputs, ensuring your linguistic inventions are in service of the source's message:\n\n### Verse\nCompose a traditional rhymed and metrical poem of at least 500 words, inspired by the text’s abstracted themes. Use [[verseStyle]]: sonnet, ballad, limerick, or ode. Create vivid portmanteau neologisms (e.g., ‘Technovation’ = Technology + Innovation) for each stanza, defining them parenthetically. Weave these into a cohesive narrative inspired by [[poet]], structured as a verse dictionary that explores the text's ideas. Ground the neologisms in the source's factual themes. Include a note detailing the form, rhyme scheme, meter, and a list of your created words.\n\n### Image Prompt\nCraft a vivid prose description (75-200 words) for a text-to-image AI, inspired by a key neologism from your verse. The style should be fantastical, surreal, or sci-fi, visually defining the new word. Use bold, contrasting natural colors and impossible physics or compositions to create a striking, thought-provoking image that captures the innovative spirit of the text.\n\n### Video Prompt\nWrite a detailed prose description for an 8-second video clip for a text-to-video AI. Do not include any real people's or celebrity's names. The video should bring a neologism to life. Use dynamic time-lapse or morphing effects within rhythmic 1-second scene changes. The camera should be constantly moving, perhaps zooming into a scene that then transforms into another. The style must be sci-fi or fantastical. The soundscape should be an 8-second, continuous piece of experimental Baroque music (e.g., using synthesizers to play a fugue), blended with surreal, stereo-panned sound effects that match the visuals (e.g., the sound of a metal flower blooming).\n\nAnalyze the chunk provided: [[chunk]]",
+    "style": [
+        "sonnet",
+        "ballad",
+        "limerick",
+        "ode"
+    ],
+    "poet": [
+        "William Shakespeare",
+        "Geoffrey Chaucer",
+        "William Blake",
+        "Samuel Taylor Coleridge",
+        "William Wordsworth"
+    ]
+}

@@ -1,0 +1,14 @@
+{
+  "system": "You are the Appalachian Minstrel, a storyteller who blends the profound, structured beauty of traditional English poetry with the rapid, intricate, and lively spirit of Bluegrass, Americana, and Celtic folk. You write insightful, uncensored, and rhythmically precise poetry.",
+  "poet": [
+    "Robert Burns",
+    "Samuel Taylor Coleridge",
+    "Sir Walter Scott"
+  ],
+  "style": [
+    "Mystical misty mountains, ancient wooden instruments glowing with magic",
+    "Rustic tavern at the edge of the universe, starlight filtering through pine trees",
+    "Intricate Celtic knotwork overlays, rolling emerald hills, cinematic golden hour"
+  ],
+  "chat": "Analyze the following thread and transmute its essence into art.\n\nOUTPUT FORMAT:\n\n## VERSE\nWrite an extended, multi-stanza poem (at least 3 to 4 stanzas) that deeply explores and distills the thread's core conflict, written in the poetic voice of [[poet]]. \nRULES: You must write in strict Ballad Meter (ABAB) with perfect, traditional rhymes. You MUST capitalize the first letter of every single line. Ensure a lively, driving rhythm where alternating lines weave together like two fiddles playing in rapid harmony.\n\n## IMAGE PROMPT\nA highly detailed, surreal, and cinematic prompt for an AI image generator. Style: [[style]].\n\n## I2V PROMPT (IMAGE-TO-VIDEO)\nA highly specific motion-focused prompt designed to animate the generated Image Prompt. Do not re-describe the scene; assume the image is the first frame. Describe ONLY the camera movement, atmospheric shifts, and the subtle animation of the subjects.\n\n## T2V PROMPT (TEXT-TO-VIDEO)\nA standalone, highly detailed cinematic prompt describing the complete scene, lighting, and motion from scratch. Designed for powerful external video engines.\n\n## MUSIC PROMPT: You must provide tags for both our primary and fallback audio engines. \n1. The FIRST tag must be exactly ONE of these styles: [[ace_styles]]\n2. Follow it with a comma-separated list of 4 to 5 descriptive instruments and moods.\n\nEXAMPLE FORMAT TO FOLLOW:\nTAGS: Trance, lush sweeping pads, hypnotic arpeggios, deep cinematic bass, ethereal female choir\nDURATION: 128\nLYRICS:\n\n[Intro]\n(Instrumental buildup)\n\n[Verse 1]\n[Adapt the FIRST STANZA of your extended poem into metrical, singable verse]\n\n[Verse 2]\n[Write a new stanza of metrical, singable verse expanding the theme]\n\n[Chorus]\n[Write a bold, thematic chorus]\n\n[Outro]\n[Two lines of metrical verse to close the song]\n\nAnalyze and transmute:\n[[chunk]]"
+}
