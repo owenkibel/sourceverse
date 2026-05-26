@@ -7,7 +7,7 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const execFileAsync = util.promisify(execFile);
 
 // --- CONFIGURATION ---
-const PROMPTS_DIR = path.join(__dirname, 'prompts');
+const PROMPTS_DIR = path.join(__dirname, 'prompts-new');
 const POSTS_DIR = 'posts';
 const IMAGES_DIR = 'images';
 const X_DIR = './x';
@@ -48,7 +48,7 @@ const APPROVED_STYLES_STRING = RAW_ACE_STYLES
 const args = process.argv.slice(2);
 const useGrok = args.includes('--grok');
 const forceT2V = args.includes('--t2v'); 
-const useT2VPromptForI2V = args.includes('--t2v-prompt-for-i2v');   // ← NEW
+
 const useHunyuan = args.includes('--hunyuan');
 const forceOmniGen = args.includes('--omnigen');
 // ... rest of flags
@@ -124,7 +124,7 @@ async function loadPrompts() {
 }
 
 function parseOutput(text) {
-  const sections = { verse: '', image: '', i2v: '', t2v: '', music: '' };
+  const sections = { verse: '', image: '', t2v: '', music: '' };
   let current = 'verse';
   
   text.split('\n').forEach(line => {
@@ -132,12 +132,10 @@ function parseOutput(text) {
     
     if (l.match(/^(#+|\*\*|__|-)*\s*(image|visual)( generation)? prompt/i)) {
         current = 'image';
-    } else if (l.match(/^(#+|\*\*|__|-)*\s*(i2v|image[- ]to[- ]video)( generation)? prompt/i)) {
-        current = 'i2v';
     } else if (l.match(/^(#+|\*\*|__|-)*\s*(t2v|text[- ]to[- ]video)( generation)? prompt/i)) {
         current = 't2v';
     } else if (l.match(/^(#+|\*\*|__|-)*\s*(video)( generation)? prompt/i)) {
-        current = 'i2v';
+        current = 't2v';
     } else if (l.match(/^(#+|\*\*|__|-)*\s*(music|audio|song|soundtrack)( generation)? prompt/i)) {
         current = 'music';
     } else if (l.match(/^(#+|\*\*|__|-)*\s*(verse|poem|poetry|spoken text|reading)/i)) {
@@ -154,7 +152,6 @@ function parseOutput(text) {
   let duration = "128"; 
   let lyrics = "";
   
-  // 2. Cleanly Split Metadata from Lyrics
   const lyricsSplit = rawMusic.split(/[*_#`]*LYRICS:[*_#`]*/i);
   let metaText = "";
   
@@ -162,7 +159,6 @@ function parseOutput(text) {
       metaText = lyricsSplit[0];
       lyrics = lyricsSplit.slice(1).join('LYRICS:').trim(); 
   } else {
-      // FIX: Hunt specifically for structural song parts, not just any random bracket!
       const structuralMatch = rawMusic.match(/\[\s*(Intro|Verse|Chorus|Outro|Bridge|Instrumental)/i);
       if (structuralMatch) {
           metaText = rawMusic.substring(0, structuralMatch.index);
@@ -173,14 +169,12 @@ function parseOutput(text) {
       }
   }
 
-  // 3. Extract TAGS from the isolated metaText
   let rawTags = "";
   const tagMatch = metaText.match(/TAGS:\s*([^\n]+)/i);
   
   if (tagMatch) {
       rawTags = tagMatch[1];
   } else {
-      // FIX: If Grok forgot "TAGS:", grab the first line of metadata that isn't DURATION
       const lines = metaText.split('\n').map(l => l.trim()).filter(l => l.length > 0 && !l.toLowerCase().includes('duration'));
       if (lines.length > 0) rawTags = lines[0];
   }
@@ -189,7 +183,6 @@ function parseOutput(text) {
       rawTags = rawTags.replace(/[*_`#]/g, '').trim();
       let tagArray = rawTags.split(',').map(t => t.trim()).filter(t => t.length > 0);
       
-      // Strip brackets from the primary genre in case Grok left them in
       let primaryTag = tagArray[0].replace(/\[|\]/g, '').trim();
       
       if (!RAW_ACE_STYLES.includes(primaryTag)) {
@@ -217,7 +210,6 @@ function parseOutput(text) {
   return {
     verse: cleanVerseText(sections.verse),
     image: sections.image.trim(),
-    i2v: sections.i2v.trim(), 
     t2v: sections.t2v.trim(), 
     musicTags: tags,
     musicDuration: duration,
@@ -1025,35 +1017,34 @@ if (modelUpdateContent) {
     await new Promise(r => setTimeout(r, 5000)); 
 
     // ==========================================
-    // 2. VIDEO GENERATION
+    // 2. VIDEO GENERATION — T2V prompt on anchor image is now PERMANENT DEFAULT
     // ==========================================
     let vidRes = { success: false, markdown: '' };
+
     if (useGeminiVideo) {
-        vidRes = await runGeminiVideo(parsed.t2v, slug);
+        vidRes = await runGeminiVideo(parsed.t2v || parsed.image, slug);
     } else {
-    const isActuallyT2V = forceT2V || useHunyuan;
-    const useSpicedI2V = useT2VPromptForI2V && !isActuallyT2V && imgRes.success;
-    
-    let videoPromptToUse = parsed.i2v;           // default
-    let effectiveI2VMode = true;
+        const isPureT2V = forceT2V || useHunyuan;
 
-    if (useSpicedI2V) {
-        videoPromptToUse = parsed.t2v;           // ← spice it up!
-        console.log(`\n🎬 Generating Spiced I2V (using T2V prompt on anchor image)...`);
-    } else if (isActuallyT2V) {
-        videoPromptToUse = parsed.t2v;
-        effectiveI2VMode = false;
-        console.log(`\n🎬 Generating Local Video (T2V mode)...`);
-    } else {
-        console.log(`\n🎬 Generating Local Video (I2V mode)...`);
+        if (isPureT2V) {
+            console.log(`\n🎬 Generating Pure T2V Video (forced by flag)`);
+            const videoPromptToUse = parsed.t2v || parsed.image || "Cinematic vertical composition";
+            vidRes = await runVideoGen(videoPromptToUse, null, true);
+        } else {
+            console.log(`\n🎬 Generating Video using T2V prompt on anchor image (default)`);
+            const videoPromptToUse = parsed.t2v || parsed.image || "Cinematic vertical composition with symbolic motion";
+            
+            if (!imgRes.success) {
+                console.warn("\n⚠️ No anchor image — falling back to pure T2V");
+                vidRes = await runVideoGen(videoPromptToUse, null, true);
+            } else {
+                vidRes = await runVideoGen(videoPromptToUse, imgRes.filename, false);
+            }
+        }
     }
 
-    if (!imgRes.success && !isActuallyT2V) {
-        console.warn("\n⚠️ Local Image generation failed! Skipping I2V Video to prevent random hallucinations.");
-    } else {
-        vidRes = await runVideoGen(videoPromptToUse, imgRes.filename, !effectiveI2VMode);
-    }
-}
+    if (!useGeminiVideo) await freeComfyVRAM();
+    await new Promise(r => setTimeout(r, 3000));
     
     if (!useGeminiVideo) await freeComfyVRAM();
     await new Promise(r => setTimeout(r, 5000));
@@ -1180,11 +1171,7 @@ ${displayHypothesis || '_No hypothesis generated_'}
 ### Generated Video {#generated-video}
 ${vidRes.markdown || '_Video generation failed/skipped_'}
 
-<details><summary>I2V Prompt (Local Image-to-Video)</summary>
-<pre>${parsed.i2v || '_No I2V prompt generated_'}</pre>
-</details>
-
-<details><summary>T2V Prompt (Standalone Text-to-Video)</summary>
+<details><summary>T2V Prompt (Text-to-Video)</summary>
 <pre>${parsed.t2v || '_No T2V prompt generated_'}</pre>
 </details>
 
