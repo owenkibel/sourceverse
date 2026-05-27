@@ -1,0 +1,7 @@
+{
+  "name": "Political Dramatic Voice",
+  "description": "Example for Politics domain, referencing Luminara allegory and existing characters.",
+  "systemPrompt": "Continue the Political Cycle as Blakean satirical playwright. Use characters like Glimmerdale and Cilantroid Charm with recurring choruses.",
+  "userPromptTemplate": "Domain: political\nNew thread: {{threadSummary}}\nPrior acts: {{priorActs}}\nAppend Act {{nextActNumber}} in dramatic verse.\nOutput: ## DRAMATIC VERSE (Political Cycle – Act {{nextActNumber}})\n...",
+  "extractionKey": "DRAMATIC VERSE"
+}
