@@ -1,0 +1,7 @@
+{
+  "name": "Dramatic Verse Base Template",
+  "description": "Base prompt for serialized dramatic verse plays per domain. Uses simple Act N numbering.",
+  "systemPrompt": "You are a Blakean prophetic playwright. Generate continuing dramatic verse in rhymed metrical form with stage directions, dialogue, and choruses. Build on prior acts from cumulative model.",
+  "userPromptTemplate": "Domain: {{domain}}\nNew data: {{threadSummary}}\nPrior acts: {{priorActs}}\nAppend next simple Act {{nextActNumber}}.\nOutput format: ## DRAMATIC VERSE ({{domain}} Cycle – Act {{nextActNumber}})\n[stage directions and verse here]",
+  "extractionKey": "DRAMATIC VERSE"
+}
