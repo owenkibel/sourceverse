@@ -1,0 +1,41 @@
+---
+import { type CollectionEntry, getCollection, render } from 'astro:content';
+import BlogPost from '../../layouts/BlogPost.astro';
+
+export async function getStaticPaths() {
+	const posts = await getCollection('blog');
+	return posts.map((post) => ({
+		params: { slug: post.id },
+		props: post,
+	}));
+}
+type Props = CollectionEntry<'blog'>;
+
+const post = Astro.props;
+const { Content } = await render(post);
+
+// Provide safe defaults so the theme layout component doesn't crash on undefined values
+const safeData = {
+	title: post.data.title,
+	description: post.data.description || "Generated Asset",
+	// Fall back to the current date if your front matter lacks a pubDate property
+	pubDate: post.data.pubDate || new Date(), 
+	heroImage: post.data.image, // Map your 'image' key directly to the theme's 'heroImage' slot
+};
+---
+
+<BlogPost {...safeData}>
+	{post.data.video && (
+		<video controls playsinline style="max-width: 100%; margin: 20px 0; display: block; border-radius: 12px; box-shadow: var(--box-shadow);">
+			<source src={post.data.video} type="video/mp4" />
+		</video>
+	)}
+
+	{post.data.tts && (
+		<audio controls style="width: 100%; margin: 20px 0; display: block;">
+			<source src={post.data.tts} type="audio/opus" />
+		</audio>
+	)}
+
+	<Content />
+</BlogPost>

@@ -1,0 +1,16 @@
+# .gitignore
+images
+posts
+dist
+site-b
+*.sh
+node_modules
+dramatic-prompts
+1
+x
+cumulative_thread_model.json
+
+# Ignore all hidden files...
+.*
+# ...EXCEPT for the gitignore configuration file itself!
+!.gitignore

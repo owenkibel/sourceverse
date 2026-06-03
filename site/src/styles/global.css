@@ -1,0 +1,218 @@
+/* ==========================================================================
+   1. CORE VARIABLES & STARK COLOR PALETTE (Tone Inspired)
+   ========================================================================== */
+:root {
+	--font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
+	/* Light Mode Profile */
+	--bg-color: #ffffff;
+	--text-color: #000000;
+	--text-muted: #444444;
+	--accent-color: #002244; 
+	--accent-light: #004488;
+	--border-color: #000000; 
+
+	/* Pagefind Light Configuration */
+	--pagefind-ui-primary: var(--accent-color);
+	--pagefind-ui-text: var(--text-color);
+	--pagefind-ui-background: var(--bg-color);
+	--pagefind-ui-border: var(--border-color);
+}
+
+:root.dark {
+	/* Dark Mode Profile */
+	--bg-color: #000000;
+	--text-color: #ffffff;
+	--text-muted: #b2b2b2;
+	--accent-color: #004488; 
+	--accent-light: #66aacc;
+	--border-color: #ffffff; 
+
+	/* Pagefind Dark Configuration */
+	--pagefind-ui-primary: var(--text-color);
+	--pagefind-ui-text: var(--text-color);
+	--pagefind-ui-background: var(--bg-color);
+	--pagefind-ui-border: var(--border-color);
+}
+
+/* ==========================================================================
+   2. GLOBAL BASE RESET & TYPOGRAPHY
+   ========================================================================== */
+body {
+	font-family: var(--font-sans);
+	background-color: var(--bg-color);
+	color: var(--text-color);
+	line-height: 1.6;
+	letter-spacing: -0.01em;
+	width: 100% !important;
+	max-width: none !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	margin: 0 0 0.5rem 0;
+	color: var(--text-color); /* Linked directly to high-contrast variables */
+	line-height: 1.2;
+	font-weight: 700;
+	letter-spacing: -0.02em;
+}
+
+a {
+	color: var(--text-color);
+	text-decoration: none;
+	border-bottom: 1px solid transparent;
+	transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+a:hover {
+	color: var(--accent-light);
+	border-bottom-color: var(--accent-light);
+}
+
+hr {
+	border: none;
+	border-top: 2px solid var(--border-color);
+	margin: 2rem 0;
+}
+
+/* ==========================================================================
+   3. SITE STRUCTURE & CONTENT LAYOUT PANES
+   ========================================================================== */
+main, 
+article, 
+.main-content {
+	width: 100%;
+	max-width: 760px; 
+	margin: 0 auto !important;
+	padding: 2rem 1.5rem !important;
+}
+
+/* ==========================================================================
+   4. FULL-WIDTH HEADER & NAVIGATION TOOLBAR
+   ========================================================================== */
+header {
+	width: 100%;
+	background-color: var(--bg-color);
+	border-bottom: 2px solid var(--border-color);
+}
+
+header nav {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
+	max-width: 1400px !important; 
+	margin: 0 auto !important;
+	padding: 1.5rem 2rem !important;
+	background-color: var(--bg-color) !important;
+	color: var(--text-color) !important;
+}
+
+.internal-links {
+	display: flex;
+	gap: 2.5rem !important; 
+	align-items: center;
+	flex-wrap: nowrap !important;   
+	white-space: nowrap !important; 
+}
+
+header h2, 
+.site-title {
+	margin: 0 !important;
+	white-space: nowrap !important; 
+}
+
+/* Navigation Interactive Link Anchor Styling */
+header nav a,
+.internal-links a {
+	color: var(--text-color) !important;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	font-size: 0.95rem;
+	opacity: 0.85;
+	border-bottom: 2px solid transparent !important;
+	text-decoration: none !important;
+}
+
+header nav a:hover {
+	opacity: 1 !important;
+	color: var(--accent-light) !important;
+	border-bottom-color: var(--accent-light) !important;
+}
+
+header nav a.active {
+	opacity: 1 !important;
+	border-bottom-color: var(--text-color) !important;
+}
+
+header h2 a, 
+.site-title a {
+	font-size: 1.4rem !important;
+	letter-spacing: -0.02em !important;
+	text-transform: none !important;
+	opacity: 1 !important;
+	border-bottom: none !important;
+}
+
+/* High-Contrast Interactive Toggle Button */
+#theme-toggle {
+	background: transparent;
+	border: 2px solid var(--border-color);
+	color: var(--text-color);
+	padding: 6px 10px;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 0px; 
+	transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+#theme-toggle:hover {
+	background-color: var(--text-color);
+	color: var(--bg-color);
+}
+
+/* ==========================================================================
+   5. HIGH-RESOLUTION MEDIA ASPECT RATIO ENFORCER
+   ========================================================================== */
+img, video {
+	display: block;
+	max-width: 100%;       
+	height: auto !important; 
+	width: auto;           
+	max-height: 70vh; /* Keeps vertical layout items scaled within standard desk displays */
+	object-fit: contain;   
+	image-rendering: auto; 
+	border: 2px solid var(--border-color);
+	border-radius: 0px !important; 
+	box-shadow: none !important;
+	margin: 2rem auto;     
+}
+
+/* ==========================================================================
+   6. PAGEFIND STATIC SEARCH ENGINE RE-SKINNING
+   ========================================================================== */
+#search {
+	--pagefind-ui-primary: var(--pagefind-ui-primary) !important;
+	--pagefind-ui-text: var(--pagefind-ui-text) !important;
+	--pagefind-ui-background: var(--pagefind-ui-background) !important;
+	--pagefind-ui-border: var(--pagefind-ui-border) !important;
+	--pagefind-ui-border-radius: 0px !important; 
+}
+
+#search .pagefind-ui__search-input {
+	font-family: var(--font-sans) !important;
+	font-weight: 700 !important;
+	border: 2px solid var(--border-color) !important;
+	background-color: var(--bg-color) !important;
+	color: var(--text-color) !important;
+}
+
+#search .pagefind-ui__result {
+	border-top: 2px solid var(--border-color) !important;
+	padding: 1.5rem 0 !important;
+}

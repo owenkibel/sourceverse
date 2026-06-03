@@ -1,0 +1,55 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead title={`Search | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
+		
+		{/* 1. Import Pagefind's compiled styles and scripts */}
+		<link href="/_pagefind/pagefind-ui.css" rel="stylesheet" />
+		<script src="/_pagefind/pagefind-ui.js" is:inline></script>
+
+		<style>
+			main {
+				width: 960px;
+				max-width: calc(100% - 2rem);
+				margin: auto;
+				padding: 3em 1em;
+			}
+			/* 2. Style customization hooks to match the Atkinson theme vibe */
+#search {
+  --pagefind-ui-primary: var(--pagefind-ui-primary);
+  --pagefind-ui-text: var(--pagefind-ui-text);
+  --pagefind-ui-background: var(--pagefind-ui-background);
+  --pagefind-ui-border: var(--pagefind-ui-border);
+  font-family: var(--font-atkinson), sans-serif;
+}
+		</style>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<h2>Search Sourceverse</h2>
+			<br />
+			{/* 3. The target container where Pagefind mounts the UI */}
+			<div id="search"></div>
+		</main>
+		<Footer />
+
+		{/* 4. Initialize the bundle engine once the document loads */}
+		<script is:inline>
+			window.addEventListener('DOMContentLoaded', (event) => {
+				new PagefindUI({ 
+					element: "#search", 
+					showSubResults: true,
+					showImages: false // Set to true if you want preview thumbnails in search results
+				});
+			});
+		</script>
+	</body>
+</html>
