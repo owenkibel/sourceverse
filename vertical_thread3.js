@@ -13,7 +13,7 @@ const IMAGES_DIR = 'images';
 const X_DIR = './x';
 const PROMPT_STATE_FILE = path.join(__dirname, '.prompt_state.json');
 // === DRAMATIC VERSE SUPPORT ===
-const DRAMATIC_PROMPTS_DIR = path.join(__dirname, 'dramatic-prompts');
+const DRAMATIC_PROMPTS_DIR = path.join(__dirname, 'dramatic-prompts-orig');
 
 // --- Watchdog Directories ---
 const HEART_INBOX = '/home/owen/ai-projects/heartmula/inbox';
