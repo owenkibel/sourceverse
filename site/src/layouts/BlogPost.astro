@@ -15,44 +15,50 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 	<head>
 		<BaseHead title={title} description={description} />
 		<style>
-			main {
-				width: calc(100% - 2em);
-				max-width: 100%;
-				margin: 0;
-			}
-			.hero-image {
-				width: 100%;
-			}
-			.hero-image img {
-				display: block;
-				margin: 0 auto;
-				border-radius: 12px;
-				box-shadow: var(--box-shadow);
-			}
-			.prose {
-				width: 720px;
-				max-width: calc(100% - 2em);
-				margin: auto;
-				padding: 1em;
-				color: rgb(var(--gray-dark));
-			}
-			.title {
-				margin-bottom: 1em;
-				padding: 1em 0;
-				text-align: center;
-				line-height: 1;
-			}
-			.title h1 {
-				margin: 0 0 0.5em 0;
-			}
-			.date {
-				margin-bottom: 0.5em;
-				color: rgb(var(--gray));
-			}
-			.last-updated-on {
-				font-style: italic;
-			}
-		</style>
+	main {
+		width: 100%;
+		max-width: 100%;
+		margin: 0;
+	}
+	.hero-image {
+		width: 100%;
+		margin-bottom: 2rem;
+	}
+	.hero-image img {
+		display: block;
+		margin: 0 auto;
+		border: 2px solid var(--border-color);
+	}
+	.prose {
+		width: 100%;
+		max-width: 760px;
+		margin: auto;
+		padding: 0 1.5rem;
+		color: var(--text-color); /* Linked directly to high contrast theme */
+	}
+	.title {
+		margin-bottom: 2rem;
+		padding: 1rem 0;
+		text-align: center;
+		line-height: 1.2;
+	}
+	.title h1 {
+		margin: 0 0 0.5rem 0;
+		font-size: 2.5rem;
+		letter-spacing: -0.02em;
+	}
+	.date {
+		margin-bottom: 0.5rem;
+		color: var(--text-muted);
+		font-weight: 700;
+		text-transform: uppercase;
+		font-size: 0.85rem;
+		letter-spacing: 0.05em;
+	}
+	.last-updated-on {
+		font-style: italic;
+	}
+</style>
 	</head>
 
 	<body>

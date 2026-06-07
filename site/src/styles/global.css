@@ -176,22 +176,6 @@ header h2 a,
 	color: var(--bg-color);
 }
 
-/* ==========================================================================
-   5. HIGH-RESOLUTION MEDIA ASPECT RATIO ENFORCER
-   ========================================================================== */
-img, video {
-	display: block;
-	max-width: 100%;       
-	height: auto !important; 
-	width: auto;           
-	max-height: 70vh; /* Keeps vertical layout items scaled within standard desk displays */
-	object-fit: contain;   
-	image-rendering: auto; 
-	border: 2px solid var(--border-color);
-	border-radius: 0px !important; 
-	box-shadow: none !important;
-	margin: 2rem auto;     
-}
 
 /* ==========================================================================
    6. PAGEFIND STATIC SEARCH ENGINE RE-SKINNING
@@ -215,4 +199,72 @@ img, video {
 #search .pagefind-ui__result {
 	border-top: 2px solid var(--border-color) !important;
 	padding: 1.5rem 0 !important;
+}
+
+/* ==========================================================================
+   5. HIGH-RESOLUTION MEDIA & TEXT WRAPPING ASPECT RATIO ENFORCER
+   ========================================================================== */
+img, video {
+	display: block;
+	max-width: 100%;       
+	height: auto !important; 
+	width: auto;           
+	max-height: 70vh; 
+	object-fit: contain;   
+	image-rendering: auto; 
+	border: 2px solid var(--border-color);
+	border-radius: 0px !important; 
+	box-shadow: none !important;
+	margin: 2rem auto;     
+}
+
+/* Enforce containment on layout details, code fragments, and prompt logs */
+details {
+	width: 100%;
+	max-width: 100%;
+	margin: 1.5rem 0;
+	padding: 0.5rem 1rem;
+	border: 2px solid var(--border-color);
+	background-color: rgba(0, 68, 136, 0.05);
+}
+
+summary {
+	cursor: pointer;
+	font-weight: 700;
+	text-transform: uppercase;
+	font-size: 0.85rem;
+	letter-spacing: 0.05em;
+	padding: 0.3rem 0;
+	color: var(--text-color);
+}
+
+pre, code {
+	font-family: monospace;
+	font-size: 0.9rem;
+	white-space: pre-wrap !important;       /* Forces long prompts to wrap naturally */
+	word-wrap: break-word !important;       /* Prevents side overflow container breaking */
+	max-width: 100%;
+	overflow-x: auto;
+	background-color: rgba(0, 0, 0, 0.05);
+	color: var(--text-color);
+	padding: 0.75rem;
+	border-left: 3px solid var(--accent-color);
+	margin: 1rem 0;
+}
+
+:root.dark pre, :root.dark code {
+	background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Pristine Verse Framework - Respects literal newlines without double paragraph spacing */
+.poetry-verse {
+	font-family: var(--font-sans);
+	white-space: pre-wrap !important;
+	line-height: 1.7;
+	font-size: 1.15rem;
+	font-style: italic;
+	color: var(--text-color);
+	margin: 2rem 0;
+	padding-left: 1.25rem;
+	border-left: 3px solid var(--accent-color);
 }

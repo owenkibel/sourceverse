@@ -6,10 +6,10 @@ import FormattedDate from '../../components/FormattedDate.astro';
 import Header from '../../components/Header.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
 
-// 1. Fetch the collection safely
+// Fetch collection entries safely
 const rawPosts = await getCollection('blog');
 
-// 2. Sort safely, falling back to 0 if an AI-generated post lacks a pubDate
+// Sort strictly in reverse chronological order
 const posts = rawPosts.sort((a, b) => {
 	const dateA = a.data.pubDate ? new Date(a.data.pubDate).getTime() : 0;
 	const dateB = b.data.pubDate ? new Date(b.data.pubDate).getTime() : 0;
@@ -22,98 +22,92 @@ const posts = rawPosts.sort((a, b) => {
 	<head>
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
 		<style>
-			main {
-				width: 960px;
+			.archive-container {
+				width: 100%;
+				max-width: 760px;
+				margin: 0 auto;
+				padding: 3rem 1.5rem;
 			}
-			ul {
-				display: flex;
-				flex-wrap: wrap;
-				gap: 2rem;
+			.archive-header {
+				margin-bottom: 3rem;
+				border-bottom: 2px solid var(--border-color);
+				padding-bottom: 1rem;
+			}
+			.archive-list {
 				list-style-type: none;
-				margin: 0;
 				padding: 0;
-			}
-			ul li {
-				width: calc(50% - 1rem);
-			}
-			ul li * {
-				text-decoration: none;
-				transition: 0.2s ease;
-			}
-			ul li:first-child {
-				width: 100%;
-				margin-bottom: 1rem;
-				text-align: center;
-			}
-			ul li:first-child img {
-				width: 100%;
-			}
-			ul li:first-child .title {
-				font-size: 2.369rem;
-			}
-			ul li img {
-				margin-bottom: 0.5rem;
-				border-radius: 12px;
-				object-fit: cover;
-			}
-			ul li a {
-				display: block;
-			}
-			.title {
 				margin: 0;
-				color: rgb(var(--black));
-				line-height: 1;
 			}
-			.date {
-				margin: 0;
-				color: rgb(var(--gray));
+			.archive-item {
+				display: flex;
+				flex-direction: row;
+				align-items: baseline;
+				justify-content: space-between;
+				padding: 1.25rem 0;
+				border-bottom: 1px dashed var(--border-color);
+				gap: 2rem;
 			}
-			ul li a:hover h4,
-			ul li a:hover .date {
-				color: rgb(var(--accent));
-			}
-			ul li a:hover img {
-				box-shadow: var(--box-shadow);
-			}
-			@media (max-width: 720px) {
-				ul {
-					gap: 0.5em;
+			@media (max-width: 640px) {
+				.archive-item {
+					flex-direction: column;
+					align-items: flex-start;
+					gap: 0.5rem;
 				}
-				ul li {
-					width: 100%;
-					text-align: center;
-				}
-				ul li:first-child {
-					margin-bottom: 0;
-				}
-				ul li:first-child .title {
-					font-size: 1.563em;				}
+			}
+			.post-link {
+				font-size: 1.2rem;
+				font-weight: 700;
+				color: var(--text-color);
+				line-height: 1.3;
+			}
+			.meta-group {
+				display: flex;
+				align-items: center;
+				gap: 1rem;
+				font-size: 0.9rem;
+				color: var(--text-muted);
+				white-space: nowrap;
+			}
+			.domain-badge {
+				font-size: 0.7rem;
+				font-weight: 700;
+				text-transform: uppercase;
+				letter-spacing: 0.05em;
+				padding: 0.15rem 0.5rem;
+				border: 1px solid var(--border-color);
+				color: var(--text-color);
+				background: rgba(0, 0, 0, 0.05);
+			}
+			:root.dark .domain-badge {
+				background: rgba(255, 255, 255, 0.1);
 			}
 		</style>
 	</head>
 	<body>
 		<Header />
-		<main>
+		<main class="archive-container">
+			<div class="archive-header">
+				<h1>Chronological Archival Log</h1>
+				<p>{SITE_DESCRIPTION}</p>
+			</div>
 			<section>
-				<ul>
+				<ul class="archive-list">
 					{
 						posts.map((post) => (
-							<li>
-								<a href={`/blog/${post.id}/`}>
-									{/* 3. Swap to standard img for absolute public/images paths */}
-									{post.data.image && (
-										<img width={720} height={360} src={post.data.image} alt="" />
-									)}
-									<h4 class="title">{post.data.title}</h4>
-									<p class="date">
-										{/* 4. Only render date component if date is present */}
-										{post.data.pubDate ? (
-											<FormattedDate date={post.data.pubDate} />
-										) : (
-											<span class="no-date">Generated Asset</span>
-										)}
-									</p>
+							<li class="archive-item">
+								<a class="post-link" href={`/blog/${post.id}/`}>
+									{post.data.title}
 								</a>
+								<div class="meta-group">
+									{post.data.domain && (
+										<span class="domain-badge">{post.data.domain}</span>
+									)}
+									{post.data.pubDate ? (
+										<FormattedDate date={post.data.pubDate} />
+									) : (
+										<span>Transmuted</span>
+									)}
+								</div>
 							</li>
 						))
 					}

@@ -6,7 +6,7 @@ const util = require('util');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const execFileAsync = util.promisify(execFile);
 
-// --- CONFIGURATION ---
+// --- CONFIGURATION MAPS ---
 const PROMPTS_DIR = path.join(__dirname, 'prompts-new');
 const POSTS_DIR = 'posts';
 const IMAGES_DIR = 'images';
@@ -22,9 +22,9 @@ const MODEL_GROK = "grok-4.3";
 const MAX_CHARS_GEMINI = 1900000;
 const MAX_CHARS_GROK = 35000;
 
-// --- ACE-STEP 1.5 VALID GENRES ---
+// --- ACE-STEP VALID STYLES ---
 const RAW_ACE_STYLES = [
-  "Acid House", "Acid Techno", "Afro House", "Afro Tech", "Afrobeats", "Alternative / Indie", "Alternative Rock", "Amapiano", "Ambient", "Ambient Techno", "Americana", "Andean Music", "Arrocha", "Axe", "Bachata", "Banda Music", "Bass House", "Bassline", "Big Room", "Bluegrass", "Blues", "Bolero", "Bossa Nova", "Bounce", "Brazilian Bass", "Brazilian Popular Music", "Breakbeat", "Breakcore", "Brega", "Brega Funk", "Brega Funk (Recife)", "Brostep", "Celtic Folk", "Children", "Chillhop", "Chillstep", "Chillwave", "Choro", "City Pop", "Classical", "Coldwave", "Corridos", "Country", "Coupe Decale", "Cuarteto", "Cumbia", "Cyber-Punk", "Cyberpunk", "Dance", "Dancehall", "Dark Ambient", "Darkstep", "Darksynth", "Darkwave", "Deep House", "Dembow", "Detroit Techno", "Disco", "Downtempo", "Dream Pop", "Drill Funk", "Drone", "Drum and Bass", "Drumstep", "Dubstep", "Dubstep (Deep)", "Electro", "Electro House", "Electro-Funk", "Electro-Jazz", "Electro-Swing", "Electroacoustic", "Electroclash", "Electronic", "Electronica", "Electropop", "Emocore", "Eurobeat", "Eurodance", "Experimental", "Experimental Electronic", "Fado", "Flamenco / Bulerias", "Folk", "Forro", "Forró Eletrônico", "French House", "Funk", "Future Bass", "Future Funk", "Future Garage", "Future Rave", "Futurepop", "G-House", "Gabber", "Glitch", "Glitch Hop", "Goa Trance", "Gospel / Religious", "Gothic", "Gqom", "Grime", "Grunge", "Guarania", "Hands Up", "Hard Rock", "Hardcore", "Hardstyle", "Hardtechno", "Heavy Metal", "Highlife", "Hip Hop / Rap", "House", "Hybrid Trap", "Hyperpop", "IDM", "Indie Folk", "Industrial", "Industrial Techno", "Instrumental", "International Funk", "Irish Folk", "Italo Disco", "J-Pop / J-Rock", "Jazz", "Jersey Club", "Jovem Guarda", "Juke / Footwork", "Jungle", "K-Pop", "Kizomba", "Kuduro", "Liquid Drum and Bass", "Liquid Funk", "Lo-Fi Hip Hop", "Lofi House", "Mambo", "Marches / Anthems", "Mariachi", "Math Rock", "Melodic Techno", "Merengue", "Metal", "Micro House", "Microhouse", "Midwest Emo", "Minimal / Deep Tech", "Minimal Techno", "Moombahton", "Nativist Folk", "Neurofunk", "New Age", "New Retro Wave", "New Wave", "Nu-Funk", "Old Guard Samba", "Organic House", "Pagode", "Pagotrap", "Philly Soul", "Phonk", "Phonk House", "Piseiro", "Pop", "Pop Rock", "Post-Hardcore", "Post-Punk", "Post-Rock", "Power-Pop", "Progressive Electronic", "Progressive House", "Progressive Rock", "Psychedelia", "Psytrance", "Punk Rap / Emo Rap", "Punk Rock", "R&B", "Ragga Jungle", "Ranchera", "Rave", "Reggae", "Reggaeton", "Regional", "Retrowave", "Riddim", "Rock", "Rock and Roll", "Rockabilly", "Romantic", "Salsa", "Samba", "Samba Enredo", "Schranz", "Sertanejo", "Sertanejo Universitário", "Shoegaze", "Ska", "Soft Rock", "Soul", "Soulful House", "Surf Music", "Synthpop", "Synthwave", "Synthwave-Darkwave", "Tango", "Tech House", "Tech Trance", "Tech-Funk", "Techno", "Technopop", "Trance", "Trap", "Trip Hop", "Trova", "Turreo RKT", "UK Drill", "UK Garage", "Uplifting Trance", "Vallenato", "Vapor-Trap", "Vaporwave", "Vocal Trance", "Wave", "World Music", "Xote", "Zamba", "Zouk", "Zouk Bass"
+  "Acid House", "Acid Techno", "Afro House", "Afro Tech", "Afrobesats", "Alternative / Indie", "Alternative Rock", "Amapiano", "Ambient", "Ambient Techno", "Americana", "Andean Music", "Arrocha", "Axe", "Bachata", "Banda Music", "Bass House", "Bassline", "Big Room", "Bluegrass", "Blues", "Bolero", "Bossa Nova", "Bounce", "Brazilian Bass", "Brazilian Popular Music", "Breakbeat", "Breakcore", "Brega", "Brega Funk", "Brega Funk (Recife)", "Brostep", "Celtic Folk", "Children", "Chillhop", "Chillstep", "Chillwave", "Choro", "City Pop", "Classical", "Coldwave", "Corridos", "Country", "Coupe Decale", "Cuarteto", "Cumbia", "Cyber-Punk", "Cyberpunk", "Dance", "Dancehall", "Dark Ambient", "Darkstep", "Darksynth", "Darkwave", "Deep House", "Dembow", "Detroit Techno", "Disco", "Downtempo", "Dream Pop", "Drill Funk", "Drone", "Drum and Bass", "Drumstep", "Dubstep", "Dubstep (Deep)", "Electro", "Electro House", "Electro-Funk", "Electro-Jazz", "Electro-Swing", "Electroacoustic", "Electroclash", "Electronic", "Electronica", "Electropop", "Emocore", "Eurobeat", "Eurodance", "Experimental", "Experimental Electronic", "Fado", "Flamenco / Bulerias", "Folk", "Forro", "Forró Eletrônico", "French House", "Funk", "Future Bass", "Future Funk", "Future Garage", "Future Rave", "Futurepop", "G-House", "Gabber", "Glitch", "Glitch Hop", "Goa Trance", "Gospel / Religious", "Gothic", "Gqom", "Grime", "Grunge", "Guarania", "Hands Up", "Hard Rock", "Hardcore", "Hardstyle", "Hardtechno", "Heavy Metal", "Highlife", "Hip Hop / Rap", "House", "Hybrid Trap", "Hyperpop", "IDM", "Indie Folk", "Industrial", "Industrial Techno", "Instrumental", "International Funk", "Irish Folk", "Italo Disco", "J-Pop / J-Rock", "Jazz", "Jersey Club", "Jovem Guarda", "Juke / Footwork", "Jungle", "K-Pop", "Kizomba", "Kuduro", "Liquid Drum and Bass", "Liquid Funk", "Lo-Fi Hip Hop", "Lofi House", "Mambo", "Marches / Anthems", "Mariachi", "Math Rock", "Melodic Techno", "Merengue", "Metal", "Micro House", "Microhouse", "Midwest Emo", "Minimal / Deep Tech", "Minimal Techno", "Moombahton", "Nativist Folk", "Neurofunk", "New Age", "New Retro Wave", "New Wave", "Nu-Funk", "Old Guard Samba", "Organic House", "Pagode", "Pagotrap", "Philly Soul", "Phonk", "Phonk House", "Piseiro", "Pop", "Pop Rock", "Post-Hardcore", "Post-Punk", "Post-Rock", "Power-Pop", "Progressive Electronic", "Progressive House", "Progressive Rock", "Psychedelia", "Psytrance", "Punk Rap / Emo Rap", "Punk Rock", "R&B", "Ragga Jungle", "Ranchera", "Rave", "Reggae", "Reggaeton", "Regional", "Retrowave", "Riddim", "Rock", "Rock and Roll", "Rockabilly", "Romantic", "Salsa", "Samba", "Samba Enredo", "Schranz", "Sertanejo", "Sertanejo Universitário", "Shoegaze", "Ska", "Soft Rock", "Soul", "Soulful House", "Surf Music", "Synthpop", "Synthwave", "Synthwave-Darkwave", "Tango", "Tech House", "Tech Trance", "Tech-Funk", "Techno", "Technopop", "Trance", "Trap", "Trip Hop", "Trova", "Turreo RKT", "UK Drill", "UK Garage", "Uplifting Trance", "Vallenato", "Vapor-Trap", "Vaporwave", "Vocal Trance", "Wave", "World Music", "Xote", "Zamba", "Zouk", "Zouk Bass"
 ];
 
 const EXCLUDED_STYLES = [
@@ -40,7 +40,7 @@ const APPROVED_STYLES_STRING = RAW_ACE_STYLES
     .filter(style => !EXCLUDED_STYLES.includes(style))
     .join(', ');
 
-// --- FLAGS ---
+// --- CLI FLAGS ---
 const args = process.argv.slice(2);
 const useGrok = args.includes('--grok');
 const forceT2V = args.includes('--t2v'); 
@@ -87,16 +87,21 @@ function cleanVerseText(text) {
 }
 
 async function freeComfyVRAM() {
-    console.log("🧹 Telling ComfyUI to release VRAM...");
+    console.log("🧹 Releasing local ComfyUI VRAM nodes...");
     try {
         await fetch('http://127.0.0.1:8188/free', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ unload_models: true, free_memory: true })
         });
-    } catch (e) {
-        console.warn("   ⚠️ Could not reach ComfyUI to clear VRAM.");
-    }
+    } catch (e) {}
+}
+
+async function safeUnlink(filePath) {
+    if (!filePath) return;
+    try {
+        await fs.unlink(filePath);
+    } catch (e) {}
 }
 
 async function loadPrompts() {
@@ -119,7 +124,6 @@ async function loadPrompts() {
   return available;
 }
 
-// --- STRUCTURED RE-PARSER (ONE PASS) ---
 function parseUnifiedOutput(text) {
   const sections = { verse: '', forecast: '', hypothesis: '', image: '', t2v: '', music: '' };
   let current = 'verse';
@@ -157,10 +161,9 @@ function parseUnifiedOutput(text) {
   if (tagMatch) {
       let rawTags = tagMatch[1].replace(/[*_`#]/g, '').trim();
       let tagArray = rawTags.split(',').map(t => t.trim()).filter(t => t.length > 0);
-      if (tagArray.length > 0 && !RAW_ACE_STYLES.includes(tagArray[0])) {
-          tagArray[0] = "Electronic"; 
+      if (tagArray.length > 0) {
+          tags = tagArray.join(', ');
       }
-      tags = tagArray.join(', ');
   }
 
   const durMatch = metaText.match(/DURATION:\s*(\d+)/i);
@@ -174,13 +177,13 @@ function parseUnifiedOutput(text) {
     t2v: sections.t2v.trim(), 
     musicTags: tags,
     musicDuration: duration,
-    musicLyrics: lyrics.replace(/[*_#`]/g, '').trim()
+    musicLyrics: lyrics.trim()
   };
 }
 
 async function generateText(system, user) {
   const maxChars = useGrok ? MAX_CHARS_GROK : MAX_CHARS_GEMINI;
-  const truncatedUser = user.length > maxChars ? user.substring(0, maxChars) + '\n\n[Truncated]' : user;
+  const truncatedUser = user.length > maxChars ? user.substring(0, maxChars) + '\n\n[Input Truncated]' : user;
 
   if (useGrok) {
     console.log(`Generating with Grok (${MODEL_GROK})...`);
@@ -195,7 +198,7 @@ async function generateText(system, user) {
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.XAI_API_KEY}` },
       body: JSON.stringify(payload)
     });
-    if (!res.ok) throw new Error(`Grok API error: ${await res.text()}`);
+    if (!res.ok) throw new Error(`Grok API Error: ${await res.text()}`);
     const data = await res.json();
     actualModelUsed = MODEL_GROK;
     return data.choices[0]?.message?.content || '';
@@ -208,28 +211,28 @@ async function generateText(system, user) {
         actualModelUsed = modelName;
         return res.response.text();
       } catch (e) {
-        console.warn(`   ⚠️ ${modelName} pass failed, moving to secondary wrapper.`);
+        console.warn(`   ⚠️ Fallback triggered: checking downstream models.`);
       }
     }
   }
-  throw new Error("All text generation attempts failed");
+  throw new Error("All text generation layers failed.");
 }
 
-// ==========================================================
-// --- MEDIA GENERATION METHODS (PRESERVED FROM V3) ---
-// ==========================================================
+// ==========================================
+// --- MEDIA CORES GENERATION ARTIFACTS ---
+// ==========================================
 async function runGeminiImage(prompt, slug) {
    try {
         const imageModel = genAI.getGenerativeModel({ model: "gemini-3.1-flash-image-preview" });
-        const verticalPrompt = `${prompt || 'Abstract surreal composition'} -- This image must be generated in a vertical 9:16 aspect ratio.`;
+        const verticalPrompt = `${prompt || 'Abstract surreal scene'} -- This image must be generated in a vertical 9:16 aspect ratio, portrait orientation.`;
         const result = await imageModel.generateContent(verticalPrompt);
         const imagePart = (result?.response?.candidates?.[0]?.content?.parts || []).find(p => p.inlineData);
         if (imagePart) {
             const finalFilename = `gemini_img_${slug}_${Date.now()}.png`;
             await fs.writeFile(path.join(IMAGES_DIR, finalFilename), Buffer.from(imagePart.inlineData.data, 'base64'));
-            return { success: true, filename: finalFilename, engine: "Gemini 3.1 Flash Image", markdown: `<p><img src="/images/${finalFilename}" style="max-width:100%; border-radius:8px;" /></p>` };
+            return { success: true, filename: finalFilename, engine: "Gemini 3.1 Flash Image", markdown: `<p><img src="/images/${finalFilename}" style="max-width:100%; border-radius:8px;" alt="Gemini Generated Image" /></p>` };
         }
-    } catch (e) { console.error(`❌ Gemini Image generation failed: ${e.message}`); }
+    } catch (e) { console.error(`❌ Gemini Image engine failure: ${e.message}`); }
     return { success: false, markdown: '' };
 }
 
@@ -239,7 +242,7 @@ async function runGeminiVideo(prompt, slug) {
         const startResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/veo-3.1-generate-preview:predictLongRunning?key=${API_KEY}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ "instances": [{ "prompt": prompt || "Cinematic video" }], "parameters": { "aspectRatio": "9:16" } })
+            body: JSON.stringify({ "instances": [{ "prompt": prompt || "Cinematic wide shot" }], "parameters": { "aspectRatio": "9:16" } })
         });
         const startData = await startResponse.json();
         if (startData.error) throw new Error(startData.error.message);
@@ -259,8 +262,27 @@ async function runGeminiVideo(prompt, slug) {
             await fs.writeFile(path.join(IMAGES_DIR, finalFilename), Buffer.from(await videoResponse.arrayBuffer()));
             return { success: true, filename: finalFilename, engine: "Veo 3.1 Preview", markdown: `\n<p><video controls src="/images/${finalFilename}" style="max-width: 100%; border-radius: 8px;" loop muted></video></p>\n` };
         }
-    } catch (e) { console.error(`❌ Gemini Video Error: ${e.message}`); }
+    } catch (e) { console.error(`❌ Gemini Video Core Error: ${e.message}`); }
     return { success: false, markdown: '' };
+}
+
+async function runGrokImagine(imagePrompt, slug) {
+  const filename = `grok_imagine_${slug}_${Date.now()}.jpg`;
+  try {
+    const response = await fetch('https://api.x.ai/v1/images/generations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.XAI_API_KEY}` },
+      body: JSON.stringify({ model: "grok-imagine-image", prompt: `${imagePrompt} --ar 9:16 --style raw`, n: 1 })
+    });
+    const data = await response.json();
+    const imageUrl = data.data?.[0]?.url;
+    if (imageUrl) {
+      const imgRes = await fetch(imageUrl);
+      await fs.writeFile(path.join(IMAGES_DIR, filename), Buffer.from(await imgRes.arrayBuffer()));
+      return { success: true, filename, engine: "Grok Imagine", markdown: `<p><img src="/images/${filename}" style="max-width:100%; border-radius:8px;" /></p>` };
+    }
+  } catch (e) { console.error(`❌ Grok Imagine framework error: ${e.message}`); }
+  return { success: false, markdown: '' };
 }
 
 async function runImageGen(prompt) {
@@ -269,15 +291,22 @@ async function runImageGen(prompt) {
     await fs.writeFile('prompt.txt', prompt || 'Abstract composition', 'utf8');
     let runnerArgs = refineWithOmniGen ? ['run_omnigen_i2i.js'] : (forceOmniGen ? ['run_omnigen_t2i.js'] : (useErnie ? ['run_ernie.js'] : (useLens ? ['run_lens.js'] : ['run_z_turbo.js'])));
     
-    // Handle fast anchor logic if refining
     if (refineWithOmniGen) {
         await execFileAsync('bun', ['run_z_turbo.js', '--state-file', 'anchor_state.json']);
     }
     
     await execFileAsync('bun', [...runnerArgs, '--state-file', stateFile]);
     const state = JSON.parse(await fs.readFile(stateFile, 'utf8'));
-    return { success: true, filename: state.filename, engine: runnerArgs[0], markdown: `<p><img src="/images/${state.filename}" style="max-width:100%; border-radius:8px;" /></p>` };
-  } catch (e) { console.error(`Image generation failed: ${e.message}`); return { success: false, markdown: '' }; }
+    const finalFilename = state.filename;
+
+    return { 
+      success: true, 
+      filename: finalFilename, 
+      engine: runnerArgs[0] === 'run_lens.js' ? 'Lens' : (runnerArgs[0] === 'run_z_turbo.js' ? 'Z-Turbo' : 'OmniGen2'), 
+      markdown: `<p><img src="/images/${finalFilename}" style="max-width:100%; border-radius:8px;" alt="Visual Artifact" /></p>` 
+    };
+  } catch (e) { console.error(`Local Image asset tracking worker failed: ${e.message}`); return { success: false, markdown: '' }; }
+  finally { await safeUnlink(stateFile); await safeUnlink('prompt.txt'); }
 }
 
 async function runVideoGen(videoPrompt, anchorImageName, isT2V) {
@@ -291,68 +320,119 @@ async function runVideoGen(videoPrompt, anchorImageName, isT2V) {
     await execFileAsync('bun', runnerArgs);
     const state = JSON.parse(await fs.readFile(stateFile, 'utf8'));
     const filename = state.filename || path.basename(state.savedFilePath);
-    return { success: true, filename, engine: useHunyuan ? "Hunyuan" : "LTX-Video", markdown: `\n<video controls src="/images/${filename}" style="max-width:100%;" loop muted></video>\n` };
-  } catch (e) { console.error(`Video generation failed: ${e.message}`); return { success: false, markdown: '' }; }
+    return { success: true, filename: filename, engine: useHunyuan ? "Hunyuan" : "LTX-Video", markdown: `\n<p><video controls src="/images/${filename}" style="max-width:100%; border-radius:8px;" loop muted></video></p>\n` };
+  } catch (e) { console.error(`Video generation worker failed: ${e.message}`); return { success: false, markdown: '' }; }
+  finally { await safeUnlink(stateFile); }
 }
 
 async function runPoetryTTS(poemText) {
     const stateFile = path.join(os.tmpdir(), `tts-state-${Date.now()}.json`);
+    const poemFile = 'temp_poem.txt';
     try {
-        await fs.writeFile('temp_poem.txt', poemText || 'Silence.', 'utf8');
+        await fs.writeFile(poemFile, poemText || 'Silence.', 'utf8');
         let runnerArgs = useOmniVoice ? ['run_omnivoice_clone.js'] : (useVoxCPM2 ? ['run_voxcpm2.js'] : ['run_kokoro_tts.js']);
-        await execFileAsync('bun', [...runnerArgs, '--state-file', stateFile, '--prompt-file', 'temp_poem.txt']);
+        await execFileAsync('bun', [...runnerArgs, '--state-file', stateFile, '--prompt-file', poemFile]);
         const state = JSON.parse(await fs.readFile(stateFile, 'utf8'));
         
+        const rawFlacPath = state.savedFilePath;
         const finalOpusFilename = state.filename.replace(/\.(flac|wav)$/, '.opus');
-        await execFileAsync('ffmpeg', ['-y', '-i', state.savedFilePath, '-c:a', 'libopus', '-b:a', '128k', path.join(IMAGES_DIR, finalOpusFilename)]);
-        return { success: true, filename: finalOpusFilename, engine: runnerArgs[0], markdown: `\n<audio controls src="/images/${finalOpusFilename}"></audio>\n` };
-    } catch (e) { console.error(`TTS generation failed: ${e.message}`); return { success: false, markdown: '' }; }
+        const finalOpusPath = path.join(IMAGES_DIR, finalOpusFilename);
+
+        await execFileAsync('ffmpeg', ['-y', '-i', rawFlacPath, '-c:a', 'libopus', '-b:a', '128k', finalOpusPath]);
+        
+        await safeUnlink(rawFlacPath);
+        return { success: true, filename: finalOpusFilename, engine: runnerArgs[0] === 'run_kokoro_tts.js' ? 'Kokoro' : 'Multi-Speaker Voice Clone', markdown: `\n<p><audio controls src="/images/${finalOpusFilename}"></audio></p>\n` };
+    } catch (e) { console.error(`TTS synthesis failed: ${e.message}`); return { success: false, markdown: '' }; }
+    finally { await safeUnlink(stateFile); await safeUnlink(poemFile); }
 }
 
 async function runAceStepGen(tags, lyrics, slug, duration) {
     const stateFile = path.join(os.tmpdir(), `acestep-state-${Date.now()}.json`);
     try {
+        console.log(`\n======================================================`);
+        console.log(`🎼 [DEBUG] SUBMITTING CONTENT TO ACE-STEP PIPELINE:`);
+        console.log(`   -> Target Tags:     "${tags}"`);
+        console.log(`   -> Core Duration:   ${duration} seconds`);
+        console.log(`   -> Engine Payload Lyrical Script:\n`);
+        console.log(lyrics);
+        console.log(`======================================================\n`);
+
         await execFileAsync('bun', ['run_acestep.js', '--state-file', stateFile, '--tags', tags, '--lyrics', lyrics, '--duration', duration.toString()]);
         const state = JSON.parse(await fs.readFile(stateFile, 'utf8'));
+        const rawFlacPath = state.savedFilePath;
         const opusFilename = `acestep_${slug}_${Date.now()}.opus`;
-        await execFileAsync('ffmpeg', ['-y', '-i', state.savedFilePath, '-af', `afade=t=out:st=${Math.max(0, duration - 5)}:d=5`, '-c:a', 'libopus', '-b:a', '128k', path.join(IMAGES_DIR, opusFilename)]);
-        return { success: true, filename: opusFilename, engine: "ACE-Step 1.5", markdown: `\n<audio controls src="/images/${opusFilename}"></audio>\n` };
-    } catch (e) { console.error(`ACE-Step Error: ${e.message}`); return { success: false, markdown: '' }; }
+        const opusPath = path.join(IMAGES_DIR, opusFilename);
+
+        await execFileAsync('ffmpeg', ['-y', '-i', rawFlacPath, '-af', `afade=t=out:st=${Math.max(0, duration - 5)}:d=5`, '-c:a', 'libopus', '-b:a', '128k', opusPath]);
+        
+        await safeUnlink(rawFlacPath);
+        return { success: true, filename: opusFilename, engine: "ACE-Step 1.5", markdown: `\n<p><audio controls src="/images/${opusFilename}"></audio></p>\n` };
+    } catch (e) { console.error(`ACE-Step pipeline execution failed: ${e.message}`); return { success: false, markdown: '' }; }
+    finally { await safeUnlink(stateFile); }
 }
 
-// ==========================================================
-// --- CORE UNIFIED RETRIEVAL PIPELINE LOOP ---
-// ==========================================================
-async function updateUnifiedDomainModel(domain, structuralAnalysis, threadFolder, nextActNumber, parsedVerse) {
-  let model = { lastUpdated: new Date().toISOString(), summary: "", recurringPatterns: [], domainThemes: {}, dramaticPlays: {} };
+async function runAudioGen(tags, lyrics, slug, duration) {
+    const baseName = `hm_${slug}_${Date.now()}`;
+    const txtFile = path.join(HEART_INBOX, `${baseName}.txt`);
+    const wavFile = path.join(HEART_OUTBOX, `${baseName}.wav`);
+    const opusFile = path.join(IMAGES_DIR, `${baseName}.opus`);
+    try {
+        await fs.writeFile(txtFile, `TAGS: ${tags}\nDURATION: ${duration}\n\n${lyrics}`);
+        let attempts = 0;
+        while (attempts < 60) {
+            await new Promise(r => setTimeout(r, 2000));
+            const stats = await fs.stat(wavFile).catch(() => null);
+            if (stats && stats.size > 1000) {
+                await execFileAsync('ffmpeg', ['-y', '-i', wavFile, '-af', `afade=t=out:st=${Math.max(0, duration - 5)}:d=5`, '-c:a', 'libopus', '-b:a', '128k', opusFile]);
+                await safeUnlink(wavFile);
+                return { success: true, filename: path.basename(opusFile), engine: "Heartmula", markdown: `\n<p><audio controls src="/images/${path.basename(opusFile)}"></audio></p>\n` };
+            }
+            attempts++;
+        }
+    } catch (e) { console.error(`Watchdog pipeline error: ${e.message}`); }
+  return { success: false, markdown: '' };
+}
+
+// ==========================================
+// --- MEMORY MAP LIFECYCLES ---
+// ==========================================
+async function updateUnifiedDomainModel(domain, folder, nextActNumber, parsed) {
+  let model = { lastUpdated: new Date().toISOString(), summary: "", recurringPatterns: [], domainThemes: {}, dramaticPlays: {}, predictionHistory: [] };
   try {
     model = JSON.parse(await fs.readFile(MODEL_PATH, 'utf8'));
-  } catch (e) { console.log("   🆕 Instantiating clean cumulative memory map."); }
+  } catch (e) { console.log("   🆕 Instantiating brand new structural history tracker mapping."); }
 
   if (!model.dramaticPlays) model.dramaticPlays = {};
   if (!model.dramaticPlays[domain]) model.dramaticPlays[domain] = [];
+  if (!model.predictionHistory) model.predictionHistory = [];
 
-  // Update act array inside our single structured history tracker
   model.dramaticPlays[domain].push({
-    thread: threadFolder,
+    thread: folder,
     act: nextActNumber,
     timestamp: new Date().toISOString(),
-    excerptSnapshot: parsedVerse.substring(0, 400)
+    excerptSnapshot: parsed.verse.substring(0, 400)
   });
 
-  // Basic neutral fallback distillation mapping (Can be extended with Grok JSON request)
-  model.summary = `Processed act sequence down into ${domain} cycle from node block: ${threadFolder}`;
+  model.predictionHistory.unshift({
+    thread: folder,
+    date: new Date().toISOString(),
+    forecast: parsed.forecast.substring(0, 500),
+    hypothesis: parsed.hypothesis.substring(0, 300)
+  });
+
+  if (model.predictionHistory.length > 25) model.predictionHistory.pop();
+
+  model.summary = `Successfully tracking domain loop [${domain.toUpperCase()}] down into stream act position: ${nextActNumber}`;
   model.lastUpdated = new Date().toISOString();
   
   await fs.writeFile(MODEL_PATH, JSON.stringify(model, null, 2) + '\n');
-  console.log(`   📈 Tracked domain state down to model tracker [Act ${nextActNumber}]`);
 }
 
 async function main() {
   await Promise.all([fs.mkdir(POSTS_DIR, { recursive: true }), fs.mkdir(IMAGES_DIR, { recursive: true })]);
 
   const prompts = await loadPrompts();
-  if (prompts.length === 0) throw new Error("No valid prompt templates resolved.");
+  if (prompts.length === 0) throw new Error("No files discovered inside prompts-new directory mapping.");
 
   let promptIndex = 0;
   try {
@@ -363,14 +443,14 @@ async function main() {
   const selPrompt = prompts[promptIndex];
   await fs.writeFile(PROMPT_STATE_FILE, JSON.stringify({ lastIndex: promptIndex }));
   
-  console.log(`\n📄 Active prompt context mapping: ${selPrompt.name} [Art Mode: ${selPrompt.artisticMode}]`);
+  console.log(`\n📄 Active contextual prompt style: ${selPrompt.name} [Artistic Mode: ${selPrompt.artisticMode}]`);
 
   const allFolders = await fs.readdir(X_DIR);
   const threadFolders = allFolders.filter(f => /^t\d+$/.test(f)).sort();
   const toProcess = targetThread ? threadFolders.filter(f => f === targetThread) : threadFolders;
 
   for (const folder of toProcess) {
-    console.log(`\n--- Single Pass Processing Cycle: ${folder} ---`);
+    console.log(`\n--- Production Layer Execution Node: ${folder} ---`);
     let payload;
     try { 
         payload = JSON.parse(await fs.readFile(path.join(X_DIR, folder, 'payload.json'), 'utf8')); 
@@ -379,12 +459,9 @@ async function main() {
     const title = payload.title || folder.toUpperCase();
     let richContextBlock = `THEMATIC SUMMARY:\n${payload.grok_poem || ''}\n\nRAW SOURCES TO TRANSMUTE:\n`;
     (payload.sources || []).forEach((src, idx) => {
-        richContextBlock += `\n--- SOURCE ${idx + 1} ---\nURL: ${src.url}\nTEXT:\n${src.rich_text || src.description_short}\n`;
+        richContextBlock += `\n--- SOURCE ${idx + 1} ---\nURL: ${src.url}\nDATA ANALYSIS:\n${src.rich_text || src.description_short}\n`;
     });
 
-    // ==========================================================
-    // --- STEP 1: PRE-INFERENCE DOMAIN DETECTION & ACT LOOKUP ---
-    // ==========================================================
     let domain = "technological";
     const lowerSummary = richContextBlock.toLowerCase();
     if (lowerSummary.includes("quantum") || lowerSummary.includes("galaxy") || lowerSummary.includes("science")) domain = "scientific";
@@ -396,121 +473,152 @@ async function main() {
         cumulativeModel = JSON.parse(await fs.readFile(MODEL_PATH, 'utf8'));
     } catch(e) {}
     
-    // Explicit dynamic computation of next integer index
     const nextActNumber = (cumulativeModel.dramaticPlays?.[domain]?.length || 0) + 1;
 
-    // ==========================================================
-    // --- STEP 2: MONOLITHIC PROMPT SYNTHESIS ---
-    // ==========================================================
+    // Assemble unified single prompt structure
     let userPrompt = selPrompt.chat.replace('[[chunk]]', richContextBlock);
     userPrompt = userPrompt.replace('[[ace_styles]]', APPROVED_STYLES_STRING);
     
-    userPrompt += `\n\n--- CUMULATIVE CONTEXT ARCHIVE ---\n`;
-    userPrompt += `DETECTED OPERATIONAL DOMAIN: ${domain.toUpperCase()}\n`;
-    userPrompt += `HISTORICAL STREAM POSITION: Act ${nextActNumber - 1} logged.\n`;
+    userPrompt += `\n\n--- ARCHIVAL PIPELINE MEMORY FIELDS ---\n`;
+    userPrompt += `TARGET SEGMENT DOMAIN: ${domain.toUpperCase()}\n`;
+    userPrompt += `CURRENT SEQUENCE DEPTH FLAG: Act ${nextActNumber - 1} recorded inside current map structure.\n`;
+
+    userPrompt += `\n\nCRITICAL MUSIC COMPOSITION REQUIREMENTS:\nInside your '## MUSIC PROMPT' section under the 'LYRICS:' field, you MUST segment the words explicitly using uppercase song arrangement brackets, such as: '[Verse 1]', '[Chorus]', '[Verse 2]', '[Chorus]', and '[Outro]'. If these are missing or stripped out, the generation engine outputs an instrumental. Lyrical words must follow the tag blocks on a new line immediately.`;
 
     if (selPrompt.artisticMode === 'dramatic') {
-        userPrompt += `\n\nCRITICAL SYSTEM REQUIREMENT:\nYou must return your primary creative work explicitly behind this header string:\n## DRAMATIC VERSE (Act ${nextActNumber})\nFollowed directly by verse line entries, staging notes, and character tags.`;
+        userPrompt += `\n\nCRITICAL OUTPUT ENFORCEMENT RULES:\nYou must return your primary creative theater work explicitly using this block structure layout header:\n## DRAMATIC VERSE (Act ${nextActNumber})\nEnsure dialogue uses named uppercase roles and complies with metrical rhymed frameworks.`;
     } else {
-        userPrompt += `\n\nCRITICAL SYSTEM REQUIREMENT:\nReturn your creative work behind a clean '## VERSE' block.`;
+        userPrompt += `\n\nCRITICAL OUTPUT ENFORCEMENT RULES:\nReturn your creative piece behind a transparent '## VERSE' block string markup loop.`;
     }
 
-    userPrompt += `\n\n## FORECAST\nProvide analytical insights.\n\n## HYPOTHESIS\nProvide a single concise falsifiable claim.\n\n## IMAGE PROMPT\nVisual parameters.\n\n## T2V PROMPT\nMotion mapping.`;
+    userPrompt += `\n\n## FORECAST\nProvide concise projections matching the context variables.\n\n## HYPOTHESIS\nProvide a unique falsifiable assertion statement based on recurring motifs here.\n\n## IMAGE PROMPT\nVisual parameters layout.\n\n## T2V PROMPT\nMotion mapping tracking parameters.`;
 
-    // Execute single-pass generation
+    // Process single-pass text request
     const generated = await generateText(selPrompt.system, userPrompt);
     if (!generated) continue;
 
-    // Parse out data variables from the shared blob context
     const parsed = parseUnifiedOutput(generated);
 
-    // ==========================================================
-    // --- STEP 3: UPDATE MEMORY LOGS & EXECUTE DOWNSTREAM MEDIA ---
-    // ==========================================================
-    await updateUnifiedDomainModel(domain, generated, folder, nextActNumber, parsed.verse);
+    // Commit memory mappings
+    await updateUnifiedDomainModel(domain, folder, nextActNumber, parsed);
 
-    // 1. Image Spawner (Preserved down to your ComfyUI architecture toggles)
+    // 1. Image Generation Pass
     let imgRes = useGrokImagine ? await runGrokImagine(parsed.image, slugify(title)) : (useGeminiImage ? await runGeminiImage(parsed.image, slugify(title)) : await runImageGen(parsed.image));
     if (!useGeminiImage) await freeComfyVRAM();
 
-    // 2. Video Spawner
+    // 2. Video Generation Pass
     let vidRes = useGeminiVideo ? await runGeminiVideo(parsed.t2v, slugify(title)) : await runVideoGen(parsed.t2v, imgRes.filename, forceT2V || useHunyuan);
     if (!useGeminiVideo) await freeComfyVRAM();
 
-    // 3. Audio Reading (Passes resolved verse or text scene script automatically)
+    // 3. Audio Reading Pass (Kokoro Spoken Dialogue)
     const ttsRes = await runPoetryTTS(parsed.verse);
     await freeComfyVRAM();
 
-    // 4. Background Suite Orchestrator
+    // 4. Background Soundtrack Generation Pass (ACE-Step / Heartmula)
     const finalDuration = parseInt(parsed.musicDuration, 10) || generationDuration;
-    let audioRes = useGeminiAudio ? await runGeminiAudio(parsed.musicTags, parsed.musicLyrics, slugify(title)) : await runAceStepGen(parsed.musicTags, parsed.musicLyrics, slugify(title), finalDuration);
-    await freeComfyVRAM();
+    let audioRes = useGeminiAudio ? await runGeminiAudio(parsed.musicTags, parsed.musicLyrics, slugify(title)) : (useHeartmula ? await runAudioGen(parsed.musicTags, parsed.musicLyrics, slugify(title), 96) : await runAceStepGen(parsed.musicTags, parsed.musicLyrics, slugify(title), finalDuration));
+    if (!useGeminiAudio) await freeComfyVRAM();
 
-    // 5. Album Stitcher Wrapper (Unchanged)
+    // 5. MP4 Video Stitching Pipeline (Combines Image and Audio for Twitter compatibility)
     if (imgRes.success && audioRes.success) {
         try {
             await execFileAsync('ffmpeg', ['-loop', '1', '-framerate', '1', '-i', path.join(IMAGES_DIR, imgRes.filename), '-i', path.join(IMAGES_DIR, audioRes.filename), '-c:v', 'libx264', '-tune', 'stillimage', '-c:a', 'aac', '-b:a', '192k', '-pix_fmt', 'yuv420p', '-shortest', '-y', path.join(IMAGES_DIR, `x_ready_music_${slugify(title)}_${Date.now()}.mp4`)]);
-        } catch (e) { console.error(`Stitching error: ${e.message}`); }
+        } catch (e) {}
+    }
+
+    // Post processing sweep to clear uncompressed intermediate flac/wav waveforms completely
+    const rawFlacDirScan = await fs.readdir(IMAGES_DIR);
+    for (const file of rawFlacDirScan) {
+        if (file.endsWith('.flac') || file.endsWith('.wav')) {
+            await safeUnlink(path.join(IMAGES_DIR, file));
+        }
     }
 
     // ==========================================================
-    // --- STEP 4: WRITE UNIFIED CLEAN MARKDOWN ENTRY ---
+    // --- ASTRO BLOG OUTPUT CREATION AND ASSET EMBEDDING ---
     // ==========================================================
     const frontMatter = [
-        `title: "${title} – Transmuted Cycle"`,
-        `author: "${useGrok ? 'Grok' : 'Gemini'} + One-Pass Structural Engine"`,
+        `title: "${title} – Transmuted Pass"`,
+        `pubDate: "${new Date().toISOString().split('T')[0]}"`,
+        `author: "${useGrok ? 'Grok' : 'Gemini'} + Core Single Pass Pipeline"`,
         `domain: "${domain}"`,
         `act: ${nextActNumber}`
     ];
-    if (imgRes.success) frontMatter.push(`image: "/images/${imgRes.filename}"`);
-    if (vidRes.success) frontMatter.push(`video: "/images/${vidRes.filename}"`);
+    if (imgRes.success) frontMatter.push(`heroImage: "/images/${imgRes.filename}"`);
+    if (vidRes.success) frontMatter.push(`videoAsset: "/images/${vidRes.filename}"`);
 
-    const markdownOutput = `---
+    const markdownPost = `---
 ${frontMatter.join('\n')}
 ---
 
-## Contents
-- [Creative Verse](#creative-verse)
-- [System Forecast](#system-forecast)
+## Navigation Indexes
+- [Primary Poetic Artifact](#primary-poetic-artifact)
+- [Analytical Forecast Evaluation](#analytical-forecast-evaluation)
 - [Falsifiable Structural Hypothesis](#falsifiable-structural-hypothesis)
-- [Kinetic Video Node](#kinetic-video-node)
-- [Asset Architecture](#asset-architecture)
+- [Kinetic Dynamic Video](#kinetic-dynamic-video)
+- [Visual Anchor Representation](#visual-anchor-representation)
+- [Generated Musical Score](#generated-musical-score)
+- [Pipeline & Debug Analytics](#pipeline-and-debug-analytics)
 
 ---
 
-### Creative Verse {#creative-verse}
-${parsed.verse || '_Creative compilation generation skipped._'}
+### Primary Poetic Artifact {#primary-poetic-artifact}
+<div class="poetry-verse">
+${parsed.verse || '_Poetic text generation unavailable._'}
+</div>
 
 ${ttsRes.markdown || ''}
 
 ---
 
-## System Forecast {#system-forecast}
-${parsed.forecast || '_Analytical forecast metrics skipped._'}
+## Analytical Forecast Evaluation {#analytical-forecast-evaluation}
+${parsed.forecast || '_Forward-looking metrics unavailable._'}
 
 ## Falsifiable Structural Hypothesis {#falsifiable-structural-hypothesis}
-> ${parsed.hypothesis || '_Falsifiable assertion statement skipped._'}
+> ${parsed.hypothesis || '_Falsifiable claim assertion block skipped._'}
 
 ---
 
-### Kinetic Video Node {#kinetic-video-node}
-${vidRes.markdown || '_Kinetic tracking engine rendering skipped._'}
+### Kinetic Dynamic Video {#kinetic-dynamic-video}
+${vidRes.markdown || '_Kinetic video tracking element skipped._'}
 
 ---
 
-### Asset Architecture {#asset-architecture}
-<strong>Operational Core:</strong> ${actualModelUsed}<br>
-<strong>Style Context Profile:</strong> ${selPrompt.name}<br>
-<strong>Sound Suite Profile:</strong> ${audioRes.engine || 'Skipped'}
+### Visual Anchor Representation {#visual-anchor-representation}
+${imgRes.markdown || '_Visual anchor asset rendering unavailable._'}
 
-#### Background Score Lyrics Configuration
-<pre>${parsed.musicLyrics}</pre>
+---
+
+### Generated Musical Score {#generated-musical-score}
+${audioRes.markdown || '_Generated background score audio embed is unavailable._'}
+
+---
+
+### Pipeline & Debug Analytics {#pipeline-and-debug-analytics}
+<strong>Inference Core Platform:</strong> ${actualModelUsed}<br>
+<strong>Style Context Archetype Profile:</strong> ${selPrompt.name}<br>
+<strong>Soundtrack Synthesis Engine:</strong> ${audioRes.engine || 'Skipped/Failed'}<br>
+<strong>Target Music Metadata Tags:</strong> <code>${parsed.musicTags}</code><br>
+<strong>Target Score Audio Duration:</strong> ${finalDuration} seconds
+
+#### Prompts Employed in Generation
+<details><summary>View Image Model Prompt</summary>
+<pre>${parsed.image || '_No image prompt text generated._'}</pre>
+</details>
+
+<details><summary>View Video Model Prompt (Text-to-Video)</summary>
+<pre>${parsed.t2v || '_No text-to-video motion prompt text generated._'}</pre>
+</details>
+
+#### Background Score Lyrical Configuration Script
+<pre>${parsed.musicLyrics || '_No lyrical words configuration found._'}</pre>
 `;
 
     const finalSlug = `${slugify(title).substring(0, 40)}-${folder}-${Date.now()}.md`;
-    await fs.writeFile(path.join(POSTS_DIR, finalSlug), markdownOutput);
-    console.log(`💾 Post successfully saved to core system disk: ${finalSlug}`);
+    await fs.writeFile(path.join(POSTS_DIR, finalSlug), markdownPost);
+    console.log(`💾 Build completed. Post synchronized cleanly with audio embed: ${finalSlug}`);
+    await freeComfyVRAM();
   }
 }
 
-main().catch(err => { console.error("Fatal exception inside script engine loop:", err); process.exit(1); });
+main().catch(err => { console.error("Fatal pipeline loop exception:", err); process.exit(1); });
