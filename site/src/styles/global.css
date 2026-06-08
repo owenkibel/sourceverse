@@ -90,12 +90,14 @@ article,
 }
 
 /* ==========================================================================
-   4. FULL-WIDTH HEADER & NAVIGATION TOOLBAR
+   4. FULL-WIDTH HEADER & NAVIGATION TOOLBAR (Infinite Span, Centered Inner Content)
    ========================================================================== */
 header {
 	width: 100%;
 	background-color: var(--bg-color);
 	border-bottom: 2px solid var(--border-color);
+	margin: 0 !important;
+	padding: 0 !important;
 }
 
 header nav {
@@ -103,16 +105,30 @@ header nav {
 	align-items: center;
 	justify-content: space-between;
 	width: 100%;
-	max-width: 1400px !important; 
+	
+	/* Infinite fix: clamp internal elements directly to your site content column */
+	max-width: 760px !important; 
 	margin: 0 auto !important;
-	padding: 1.5rem 2rem !important;
+	
+	/* Pad elements internally so they align with your article borders perfectly */
+	padding: 1.5rem 1.5rem !important;
 	background-color: var(--bg-color) !important;
 	color: var(--text-color) !important;
 }
 
+/* Ensure absolute contrast clarity inside Dark Mode */
+:root.dark header {
+	background-color: #000000 !important;
+	border-bottom: 2px solid #ffffff !important;
+}
+
+:root.dark header nav {
+	background-color: #000000 !important;
+}
+
 .internal-links {
 	display: flex;
-	gap: 2.5rem !important; 
+	gap: 2rem !important; 
 	align-items: center;
 	flex-wrap: nowrap !important;   
 	white-space: nowrap !important; 
@@ -124,15 +140,15 @@ header h2,
 	white-space: nowrap !important; 
 }
 
-/* Navigation Interactive Link Anchor Styling */
+/* Navigation Link Anchors high-contrast visibility overrides */
 header nav a,
 .internal-links a {
 	color: var(--text-color) !important;
 	font-weight: 700;
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
-	font-size: 0.95rem;
-	opacity: 0.85;
+	font-size: 0.9rem;
+	opacity: 0.8;
 	border-bottom: 2px solid transparent !important;
 	text-decoration: none !important;
 }
@@ -143,14 +159,20 @@ header nav a:hover {
 	border-bottom-color: var(--accent-light) !important;
 }
 
+/* Clear Dark Mode active navigation item highlights */
 header nav a.active {
 	opacity: 1 !important;
-	border-bottom-color: var(--text-color) !important;
+	color: var(--text-color) !important;
+	border-bottom: 2px solid var(--text-color) !important;
+}
+
+:root.dark header nav a.active {
+	border-bottom-color: #ffffff !important;
 }
 
 header h2 a, 
 .site-title a {
-	font-size: 1.4rem !important;
+	font-size: 1.3rem !important;
 	letter-spacing: -0.02em !important;
 	text-transform: none !important;
 	opacity: 1 !important;
@@ -238,19 +260,7 @@ summary {
 	color: var(--text-color);
 }
 
-pre, code {
-	font-family: monospace;
-	font-size: 0.9rem;
-	white-space: pre-wrap !important;       /* Forces long prompts to wrap naturally */
-	word-wrap: break-word !important;       /* Prevents side overflow container breaking */
-	max-width: 100%;
-	overflow-x: auto;
-	background-color: rgba(0, 0, 0, 0.05);
-	color: var(--text-color);
-	padding: 0.75rem;
-	border-left: 3px solid var(--accent-color);
-	margin: 1rem 0;
-}
+
 
 :root.dark pre, :root.dark code {
 	background-color: rgba(255, 255, 255, 0.05);
@@ -268,3 +278,124 @@ pre, code {
 	padding-left: 1.25rem;
 	border-left: 3px solid var(--accent-color);
 }
+
+blockquote {
+    margin: 1rem 0;
+    padding: 0.5rem 1rem;
+    border-left: 3px solid var(--border-color);
+    background: rgba(0, 68, 136, 0.02);
+    font-size: 0.95rem;
+    color: var(--text-muted);
+}
+
+/* ==========================================================================
+   5. PRISM HIGH-CONTRAST VIVID SYNTAX HIGHLIGHTER
+   ========================================================================== */
+/* Core Layout Container — Completely free of Shiki's inline attribute style injection */
+pre[class*="language-"],
+code[class*="language-"],
+pre, code {
+	font-family: 'Courier New', Courier, monospace;
+	font-size: 0.9rem;
+	direction: ltr;
+	text-align: left;
+	white-space: pre-wrap !important;
+	word-break: break-all !important;
+	word-wrap: break-word !important;
+	max-width: 100%;
+	overflow-x: auto;
+	background-color: rgba(0, 68, 136, 0.05) !important;
+	color: var(--text-color) !important;
+	border: 2px solid var(--border-color) !important;
+	padding: 1rem !important;
+	margin: 1.5rem 0;
+	display: block;
+}
+
+/* Compact inline adjustments for text parameters */
+p > code, li > code {
+	display: inline !important;
+	padding: 0.2rem 0.4rem !important;
+	margin: 0;
+	background-color: rgba(0, 0, 0, 0.05) !important;
+	border: 1px solid var(--border-color) !important;
+}
+
+/* Dark Mode Background Absolute High-Contrast Override */
+:root.dark pre[class*="language-"],
+:root.dark pre {
+	background-color: #000000 !important;
+	border-color: #ffffff !important;
+}
+
+:root.dark p > code, 
+:root.dark li > code {
+	background-color: #111111 !important;
+	border-color: #333333 !important;
+}
+
+/* Vivid Syntactic Token Highlights (For future code snippets) */
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+	color: #7ef8f8;
+	font-style: italic;
+}
+
+.token.punctuation {
+	color: var(--text-color);
+}
+
+.token.property,
+.token.tag,
+.token.boolean,
+.token.number,
+.token.constant,
+.token.symbol,
+.token.deleted {
+	color: #ff5555; /* Vivid Coral Red */
+	font-weight: 700;
+}
+
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted {
+	color: #50fa7b; /* Vivid Electric Green */
+}
+
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string {
+	color: var(--text-color);
+}
+
+.token.atrule,
+.token.attr-value,
+.token.keyword {
+	color: #ff79c6; /* Vivid High-Fidelity Magenta */
+	font-weight: 700;
+}
+
+.token.function,
+.token.class-name {
+	color: #8be9fd; /* Vivid Cyan Blue */
+}
+
+.token.regex,
+.token.important,
+.token.variable {
+	color: #f1fa8c; /* Vivid Safety Yellow */
+}
+
+/* Fine-tuning active dark mode contrast scopes */
+:root.dark .token.comment  { color: #75715e; }
+:root.dark .token.keyword  { color: #f92672; }
+:root.dark .token.string   { color: #e6db74; }
+:root.dark .token.function { color: #a6e22e; }
+:root.dark .token.number   { color: #ae81ff; }

@@ -548,7 +548,7 @@ async function main() {
         }
     }
 
- // ==========================================================
+    // ==========================================================
     // --- ASTRO BLOG OUTPUT CREATION AND ASSET EMBEDDING ---
     // ==========================================================
     const frontMatter = [
@@ -596,59 +596,36 @@ ${parsed.forecast || '_Forward-looking metrics unavailable._'}
 ### Kinetic Dynamic Video {#kinetic-dynamic-video}
 ${vidRes.markdown || '_Kinetic video tracking element skipped._'}
 
-##### Video Generation Prompt (Text-to-Video Engine)
-<blockquote>
-<strong>Target Prompt Parameters:</strong> ${parsed.t2v || '_No video prompt generated._'}
-</blockquote>
-
 ---
 
 ### Visual Anchor Representation {#visual-anchor-representation}
 ${imgRes.markdown || '_Visual anchor asset rendering unavailable._'}
-
-##### Image Generation Prompt (Visual Engine)
-<blockquote>
-<strong>Target Prompt Parameters:</strong> ${parsed.image || '_No image prompt generated._'}
-</blockquote>
 
 ---
 
 ### Generated Musical Score {#generated-musical-score}
 ${audioRes.markdown || '_Generated background score audio embed is unavailable._'}
 
-##### Musical Score Vocal & Instrument Prompt Mapping
-<blockquote>
-<strong>Target Music Metadata Tags:</strong> <code>${parsed.musicTags}</code><br>
-<strong>Target Score Audio Duration:</strong> ${finalDuration} seconds
-</blockquote>
-<pre>${parsed.musicLyrics || '_No lyrical words configuration found._'}</pre>
-
 ---
 
 ### Pipeline & Debug Analytics {#pipeline-and-debug-analytics}
-<strong>Active Text Inference Core Platform:</strong> <code>${actualModelUsed}</code><br>
-<strong>Style Context Profile:</strong> <code>${selPrompt.name}.json</code><br>
-<strong>Image Asset Processing Worker:</strong> <code>${imgRes.engine || 'Skipped/Failed'}</code><br>
-<strong>Video Asset Processing Worker:</strong> <code>${vidRes.engine || 'Skipped/Failed'}</code><br>
-<strong>TTS Spoken Audio Worker:</strong> <code>${ttsRes.engine || 'Skipped/Failed'}</code><br>
-<strong>Soundtrack Audio Score Worker:</strong> <code>${audioRes.engine || 'Skipped/Failed'}</code>
+<strong>Inference Core Platform:</strong> ${actualModelUsed}<br>
+<strong>Style Context Archetype Profile:</strong> ${selPrompt.name}<br>
+<strong>Soundtrack Synthesis Engine:</strong> ${audioRes.engine || 'Skipped/Failed'}<br>
+<strong>Target Music Metadata Tags:</strong> <code>${parsed.musicTags}</code><br>
+<strong>Target Score Audio Duration:</strong> ${finalDuration} seconds
 
-<br>
-
-### Complete Core Prompt Log
-<details><summary>Expand Full Prompt Code Details Sent to Inference Engine</summary>
-
-#### System Directive Context Profile
-\`\`\`text
-${selPrompt.system}
-\`\`\`
-
-#### Final Assembled Chat Prompt Payload
-\`\`\`text
-${userPrompt}
-\`\`\`
-
+#### Prompts Employed in Generation
+<details><summary>View Image Model Prompt</summary>
+<pre>${parsed.image || '_No image prompt text generated._'}</pre>
 </details>
+
+<details><summary>View Video Model Prompt (Text-to-Video)</summary>
+<pre>${parsed.t2v || '_No text-to-video motion prompt text generated._'}</pre>
+</details>
+
+#### Background Score Lyrical Configuration Script
+<pre>${parsed.musicLyrics || '_No lyrical words configuration found._'}</pre>
 `;
 
     const finalSlug = `${slugify(title).substring(0, 40)}-${folder}-${Date.now()}.md`;
