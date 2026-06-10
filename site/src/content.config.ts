@@ -6,13 +6,27 @@ const blog = defineCollection({
   schema: z.object({
     title: z.string(),
     description: z.string().optional(),
+    
+    // 1. Make new pipeline fields optional so older posts don't crash the server
+    date: z.coerce.date().optional(), 
+    source: z.enum(['digest', 'thread', 'link']).optional(),
+    
+    // 2. Retain legacy fields so your older posts remain valid
     pubDate: z.coerce.date().optional(),
     updatedDate: z.coerce.date().optional(),
-    // Change heroImage to image to align with your GenAI pipeline layout
+    
     image: z.string().optional(), 
     video: z.string().optional(),
     tts: z.string().optional(),
     author: z.string().optional(),
+  }).transform((data) => {
+    // 3. Dynamic Fallback: If a post lacks 'date', seamlessly use 'pubDate'
+    // If it lacks 'source', default it to 'digest' or a fallback string
+    return {
+      ...data,
+      date: data.date || data.pubDate || new Date(),
+      source: data.source || 'digest', 
+    };
   }),
 });
 

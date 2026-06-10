@@ -3,6 +3,13 @@ import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+
+// site/src/pages/index.astro (or your blog roll page)
+import { getCollection } from 'astro:content';
+import { getSortedPosts } from '../lib/sortPosts';
+
+const allPosts = await getCollection('blog');
+const sortedPosts = getSortedPosts(allPosts);
 ---
 
 <!doctype html>
