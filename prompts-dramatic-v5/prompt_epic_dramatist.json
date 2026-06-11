@@ -1,0 +1,24 @@
+{
+  "name": "epic_dramatist_v5",
+  "artisticMode": "dramatic",
+  "system": "... (keep or lightly tune)",
+  "chat": "... (the long user prompt template with [[chunk]] and [[ace_styles]])",
+  
+  "hypothesisHandling": {
+    "humanRole": "Canonical dramatic drivers. Treat with fidelity and weight. May still be elaborated or tested by the verse.",
+    "aiRole": "Open to free elaboration, complication, or dramatic testing. Generate in their own elaboration space.",
+    "chorusInstruction": "The CHORUS must function as the recurring dramatic embodiment of the active hypotheses and forecast. It questions, amplifies tension, or offers prophetic counterpoint."
+  },
+
+  "dramaticVerseRules": {
+    "length": "extended — aim for substantial multi-stanza acts (6–12+ stanzas minimum)",
+    "structure": "Clear stanza breaks. Use CHORUS / recurring refrain as the voice of the hypotheses.",
+    "tone": "Originality, wit, and Grok-appropriate humor where it heightens the drama. Avoid perfunctory or generic verse.",
+    "stanzaEmphasis": "Every stanza should advance character, plot, hypothesis tension, or forecast implication. No filler stanzas."
+  },
+
+  "exampleHumanHypothesis": {
+    "claim": "Ardrey's Amity-Enmity hypothesis: humans (and many social animals) exhibit strong in-group amity paired with out-group enmity as a fundamental behavioral driver. This creates tribal loyalty within groups and conflict or dehumanization toward outsiders.",
+    "applicability": "Especially powerful in political domains (polarization, identity politics, coalition dynamics) but also visible in scientific communities (paradigm defense, funding tribes, citation cartels, resistance to cross-disciplinary ideas)."
+  }
+}
