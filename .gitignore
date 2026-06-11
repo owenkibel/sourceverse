@@ -3,6 +3,7 @@ images
 posts
 dist
 site-b
+source-b
 *.sh
 node_modules
 dramatic-prompts

@@ -551,15 +551,24 @@ async function main() {
  // ==========================================================
     // --- ASTRO BLOG OUTPUT CREATION AND ASSET EMBEDDING ---
     // ==========================================================
+// 1. Capture high-precision UTC time for deterministic sorting
+    const postDate = new Date().toISOString();
+
+    // 2. Build Astro-aligned Frontmatter
+    // JSON.stringify safely escapes arbitrary title characters (like colons or quotes)
     const frontMatter = [
-        `title: "${title} – Transmuted Pass"`,
-        `pubDate: "${new Date().toISOString().split('T')[0]}"`,
-        `author: "${useGrok ? 'Grok' : 'Gemini'} + Core Single Pass Pipeline"`,
-        `domain: "${domain}"`,
+        `title: ${JSON.stringify(`${title} – Transmuted Pass`)}`,
+        `date: "${postDate}"`,
+        `pubDate: "${postDate.split('T')[0]}"`,
+        `author: ${JSON.stringify((useGrok ? 'Grok' : 'Gemini') + ' + Core Single Pass Pipeline')}`,
+        `source: "thread"`,
+        `domain: ${JSON.stringify(domain)}`,
         `act: ${nextActNumber}`
     ];
-    if (imgRes.success) frontMatter.push(`heroImage: "/images/${imgRes.filename}"`);
-    if (vidRes.success) frontMatter.push(`videoAsset: "/images/${vidRes.filename}"`);
+    
+    // Aligned keys directly with your Astro schema layout definitions
+    if (imgRes.success) frontMatter.push(`image: "/images/${imgRes.filename}"`);
+    if (vidRes.success) frontMatter.push(`video: "/images/${vidRes.filename}"`);
 
     const markdownPost = `---
 ${frontMatter.join('\n')}
@@ -651,9 +660,27 @@ ${userPrompt}
 </details>
 `;
 
-    const finalSlug = `${slugify(title).substring(0, 40)}-${folder}-${Date.now()}.md`;
-    await fs.writeFile(path.join(POSTS_DIR, finalSlug), markdownPost);
-    console.log(`💾 Build completed. Post synchronized cleanly with audio embed: ${finalSlug}`);
+    // 3. Collision-Proof File Generation Sequence
+    const baseSlug = `${slugify(title).substring(0, 40)}-${folder}-${Date.now()}`;
+    let finalFilePath = path.join(POSTS_DIR, `${baseSlug}.md`);
+    let counter = 1;
+
+    while (true) {
+        try {
+            // Asynchronously probe path availability
+            await fs.access(finalFilePath);
+            // Path is busy; append counter suffix
+            finalFilePath = path.join(POSTS_DIR, `${baseSlug}-${counter}.md`);
+            counter++;
+        } catch {
+            // Path is clear to write
+            break;
+        }
+    }
+
+    // 4. Atomic Write Operation
+    await fs.writeFile(finalFilePath, markdownPost, 'utf8');
+    console.log(`💾 Build completed. Post synchronized cleanly with audio embed: ${path.basename(finalFilePath)}`);
     await freeComfyVRAM();
   }
 }

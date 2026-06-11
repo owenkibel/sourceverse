@@ -264,7 +264,16 @@ async function main() {
     const postFileName = `bookmarks-digest-p${pageCounter}-${batchSlugTimestamp}.md`;
     const outputMarkdownPath = path.join(TARGET_DIR, postFileName);
 
-    let markdownBody = `---\ntitle: "Bookmarks Digest — Page ${pageCounter}"\ndate: ${finalIsoTime}\ndescription: "Fast compilation update containing ${chunk.length} curated resources."\n---\n\n`;
+  // 1. Capture or fallback to high-precision timestamp for timeline uniformity
+    const postDate = finalIsoTime || new Date().toISOString();
+
+    // 2. Safe Frontmatter Generation with JSON.stringify and Content Layer schema alignment
+    let markdownBody = `---\n`;
+    markdownBody += `title: ${JSON.stringify(`Bookmarks Digest — Page ${pageCounter}`)}\n`;
+    markdownBody += `date: "${postDate}"\n`;
+    markdownBody += `source: "digest"\n`;
+    markdownBody += `description: "Fast compilation update containing ${chunk.length} curated resources."\n`;
+    markdownBody += `---\n\n`;
 
     chunk.forEach((item, idx) => {
       markdownBody += `### ${idx + 1}. [${item.title}](${item.url})\n`;
@@ -288,8 +297,23 @@ async function main() {
       markdownBody += `* [Direct Resource Link](${item.url})\n\n---\n\n`;
     });
 
-    fs.writeFileSync(outputMarkdownPath, markdownBody, 'utf-8');
-    console.log(`💾 Saved: ./posts/${postFileName} [Contains: ${chunk.length} URLs]`);
+    // 3. Collision-Proof File Checking Loop (Utilizing your top-level path import)
+    let directory = path.dirname(outputMarkdownPath);
+    let ext = path.extname(outputMarkdownPath);
+    let baseFilename = path.basename(outputMarkdownPath, ext);
+
+    let counter = 1;
+    let finalOutputPath = outputMarkdownPath;
+
+    // Increment filename suffix sequentially if the targeted path is already taken
+    while (fs.existsSync(finalOutputPath)) {
+      finalOutputPath = path.join(directory, `${baseFilename}-${counter}${ext}`);
+      counter++;
+    }
+
+    // 4. Secure Write Operation using the unique calculated file path
+    fs.writeFileSync(finalOutputPath, markdownBody, 'utf-8');
+    console.log(`💾 Saved: ${finalOutputPath} [Contains: ${chunk.length} URLs]`);
     pageCounter++;
   }
 

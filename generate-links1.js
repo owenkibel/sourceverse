@@ -789,9 +789,15 @@ Output EXACTLY the complete clean markdown body for the blog post (starting with
       );
       debugSection += '\n```\n';
 
+ // 1. Generate precision UTC ISO date string for Astro sorting
+      const postDate = new Date().toISOString();
+
+      // 2. Updated Frontmatter with JSON.stringify safety, sorting date, and source tag
       const frontMatter = `---
-title: Links ${timestamp}
+title: ${JSON.stringify(`Links ${timestamp}`)}
+date: ${postDate}
 author: Grok
+source: "link"
 tags:
   - Bookmarks
 ---
@@ -818,15 +824,35 @@ tags:
       const fullMarkdown = frontMatter + '\n' + markdownBody + debugSection + summaryFooter;      
 
       await fs.mkdir(OUTPUT_DIR, { recursive: true });
-      await fs.writeFile(path.join(OUTPUT_DIR, `links-${safeTimestamp}.md`), fullMarkdown);
 
-      console.log(`Generated blog post with debug section: posts/links-${safeTimestamp}.md`);
+      // 3. Collision-Proof Resolution Loop (Asynchronous)
+      let baseFilename = `links-${safeTimestamp}`;
+      let finalFilePath = path.join(OUTPUT_DIR, `${baseFilename}.md`);
+      let counter = 1;
+
+      while (true) {
+        try {
+          // Check if the file path is already taken
+          await fs.access(finalFilePath);
+          // If it doesn't throw an error, file exists. Append an incremented suffix.
+          finalFilePath = path.join(OUTPUT_DIR, `${baseFilename}-${counter}.md`);
+          counter++;
+        } catch {
+          // fs.access throws an error if the file doesn't exist, meaning it is safe to write
+          break;
+        }
+      }
+
+      // 4. Write the uniquely verified file path
+      await fs.writeFile(finalFilePath, fullMarkdown, 'utf8');
+
+      console.log(`Generated blog post with debug section: posts/${path.basename(finalFilePath)}`);
       console.log(`Batch ${batchIndex} → ${validGroups.length} thread candidate folder(s) in ${X_OUTPUT_DIR}`);
 
       await fs.rm(X_OUTPUT_DIR, { recursive: true, force: true });
       await fs.mkdir(X_OUTPUT_DIR, { recursive: true });
 
-for (let i = 0; i < validGroups.length; i++) {
+      for (let i = 0; i < validGroups.length; i++) {
         await processGroupToFolder(validGroups[i], `t${i + 1}`, enriched);
       }
       
