@@ -414,17 +414,12 @@ async function runAudioGen(tags, lyrics, slug, duration) {
 // ==========================================
 // --- MEMORY MAP LIFECYCLES ---
 // ==========================================
-async function updateUnifiedDomainModel(domain, nextActNumber, folder, parsedOutput, activeHypotheses) {
-    let model = { dramaticPlays: {}, predictionHistory: [] };
-    try {
-        const existing = await fs.readFile(MODEL_PATH, 'utf8');
-        model = JSON.parse(existing);
-    } catch (e) {}
 
-    if (!model.dramaticPlays) model.dramaticPlays = {};
+async function updateUnifiedDomainModel(domain, nextActNumber, folder, parsedOutput, activeHypotheses) {
+    // ... your existing file reading logic ...
+    
     if (!model.dramaticPlays[domain]) model.dramaticPlays[domain] = [];
 
-    // Log the structural performance index data to track context evolution
     model.dramaticPlays[domain].push({
         thread: folder,
         act: nextActNumber,
@@ -436,6 +431,7 @@ async function updateUnifiedDomainModel(domain, nextActNumber, folder, parsedOut
             summary: h.claim.substring(0, 120)
         }))
     });
+
 
     // Cycle new AI discoveries into rolling historical memory for prompt loops
     if (parsedOutput.hypothesis_elaboration_ai || parsedOutput.hypothesis) {
@@ -579,7 +575,7 @@ userPrompt += `- The CHORUS/refrain section must directly articulate the collisi
     const parsed = parseUnifiedOutput(generated);
 
     // Commit memory mappings
-    await updateUnifiedDomainModel(domain, folder, nextActNumber, parsed);
+await updateUnifiedDomainModel(domain, nextActNumber, folder, parsed, mergedHypotheses);
 
     // 1. Image Generation Pass
     let imgRes = useGrokImagine ? await runGrokImagine(parsed.image, slugify(title)) : (useGeminiImage ? await runGeminiImage(parsed.image, slugify(title)) : await runImageGen(parsed.image));
