@@ -2,11 +2,10 @@
   "hypotheses": [
     {
       "id": "ardrey-amity-enmity",
-      "claim": "Ardrey's Amity-Enmity hypothesis: humans (and many social animals) exhibit strong in-group amity paired with out-group enmity as a fundamental behavioral driver. This creates tribal loyalty, cooperation, and identity within groups, while generating conflict, dehumanization, or hostility toward outsiders.",
+      "claim": "Ardrey's Amity-Enmity Hypothesis: Human social structures depend fundamentally on an externalized threat vector to maintain internal structural integrity. In-group amity scales in direct proportion to perceived out-group enmity. When applied to political configurations, polarization is a survival adaptation; when applied to scientific fields, it manifests as fierce defense of orthodox paradigms and coordinated algorithmic gatekeeping of heterodox insights.",
       "domain": "political",
-      "source": "human",
       "status": "core",
-      "notes": "Particularly powerful for political and cultural threads. Also testable in scientific communities (paradigm defense, citation patterns, funding tribes, resistance to heterodox ideas)."
+      "notes": "Applicable across both geopolitical structures and tribal funding loops in structural academic environments."
     }
   ]
 }

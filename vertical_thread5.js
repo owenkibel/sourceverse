@@ -7,14 +7,16 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const execFileAsync = util.promisify(execFile);
 
 // --- CONFIGURATION MAPS ---
-// const PROMPTS_DIR = path.join(__dirname, 'prompts-new');
+// Change this line from 'prompts-new' to your V5 directory
+const PROMPTS_DIR = path.join(__dirname, 'prompts-dramatic-v5');
+
+// Inject this right below your other file configuration constants
+const HUMAN_HYPOTHESES_FILE = path.join(__dirname, 'human-hypotheses.json');
 const POSTS_DIR = 'posts';
 const IMAGES_DIR = 'images';
 const X_DIR = './x';
 const PROMPT_STATE_FILE = path.join(__dirname, '.prompt_state.json');
 const MODEL_PATH = 'cumulative_thread_model.json';
-const PROMPTS_DIR = path.join(__dirname, 'prompts-dramatic-v5');   // fresh set
-const HUMAN_HYPOTHESES_FILE = path.join(__dirname, 'human-hypotheses.json'); // optional, loaded if present
 
 // --- Watchdog Directories ---
 const HEART_INBOX = '/home/owen/ai-projects/heartmula/inbox';
@@ -412,36 +414,80 @@ async function runAudioGen(tags, lyrics, slug, duration) {
 // ==========================================
 // --- MEMORY MAP LIFECYCLES ---
 // ==========================================
-async function updateUnifiedDomainModel(domain, folder, nextActNumber, parsed) {
-  let model = { lastUpdated: new Date().toISOString(), summary: "", recurringPatterns: [], domainThemes: {}, dramaticPlays: {}, predictionHistory: [] };
-  try {
-    model = JSON.parse(await fs.readFile(MODEL_PATH, 'utf8'));
-  } catch (e) { console.log("   🆕 Instantiating brand new structural history tracker mapping."); }
+async function updateUnifiedDomainModel(domain, nextActNumber, folder, parsedOutput, activeHypotheses) {
+    let model = { dramaticPlays: {}, predictionHistory: [] };
+    try {
+        const existing = await fs.readFile(MODEL_PATH, 'utf8');
+        model = JSON.parse(existing);
+    } catch (e) {}
 
-  if (!model.dramaticPlays) model.dramaticPlays = {};
-  if (!model.dramaticPlays[domain]) model.dramaticPlays[domain] = [];
-  if (!model.predictionHistory) model.predictionHistory = [];
+    if (!model.dramaticPlays) model.dramaticPlays = {};
+    if (!model.dramaticPlays[domain]) model.dramaticPlays[domain] = [];
 
-  model.dramaticPlays[domain].push({
-    thread: folder,
-    act: nextActNumber,
-    timestamp: new Date().toISOString(),
-    excerptSnapshot: parsed.verse.substring(0, 400)
-  });
+    // Log the structural performance index data to track context evolution
+    model.dramaticPlays[domain].push({
+        thread: folder,
+        act: nextActNumber,
+        timestamp: new Date().toISOString(),
+        chorusSnapshot: parsedOutput.chorus || parsedOutput.refrain || "",
+        activeHypothesesSnapshot: (activeHypotheses || []).map(h => ({
+            source: h.source,
+            id: h.id || "exploratory",
+            summary: h.claim.substring(0, 120)
+        }))
+    });
 
-  model.predictionHistory.unshift({
-    thread: folder,
-    date: new Date().toISOString(),
-    forecast: parsed.forecast.substring(0, 500),
-    hypothesis: parsed.hypothesis.substring(0, 300)
-  });
+    // Cycle new AI discoveries into rolling historical memory for prompt loops
+    if (parsedOutput.hypothesis_elaboration_ai || parsedOutput.hypothesis) {
+        if (!model.predictionHistory) model.predictionHistory = [];
+        model.predictionHistory.push({
+            timestamp: new Date().toISOString(),
+            actRef: nextActNumber,
+            domain: domain,
+            hypothesis: parsedOutput.hypothesis_elaboration_ai || parsedOutput.hypothesis
+        });
+    }
 
-  if (model.predictionHistory.length > 25) model.predictionHistory.pop();
+    await fs.writeFile(MODEL_PATH, JSON.stringify(model, null, 2), 'utf8');
+    console.log(`💾 Ledger state tracking committed to ${MODEL_PATH}`);
+}
 
-  model.summary = `Successfully tracking domain loop [${domain.toUpperCase()}] down into stream act position: ${nextActNumber}`;
-  model.lastUpdated = new Date().toISOString();
-  
-  await fs.writeFile(MODEL_PATH, JSON.stringify(model, null, 2) + '\n');
+/**
+ * Asynchronously loads canonical human hypotheses and merges them with historic AI claims.
+ * Preserves downstream execution tracking without pausing the pipeline node.
+ */
+async function loadAndMergeHypotheses(domain, cumulativeModel) {
+    let humanHyps = [];
+    try {
+        const exists = await fs.access(HUMAN_HYPOTHESES_FILE).then(() => true).catch(() => false);
+        if (exists) {
+            const fileContent = await fs.readFile(HUMAN_HYPOTHESES_FILE, 'utf8');
+            const data = JSON.parse(fileContent);
+            const rawArray = data.hypotheses || data || [];
+            
+            // Isolate items mapping to the active execution domain context
+            humanHyps = rawArray.filter(h => 
+                !h.domain || h.domain.toLowerCase() === domain.toLowerCase()
+            );
+        }
+    } catch (error) {
+        console.log("   ℹ️ Base memory optimization: human-hypotheses.json skipped or unreadable.");
+    }
+
+    // Isolate historic AI hypotheses from your existing cumulative predictionHistory tracking block
+    const aiHyps = (cumulativeModel.predictionHistory || [])
+        .filter(p => p.hypothesis && p.hypothesis.trim().length > 25)
+        .slice(-4) // Grab the latest rolling observations
+        .map((p, i) => ({
+            id: `ai-found-${Date.now()}-${i}`,
+            claim: p.hypothesis.trim().substring(0, 600),
+            source: "ai"
+        }));
+
+    return [
+        ...humanHyps.map(h => ({ ...h, source: "human" })),
+        ...aiHyps
+    ];
 }
 
 async function main() {
@@ -488,64 +534,43 @@ async function main() {
     try {
         cumulativeModel = JSON.parse(await fs.readFile(MODEL_PATH, 'utf8'));
     } catch(e) {}
+    
+const nextActNumber = (cumulativeModel.dramaticPlays?.[domain]?.length || 0) + 1;
 
-    async function loadAndMergeHypotheses(domain, cumulativeModel) {
-  let humanHyps = [];
-  try {
-    if (await fs.access(humanHypsPath).then(() => true).catch(() => false)) {
-      const raw = JSON.parse(await fs.readFile(humanHypsPath, 'utf8'));
-      humanHyps = (raw.hypotheses || raw).filter(h => !h.domain || h.domain === domain);
-    }
-  } catch (e) {}
+// ====================================================================
+// V5 INTEGRATION POINT: ASYNCHRONOUS HYPOTHESIS RESOLUTION
+// ====================================================================
+const mergedHypotheses = await loadAndMergeHypotheses(domain, cumulativeModel);
 
-  const aiHyps = (cumulativeModel.predictionHistory || [])
-    .filter(p => p.hypothesis && p.hypothesis.length > 20)
-    .slice(0, 6) // recent relevant ones
-    .map((p, i) => ({
-      id: `ai-${Date.now()}-${i}`,
-      claim: p.hypothesis.substring(0, 600),
-      source: "ai",
-      status: "elaborating",
-      linkedActs: []
-    }));
-
-  // Merge: human first (canonical), then AI. Both are eligible for elaboration.
-  const merged = [
-    ...humanHyps.map(h => ({ ...h, source: "human", status: h.status || "core" })),
-    ...aiHyps
-  ];
-
-  return merged;
+let hypothesisBlock = `### RUNTIME HYPOTHESES IN PLAY\n`;
+if (mergedHypotheses.length === 0) {
+    hypothesisBlock += "(No active hypotheses initialized this cycle — extract fresh tension from sources.)\n";
+} else {
+    mergedHypotheses.forEach((h, idx) => {
+        const originTag = h.source === "human" ? "CANONICAL STRUCTURE" : "AI CONJECTURE";
+        hypothesisBlock += `${idx + 1}. [${originTag}] ${h.claim}\n`;
+    });
 }
-    
-    const nextActNumber = (cumulativeModel.dramaticPlays?.[domain]?.length || 0) + 1;
 
-    // Assemble unified single prompt structure
-let userPrompt = selPrompt.chat.replace('[[chunk]]', richContextBlock);
-userPrompt = userPrompt.replace('[[ace_styles]]', APPROVED_STYLES_STRING);
+// Map parameters inside your structural text template
+let userPrompt = selPrompt.chat
+    .replace('[[chunk]]', richContextBlock)
+    .replace('[[ace_styles]]', APPROVED_STYLES_STRING)
+    .replace('[[act_number]]', nextActNumber.toString());
 
-// NEW: inject hypotheses + explicit dramatic verse guidance
-userPrompt += `\n\n${hypothesisBlock}`;
+// Safely substitute the hypotheses block if the key exists, otherwise append it
+if (userPrompt.includes('[[hypotheses_block]]')) {
+    userPrompt = userPrompt.replace('[[hypotheses_block]]', hypothesisBlock);
+} else {
+    userPrompt += `\n\n${hypothesisBlock}`;
+}
 
-userPrompt += `\n\n--- DRAMATIC VERSE REQUIREMENTS (CRITICAL) ---\n`;
-userPrompt += `Create EXTENDED dramatic verse in clear stanzas (minimum 6–12 stanzas for a full act, more if the material is rich). `;
-userPrompt += `Use originality, sharp wit, and Grok-style humor where it serves the drama. Avoid brief or perfunctory output. `;
-userPrompt += `Structure with stanza breaks. The CHORUS / recurring refrain must directly embody or comment on the active hypotheses and forecast — it is the living voice of the ideas. `;
-userPrompt += `Human-introduced hypotheses are canonical dramatic drivers and should be treated with particular weight and fidelity; both human and AI hypotheses may be elaborated, tested, or complicated across stanzas and acts.`;
-    
-    userPrompt += `\n\n--- ARCHIVAL PIPELINE MEMORY FIELDS ---\n`;
-    userPrompt += `TARGET SEGMENT DOMAIN: ${domain.toUpperCase()}\n`;
-    userPrompt += `CURRENT SEQUENCE DEPTH FLAG: Act ${nextActNumber - 1} recorded inside current map structure.\n`;
-
-    userPrompt += `\n\nCRITICAL MUSIC COMPOSITION REQUIREMENTS:\nInside your '## MUSIC PROMPT' section under the 'LYRICS:' field, you MUST segment the words explicitly using uppercase song arrangement brackets, such as: '[Verse 1]', '[Chorus]', '[Verse 2]', '[Chorus]', and '[Outro]'. If these are missing or stripped out, the generation engine outputs an instrumental. Lyrical words must follow the tag blocks on a new line immediately.`;
-
-    if (selPrompt.artisticMode === 'dramatic') {
-        userPrompt += `\n\nCRITICAL OUTPUT ENFORCEMENT RULES:\nYou must return your primary creative theater work explicitly using this block structure layout header:\n## DRAMATIC VERSE (Act ${nextActNumber})\nEnsure dialogue uses named uppercase roles and complies with metrical rhymed frameworks.`;
-    } else {
-        userPrompt += `\n\nCRITICAL OUTPUT ENFORCEMENT RULES:\nReturn your creative piece behind a transparent '## VERSE' block string markup loop.`;
-    }
-
-    userPrompt += `\n\n## FORECAST\nProvide concise projections matching the context variables.\n\n## HYPOTHESIS\nProvide a unique falsifiable assertion statement based on recurring motifs here.\n\n## IMAGE PROMPT\nVisual parameters layout.\n\n## T2V PROMPT\nMotion mapping tracking parameters.`;
+// Append structural constraints to prevent perfunctory output drops
+userPrompt += `\n\n--- MANDATORY DRAMATIC PRODUCTION REQUIREMENTS ---\n`;
+userPrompt += `- Write EXTENDED, substantial verse structured explicitly into separated stanzas.\n`;
+userPrompt += `- Infuse the text with sharp originality, observational wit, and oracular Grok-style humor.\n`;
+userPrompt += `- Target an active narrative depth of 8–16 stanzas minimum to flesh out the scene.\n`;
+userPrompt += `- The CHORUS/refrain section must directly articulate the collision of your active hypotheses and the underlying forecast.\n`;
 
     // Process single-pass text request
     const generated = await generateText(selPrompt.system, userPrompt);
@@ -555,15 +580,6 @@ userPrompt += `Human-introduced hypotheses are canonical dramatic drivers and sh
 
     // Commit memory mappings
     await updateUnifiedDomainModel(domain, folder, nextActNumber, parsed);
-
-    const mergedHypotheses = await loadAndMergeHypotheses(domain, cumulativeModel);
-
-// Build a clean block for the prompt
-let hypothesisBlock = `--- HYPOTHESES (Human = canonical dramatic drivers; AI = open to elaboration) ---\n`;
-mergedHypotheses.forEach((h, idx) => {
-  const marker = h.source === "human" ? "HUMAN (edit freely in JSON)" : "AI (elaborate freely)";
-  hypothesisBlock += `${idx + 1}. [${marker}] ${h.claim}\n`;
-});
 
     // 1. Image Generation Pass
     let imgRes = useGrokImagine ? await runGrokImagine(parsed.image, slugify(title)) : (useGeminiImage ? await runGeminiImage(parsed.image, slugify(title)) : await runImageGen(parsed.image));
