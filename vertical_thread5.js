@@ -416,10 +416,22 @@ async function runAudioGen(tags, lyrics, slug, duration) {
 // ==========================================
 
 async function updateUnifiedDomainModel(domain, nextActNumber, folder, parsedOutput, activeHypotheses) {
-    // ... your existing file reading logic ...
-    
+    // 1. Initialize the base structure outside the try block to establish scope
+    let model = { dramaticPlays: {}, predictionHistory: [] };
+
+    try {
+        const existing = await fs.readFile(MODEL_PATH, 'utf8');
+        model = JSON.parse(existing);
+    } catch (e) {
+        // If the file doesn't exist yet, we proceed with our initialized base structure
+    }
+
+    // 2. Defensive structural verification to ensure arrays/objects exist on the parsed JSON
+    if (!model.dramaticPlays) model.dramaticPlays = {};
+    if (!model.predictionHistory) model.predictionHistory = [];
     if (!model.dramaticPlays[domain]) model.dramaticPlays[domain] = [];
 
+    // 3. Append execution ledger data to track context evolution
     model.dramaticPlays[domain].push({
         thread: folder,
         act: nextActNumber,
@@ -428,22 +440,22 @@ async function updateUnifiedDomainModel(domain, nextActNumber, folder, parsedOut
         activeHypothesesSnapshot: (activeHypotheses || []).map(h => ({
             source: h.source,
             id: h.id || "exploratory",
-            summary: h.claim.substring(0, 120)
+            summary: h.claim ? h.claim.substring(0, 120) : ""
         }))
     });
 
-
-    // Cycle new AI discoveries into rolling historical memory for prompt loops
-    if (parsedOutput.hypothesis_elaboration_ai || parsedOutput.hypothesis) {
-        if (!model.predictionHistory) model.predictionHistory = [];
+    // 4. Cycle new AI discoveries into rolling historical memory for prompt loops
+    const prospectiveHypothesis = parsedOutput.hypothesis_elaboration_ai || parsedOutput.hypothesis;
+    if (prospectiveHypothesis && prospectiveHypothesis.trim().length > 0) {
         model.predictionHistory.push({
             timestamp: new Date().toISOString(),
             actRef: nextActNumber,
             domain: domain,
-            hypothesis: parsedOutput.hypothesis_elaboration_ai || parsedOutput.hypothesis
+            hypothesis: prospectiveHypothesis.trim()
         });
     }
 
+    // 5. Commit serialized state back to disk
     await fs.writeFile(MODEL_PATH, JSON.stringify(model, null, 2), 'utf8');
     console.log(`💾 Ledger state tracking committed to ${MODEL_PATH}`);
 }
