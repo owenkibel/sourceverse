@@ -729,20 +729,10 @@ const response = await fetch('https://api.x.ai/v1/chat/completions', {
         throw new Error(`Grok API error: ${response.status} ${errorText}`);
       }
 
-      // const apiData = await response.json();
-      // let markdownBody = apiData.choices[0].message.content.trim();
-
-const apiData = await response.json();
+      const apiData = await response.json();
       let markdownBody = apiData.choices[0].message.content.trim();
 
-      // 1. Convert Grok's trailing double spaces into explicit HTML line breaks
-      markdownBody = markdownBody.replace(/  \n/g, '<br />\n');
 
-      // 2. Clear out any trailing spaces on standard lines without touching the breaks
-      markdownBody = markdownBody.replace(/(?<! ) {3,}$/gm, '');
-
-      // 3. Normalize excessive blank lines safely without flattening paragraphs
-      markdownBody = markdownBody.replace(/\n{3,}/g, '\n\n');
       
 // Previous
 

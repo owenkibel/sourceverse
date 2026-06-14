@@ -466,29 +466,40 @@ async function updateUnifiedDomainModel(domain, nextActNumber, folder, parsedOut
  */
 async function loadAndMergeHypotheses(domain, cumulativeModel) {
     let humanHyps = [];
+    const HYPOTHESES_DIR = path.join(__dirname, 'human-hypotheses');
+
     try {
-        const exists = await fs.access(HUMAN_HYPOTHESES_FILE).then(() => true).catch(() => false);
-        if (exists) {
-            const fileContent = await fs.readFile(HUMAN_HYPOTHESES_FILE, 'utf8');
-            const data = JSON.parse(fileContent);
-            const rawArray = data.hypotheses || data || [];
+        const dirExists = await fs.access(HYPOTHESES_DIR).then(() => true).catch(() => false);
+        if (dirExists) {
+            const files = (await fs.readdir(HYPOTHESES_DIR)).filter(f => f.endsWith('.json'));
             
-            // Isolate items mapping to the active execution domain context
-            humanHyps = rawArray.filter(h => 
-                !h.domain || h.domain.toLowerCase() === domain.toLowerCase()
-            );
+            for (const file of files) {
+                try {
+                    const content = await fs.readFile(path.join(HYPOTHESES_DIR, file), 'utf8');
+                    const data = JSON.parse(content);
+                    const rawArray = Array.isArray(data) ? data : (data.hypotheses || [data]);
+                    
+                    // Filter and accumulate items matching the active domain
+                    const filtered = rawArray.filter(h => 
+                        !h.domain || h.domain.toLowerCase() === domain.toLowerCase()
+                    );
+                    humanHyps.push(...filtered);
+                } catch (err) {
+                    console.warn(`⚠️ Failed parsing hypothesis file: ${file}`);
+                }
+            }
         }
     } catch (error) {
-        console.log("   ℹ️ Base memory optimization: human-hypotheses.json skipped or unreadable.");
+        console.log("   ℹ️ Multi-hypothesis directory bypass: defaulting to AI historical memory entries.");
     }
 
-    // Isolate historic AI hypotheses from your existing cumulative predictionHistory tracking block
+    // Pull historic AI observations from predictionHistory registry
     const aiHyps = (cumulativeModel.predictionHistory || [])
         .filter(p => p.hypothesis && p.hypothesis.trim().length > 25)
-        .slice(-4) // Grab the latest rolling observations
+        .slice(-4)
         .map((p, i) => ({
             id: `ai-found-${Date.now()}-${i}`,
-            claim: p.hypothesis.trim().substring(0, 600),
+            claim: p.hypothesis.trim().substring(0, 550),
             source: "ai"
         }));
 
@@ -532,23 +543,60 @@ async function main() {
         richContextBlock += `\n--- SOURCE ${idx + 1} ---\nURL: ${src.url}\nDATA ANALYSIS:\n${src.rich_text || src.description_short}\n`;
     });
 
+    // let domain = "technological";
+    // const lowerSummary = richContextBlock.toLowerCase();
+    // if (lowerSummary.includes("quantum") || lowerSummary.includes("galaxy") || lowerSummary.includes("science")) domain = "scientific";
+    // else if (lowerSummary.includes("art") || lowerSummary.includes("music") || lowerSummary.includes("baroque")) domain = "artistic";
+    // else if (lowerSummary.includes("trump") || lowerSummary.includes("election") || lowerSummary.includes("political")) domain = "political";
+
+    // let cumulativeModel = { dramaticPlays: {} };
+    // try {
+    //     cumulativeModel = JSON.parse(await fs.readFile(MODEL_PATH, 'utf8'));
+    // } catch(e) {}
+
+// === HARDENED DOMAIN DETECTION MATRIX (Regex Word Boundaries) ===
     let domain = "technological";
-    const lowerSummary = richContextBlock.toLowerCase();
-    if (lowerSummary.includes("quantum") || lowerSummary.includes("galaxy") || lowerSummary.includes("science")) domain = "scientific";
-    else if (lowerSummary.includes("art") || lowerSummary.includes("music") || lowerSummary.includes("baroque")) domain = "artistic";
-    else if (lowerSummary.includes("trump") || lowerSummary.includes("election") || lowerSummary.includes("political")) domain = "political";
-
-    let cumulativeModel = { dramaticPlays: {} };
-    try {
-        cumulativeModel = JSON.parse(await fs.readFile(MODEL_PATH, 'utf8'));
-    } catch(e) {}
     
-const nextActNumber = (cumulativeModel.dramaticPlays?.[domain]?.length || 0) + 1;
+    // 1. Clean out known recurring site navigation boilerplate to prevent false science positives
+    const cleanContextText = richContextBlock
+        .replace(/alexa science space environment wildlife/gi, '')
+        .replace(/sections? titles|nav-menu|sign in/gi, '');
 
-// ====================================================================
-// V5 INTEGRATION POINT: ASYNCHRONOUS HYPOTHESIS RESOLUTION
-// ====================================================================
-const mergedHypotheses = await loadAndMergeHypotheses(domain, cumulativeModel);
+    // 2. High-Priority Political Evaluator (Catches ideological, media, and macroeconomic debates)
+    if (/\b(trump|election|political|politics|senate|midterm|democrat|republican|vandal|aoc|musk|elon|capitalism|capitalist|journalism|journalist|newsroom|media|scandal|huckabee|free beacon|national review|wsj|opinion)\b/i.test(cleanContextText)) {
+      domain = "political";
+    } 
+    // 3. Isolated Scientific Evaluator (Strict word boundaries prevent boilerplate bleeding)
+    else if (/\b(quantum|galaxy|science|physics|nuclear|atoms|ion|thorium|lattice|clock|cosmology)\b/i.test(cleanContextText)) {
+      domain = "scientific";
+    } 
+    // 4. Isolated Artistic Evaluator (Prevents 'art' from matching 'article', 'party', or 'artificial')
+    else if (/\b(art|music|baroque|bach|harpsichord|cantata|aria|theatrical|canvas|poem|poetry|sonnet)\b/i.test(cleanContextText)) {
+      domain = "artistic";
+    }
+
+    console.log(`📡 Domain Classification Segment settled: [${domain.toUpperCase()}]`);
+
+    let cumulativeModel = { dramaticPlays: {}, predictionHistory: [] };
+    try {
+      cumulativeModel = JSON.parse(await fs.readFile(MODEL_PATH, 'utf8'));
+    } catch(e) {}
+
+    const nextActNumber = (cumulativeModel.dramaticPlays?.[domain]?.length || 0) + 1;
+
+    // Load and merge human + AI hypotheses for this domain
+    const mergedHypotheses = await loadAndMergeHypotheses(domain, cumulativeModel);
+
+    // === EXPLICIT AUDIT LOGGER FOR THE LIFE OF HUMAN IDEAS ===
+    const activeHumanClaims = mergedHypotheses.filter(h => h.source === "human");
+    if (activeHumanClaims.length > 0) {
+      console.log(`🔥 [CRITICAL] Canonical Human Hypothesis Active for Act ${nextActNumber}!`);
+      activeHumanClaims.forEach(h => {
+        console.log(`   📜 ID: [${h.id}] | Active Context: "${h.claim.substring(0, 95)}..."`);
+      });
+    } else {
+      console.log(`ℹ️ No human hypotheses registered for the [${domain}] domain this run.`);
+    }
 
 let hypothesisBlock = `### RUNTIME HYPOTHESES IN PLAY\n`;
 if (mergedHypotheses.length === 0) {
