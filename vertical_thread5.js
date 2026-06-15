@@ -610,42 +610,28 @@ if (mergedHypotheses.length === 0) {
 
 
 // ====================================================================
-    // DEFENSIVE PROMPT COMPILATION MATRIX (Prevents Silent Token Omissions)
+    // STATE ISOLATION LAYER (Prevents Token Mutation Across Thread Loops)
     // ====================================================================
     let userPrompt = selPrompt.chat;
 
-    // 1. Process explicit variable swaps
+    // Use global regex patterns to guarantee clean substitution of all token instances
+    userPrompt = userPrompt.replace(/\[\[chunk\]\]/g, richContextBlock);
     userPrompt = userPrompt.replace(/\[\[ace_styles\]\]/g, APPROVED_STYLES_STRING);
     userPrompt = userPrompt.replace(/\[\[act_number\]\]/g, nextActNumber.toString());
 
-    // 2. Map hypotheses block safely
+    // Inject active hypothesis tracking matrix
     if (userPrompt.includes('[[hypotheses_block]]')) {
       userPrompt = userPrompt.replace(/\[\[hypotheses_block\]\]/g, hypothesisBlock);
-    }
-
-    // 3. Track and evaluate context ingestion token
-    let chunkWasSwapped = false;
-    if (userPrompt.includes('[[chunk]]')) {
-      userPrompt = userPrompt.replace(/\[\[chunk\]\]/g, richContextBlock);
-      chunkWasSwapped = true;
-    }
-
-    // 4. Force append hypotheses list if no explicit token was found in the schema
-    if (!selPrompt.chat.includes('[[hypotheses_block]]')) {
+    } else {
       userPrompt += `\n\n${hypothesisBlock}`;
     }
 
-    // 5. Append structural formatting guardrails
+    // Append strict runtime constraints to enforce depth and ensure long-form output
     userPrompt += `\n\n--- MANDATORY DRAMATIC PRODUCTION REQUIREMENTS ---\n`;
     userPrompt += `- Write EXTENDED, substantial verse structured explicitly into separated stanzas.\n`;
     userPrompt += `- Infuse the text with sharp originality, observational wit, and oracular Grok-style humor.\n`;
     userPrompt += `- Target an active narrative depth of 8–16 stanzas minimum to flesh out the scene.\n`;
     userPrompt += `- The CHORUS/refrain section must directly articulate the collision of your active hypotheses and the underlying forecast.\n`;
-
-    // 6. CRITICAL SAFETY FALLBACK: Append data stream if the token was missing from template
-    if (!chunkWasSwapped) {
-      userPrompt += `\n\n--- INGESTED INPUT STREAM DATA ---\n${richContextBlock}`;
-    }
 
     // Execute the clean, isolated text generation handshake
     const rawOutput = await generateText(selPrompt.system, userPrompt);
