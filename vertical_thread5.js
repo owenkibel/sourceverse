@@ -608,31 +608,48 @@ if (mergedHypotheses.length === 0) {
     });
 }
 
-// Map parameters inside your structural text template
-let userPrompt = selPrompt.chat
-    .replace('[[chunk]]', richContextBlock)
-    .replace('[[ace_styles]]', APPROVED_STYLES_STRING)
-    .replace('[[act_number]]', nextActNumber.toString());
 
-// Safely substitute the hypotheses block if the key exists, otherwise append it
-if (userPrompt.includes('[[hypotheses_block]]')) {
-    userPrompt = userPrompt.replace('[[hypotheses_block]]', hypothesisBlock);
-} else {
-    userPrompt += `\n\n${hypothesisBlock}`;
-}
+// ====================================================================
+    // DEFENSIVE PROMPT COMPILATION MATRIX (Prevents Silent Token Omissions)
+    // ====================================================================
+    let userPrompt = selPrompt.chat;
 
-// Append structural constraints to prevent perfunctory output drops
-userPrompt += `\n\n--- MANDATORY DRAMATIC PRODUCTION REQUIREMENTS ---\n`;
-userPrompt += `- Write EXTENDED, substantial verse structured explicitly into separated stanzas.\n`;
-userPrompt += `- Infuse the text with sharp originality, observational wit, and oracular Grok-style humor.\n`;
-userPrompt += `- Target an active narrative depth of 8–16 stanzas minimum to flesh out the scene.\n`;
-userPrompt += `- The CHORUS/refrain section must directly articulate the collision of your active hypotheses and the underlying forecast.\n`;
+    // 1. Process explicit variable swaps
+    userPrompt = userPrompt.replace(/\[\[ace_styles\]\]/g, APPROVED_STYLES_STRING);
+    userPrompt = userPrompt.replace(/\[\[act_number\]\]/g, nextActNumber.toString());
 
-    // Process single-pass text request
-    const generated = await generateText(selPrompt.system, userPrompt);
-    if (!generated) continue;
+    // 2. Map hypotheses block safely
+    if (userPrompt.includes('[[hypotheses_block]]')) {
+      userPrompt = userPrompt.replace(/\[\[hypotheses_block\]\]/g, hypothesisBlock);
+    }
 
-    const parsed = parseUnifiedOutput(generated);
+    // 3. Track and evaluate context ingestion token
+    let chunkWasSwapped = false;
+    if (userPrompt.includes('[[chunk]]')) {
+      userPrompt = userPrompt.replace(/\[\[chunk\]\]/g, richContextBlock);
+      chunkWasSwapped = true;
+    }
+
+    // 4. Force append hypotheses list if no explicit token was found in the schema
+    if (!selPrompt.chat.includes('[[hypotheses_block]]')) {
+      userPrompt += `\n\n${hypothesisBlock}`;
+    }
+
+    // 5. Append structural formatting guardrails
+    userPrompt += `\n\n--- MANDATORY DRAMATIC PRODUCTION REQUIREMENTS ---\n`;
+    userPrompt += `- Write EXTENDED, substantial verse structured explicitly into separated stanzas.\n`;
+    userPrompt += `- Infuse the text with sharp originality, observational wit, and oracular Grok-style humor.\n`;
+    userPrompt += `- Target an active narrative depth of 8–16 stanzas minimum to flesh out the scene.\n`;
+    userPrompt += `- The CHORUS/refrain section must directly articulate the collision of your active hypotheses and the underlying forecast.\n`;
+
+    // 6. CRITICAL SAFETY FALLBACK: Append data stream if the token was missing from template
+    if (!chunkWasSwapped) {
+      userPrompt += `\n\n--- INGESTED INPUT STREAM DATA ---\n${richContextBlock}`;
+    }
+
+    // Execute the clean, isolated text generation handshake
+    const rawOutput = await generateText(selPrompt.system, userPrompt);
+    const parsed = parseUnifiedOutput(rawOutput);
 
     // Commit memory mappings
 await updateUnifiedDomainModel(domain, nextActNumber, folder, parsed, mergedHypotheses);
