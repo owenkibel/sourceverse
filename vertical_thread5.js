@@ -469,28 +469,29 @@ async function loadAndMergeHypotheses(domain, cumulativeModel) {
     const HYPOTHESES_DIR = path.join(__dirname, 'human-hypotheses');
 
     try {
+        // Path A: Check for individual files inside a directory structure
         const dirExists = await fs.access(HYPOTHESES_DIR).then(() => true).catch(() => false);
         if (dirExists) {
             const files = (await fs.readdir(HYPOTHESES_DIR)).filter(f => f.endsWith('.json'));
-            
             for (const file of files) {
                 try {
                     const content = await fs.readFile(path.join(HYPOTHESES_DIR, file), 'utf8');
                     const data = JSON.parse(content);
                     const rawArray = Array.isArray(data) ? data : (data.hypotheses || [data]);
-                    
-                    // Filter and accumulate items matching the active domain
-                    const filtered = rawArray.filter(h => 
-                        !h.domain || h.domain.toLowerCase() === domain.toLowerCase()
-                    );
+                    const filtered = rawArray.filter(h => !h.domain || h.domain.toLowerCase() === domain.toLowerCase());
                     humanHyps.push(...filtered);
-                } catch (err) {
-                    console.warn(`⚠️ Failed parsing hypothesis file: ${file}`);
-                }
+                } catch (err) {}
             }
+        } 
+        // Path B: Fallback to reading a unified human-hypotheses.json file if directory is missing
+        else if (await fs.access(HUMAN_HYPOTHESES_FILE).then(() => true).catch(() => false)) {
+            const content = await fs.readFile(HUMAN_HYPOTHESES_FILE, 'utf8');
+            const data = JSON.parse(content);
+            const rawArray = Array.isArray(data) ? data : (data.hypotheses || [data]);
+            humanHyps = rawArray.filter(h => !h.domain || h.domain.toLowerCase() === domain.toLowerCase());
         }
     } catch (error) {
-        console.log("   ℹ️ Multi-hypothesis directory bypass: defaulting to AI historical memory entries.");
+        console.log("   ℹ️ Hypothesis parsing bypass: defaulting to AI memory logs.");
     }
 
     // Pull historic AI observations from predictionHistory registry
@@ -633,12 +634,34 @@ if (mergedHypotheses.length === 0) {
     userPrompt += `- Target an active narrative depth of 8–16 stanzas minimum to flesh out the scene.\n`;
     userPrompt += `- The CHORUS/refrain section must directly articulate the collision of your active hypotheses and the underlying forecast.\n`;
 
-    // Execute the clean, isolated text generation handshake
+// Execute the clean, isolated text generation handshake
     const rawOutput = await generateText(selPrompt.system, userPrompt);
     const parsed = parseUnifiedOutput(rawOutput);
 
+    // ====================================================================
+    // 🛠️ RELOCATED: DEFENSIVE MUSIC TAG FILTER (Now inside Loop Scope)
+    // ====================================================================
+    let cleanTagsArray = (parsed.musicTags || "")
+        .split(',')
+        .map(t => t.trim())
+        .filter(t => {
+            if (!t) return false;
+            // Explicitly allow core vocal routing profiles
+            const isVocalProfile = /\b(vocals|baritone|tenor|soprano|duet|singer|voice)\b/i.test(t);
+            // Verify against the hardcoded ComfyUI whitelist array
+            const isValidStyle = RAW_ACE_STYLES.some(style => style.toLowerCase() === t.toLowerCase());
+            return isVocalProfile || isValidStyle;
+        });
+
+    // Fallback to a safe production default if all generated tags were rejected
+    if (cleanTagsArray.length === 0) {
+        cleanTagsArray = ["Classical", "Instrumental"];
+    }
+    const safeMusicTagsString = cleanTagsArray.join(', ');
+    console.log(`🎵 Sanitized Music Tags submitted to node: "${safeMusicTagsString}"`);
+
     // Commit memory mappings
-await updateUnifiedDomainModel(domain, nextActNumber, folder, parsed, mergedHypotheses);
+    await updateUnifiedDomainModel(domain, nextActNumber, folder, parsed, mergedHypotheses);
 
     // 1. Image Generation Pass
     let imgRes = useGrokImagine ? await runGrokImagine(parsed.image, slugify(title)) : (useGeminiImage ? await runGeminiImage(parsed.image, slugify(title)) : await runImageGen(parsed.image));
@@ -652,9 +675,10 @@ await updateUnifiedDomainModel(domain, nextActNumber, folder, parsed, mergedHypo
     const ttsRes = await runPoetryTTS(parsed.verse);
     await freeComfyVRAM();
 
-    // 4. Background Soundtrack Generation Pass (ACE-Step / Heartmula)
-    const finalDuration = parseInt(parsed.musicDuration, 10) || generationDuration;
-    let audioRes = useGeminiAudio ? await runGeminiAudio(parsed.musicTags, parsed.musicLyrics, slugify(title)) : (useHeartmula ? await runAudioGen(parsed.musicTags, parsed.musicLyrics, slugify(title), 96) : await runAceStepGen(parsed.musicTags, parsed.musicLyrics, slugify(title), finalDuration));
+const finalDuration = parseInt(parsed.musicDuration, 10) || generationDuration;
+    let audioRes = useGeminiAudio 
+        ? await runGeminiAudio(safeMusicTagsString, parsed.musicLyrics, slugify(title)) 
+        : await runAceStepGen(safeMusicTagsString, parsed.musicLyrics, slugify(title), finalDuration);
     if (!useGeminiAudio) await freeComfyVRAM();
 
     // 5. MP4 Video Stitching Pipeline (Combines Image and Audio for Twitter compatibility)
