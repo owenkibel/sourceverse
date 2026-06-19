@@ -173,7 +173,25 @@ async function main() {
 
         const seed = Math.floor(Math.random() * 1000000000);
 
-        const selectedVoice = CLASSICAL_VOICES[Math.floor(Math.random() * CLASSICAL_VOICES.length)];
+        // const selectedVoice = CLASSICAL_VOICES[Math.floor(Math.random() * CLASSICAL_VOICES.length)];
+// CHANGE THIS OLD LINE:
+// const selectedVoice = CLASSICAL_VOICES[Math.floor(Math.random() * CLASSICAL_VOICES.length)];
+
+// TO THIS SMART SELECTOR:
+let selectedVoice = CLASSICAL_VOICES[1]; // Default to Mezzo-Soprano fallback
+
+const lowerTags = tags.toLowerCase();
+if (lowerTags.includes('baritone') || (lowerTags.includes('male') && lowerTags.includes('bass'))) {
+    selectedVoice = CLASSICAL_VOICES[0]; // Bass-Baritone
+} else if (lowerTags.includes('tenor') || lowerTags.includes('male')) {
+    selectedVoice = CLASSICAL_VOICES[2]; // Lyric Tenor
+} else if (lowerTags.includes('soprano') && lowerTags.includes('dramatic')) {
+    selectedVoice = CLASSICAL_VOICES[3]; // Dramatic Soprano
+} else if (lowerTags.includes('soprano') || lowerTags.includes('female')) {
+    selectedVoice = CLASSICAL_VOICES[1]; // Mezzo-Soprano
+}
+
+
         console.log(`🎭 Selected Vocal Profile: ${selectedVoice.name} -> Routing as [${selectedVoice.gender}]`);
 
         const payload = buildPayload(tags, lyrics, seed, duration, selectedVoice);

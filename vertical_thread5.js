@@ -657,6 +657,10 @@ if (mergedHypotheses.length === 0) {
     if (cleanTagsArray.length === 0) {
         cleanTagsArray = ["Classical", "Instrumental"];
     }
+
+    // SAFEGUARD: Cap the tags at 5 maximum before string conversion to protect ComfyUI VRAM/Python loaders
+    cleanTagsArray = cleanTagsArray.slice(0, 5);
+
     const safeMusicTagsString = cleanTagsArray.join(', ');
     console.log(`🎵 Sanitized Music Tags submitted to node: "${safeMusicTagsString}"`);
 

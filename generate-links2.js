@@ -393,20 +393,15 @@ async function processGroupToFolder(groupContent, folderName, enrichedData) {
   const mainUrls = [];
   const itemTexts = [];
 
-  for (const item of items) {
-    const linkMatch = item.match(/\[\s*([^\[\]]+?)\s*\]\((https?:\/\/[^\)]+)\)/);
+for (const item of items) {
+    const linkMatch = item.match(/\[\s*([^\[\]]+?)\s*\]\((https?:\/\/[^\s\)]+)\)/);
     if (!linkMatch) continue;
 
     const linkTitle = linkMatch[1].trim();
     const url = linkMatch[2].trim();
 
-    let description = '';
-    if (item.includes(')**')) {
-      description = item.split(')**')[1] || '';
-    } else if (item.includes(']:')) {
-      description = item.split(']:')[1] || '';
-    }
-    description = description.replace(/^[:\s]+/, '').trim();
+    // Dynamically look for the description text by cleaning out the markdown link syntax prefix
+    let description = item.replace(/[-\*\s]*\[[^\]]+\]\([^\)]+\)[:\s]*/g, '').trim();
 
     const cleanText = description || linkTitle;
     if (cleanText) {
@@ -738,26 +733,33 @@ const response = await fetch('https://api.x.ai/v1/chat/completions', {
 
       markdownBody = markdownBody.replace(/[ \t]+$/gm, '').replace(/\s{2,}\n/g, '\n');
 
-  // === FORCE THUMBNAIL INSERTION + ULTRA-STRICT MATCHING (post-Grok) ===
-markdownBody = markdownBody.replace(
-  /-\s*\*? \*?\[([^\]]+?)\]\((https?:\/\/[^\)]+)\)\*? \*?\s*:\s*(.+?)(?=\n\s*-\s*\*? \*?\[|\n\s*##|\Z)/gs,
-  (match, title, url, desc) => {
-    const source = findBestMatchForUrl(url, enriched);
+// === FORCE THUMBNAIL INSERTION + DE-DUPLICATION SAFEGUARD ===
+      markdownBody = markdownBody.split('\n').map((line, idx, arr) => {
+        const trimmed = line.trim();
+        
+        if ((trimmed.startsWith('- ') || trimmed.startsWith('* ')) && trimmed.includes('[') && trimmed.includes('](')) {
+          const urlMatch = trimmed.match(/\]\((https?:\/\/[^\s\)]+)/);
+          if (urlMatch) {
+            const currentUrl = urlMatch[1].trim();
+            const source = findBestMatchForUrl(currentUrl, enriched);
+            
+            // Look ahead to the next line to see if an image is already embedded
+            const nextLine = arr[idx + 1] ? arr[idx + 1].trim() : '';
+            if (nextLine.startsWith('![thumbnail]')) {
+              return line; // Skip adding it again if it already exists!
+            }
 
-    const displayTitle = (source.og_title && source.og_title.length > 8) 
-      ? source.og_title 
-      : title;
-
-    let bullet = `- **[${displayTitle}](${url})**: ${desc.trim()}`;
-
-    if (source.og_image && source.og_image.startsWith('http')) {
-      bullet += `\n  ![thumbnail](${source.og_image})`;
-    } else {
-      bullet += `\n  ![thumbnail](https://via.placeholder.com/400x225/222222/FFFFFF?text=No+Image)`;
-    }
-    return bullet + '\n\n';
-  }
-);
+            let updatedLine = line;
+            if (source.og_image && source.og_image.startsWith('http')) {
+              updatedLine += `\n  ![thumbnail](${source.og_image})`;
+            } else {
+              updatedLine += `\n  ![thumbnail](https://via.placeholder.com/400x225/222222/FFFFFF?text=No+Image)`;
+            }
+            return updatedLine;
+          }
+        }
+        return line;
+      }).join('\n');
       
       // === SIMPLIFIED EXTRACTION: include EVERY ## section (including Miscellaneous) ===
       let cleanedBody = markdownBody
@@ -815,6 +817,24 @@ tags:
       }
       summaryFooter += `\n(Images may be omitted when enrichment fails or domains are skipped.)\n`;
       // ===========================================
+
+// === POETRY LINE SANITIZATION SWEEP ===
+      // Finds markdown italic blocks (lines starting with *) and ensures they end with exactly two spaces
+      let lines = markdownBody.split('\n');
+      let insidePoem = false;
+      
+      markdownBody = lines.map(line => {
+        if (line.trim() === '*') {
+          insidePoem = !insidePoem;
+          return line;
+        }
+        if (insidePoem && line.trim().length > 0 && !line.trim().startsWith('*')) {
+          // Trim existing spaces, then append exactly two spaces for a crisp markdown break
+          return line.trimEnd() + '  ';
+        }
+        return line;
+      }).join('\n');
+
 
       const fullMarkdown = frontMatter + '\n' + markdownBody + debugSection + summaryFooter;      
 
