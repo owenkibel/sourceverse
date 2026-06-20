@@ -399,3 +399,13 @@ p > code, li > code {
 :root.dark .token.string   { color: #e6db74; }
 :root.dark .token.function { color: #a6e22e; }
 :root.dark .token.number   { color: #ae81ff; }
+
+
+.poetry-verse {
+  max-height: 450px;
+  overflow-y: auto;
+  padding-right: 15px;
+  border-left: 3px solid var(--accent-color, #444);
+  margin-bottom: 20px;
+  scrollbar-width: thin;
+}

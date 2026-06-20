@@ -40,9 +40,22 @@ const EXCLUDED_STYLES = [
   "Sertanejo Universitário", "Turreo RKT", "Vallenato", "Xote", "Zamba", "Zouk", "Zouk Bass"
 ];
 
-const APPROVED_STYLES_STRING = RAW_ACE_STYLES
-    .filter(style => !EXCLUDED_STYLES.includes(style))
-    .join(', ');
+// const APPROVED_STYLES_STRING = RAW_ACE_STYLES
+//     .filter(style => !EXCLUDED_STYLES.includes(style))
+//     .join(', ');
+
+// REPLACE WITH THIS:
+function getShuffledAceStyles() {
+  const filtered = RAW_ACE_STYLES.filter(style => !EXCLUDED_STYLES.includes(style));
+  
+  // High-uniformity Fisher-Yates shuffle to completely break primacy bias
+  for (let i = filtered.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [filtered[i], filtered[j]] = [filtered[j], filtered[i]];
+  }
+  
+  return filtered.join(', ');
+}
 
 // --- CLI FLAGS ---
 const args = process.argv.slice(2);
@@ -617,7 +630,10 @@ if (mergedHypotheses.length === 0) {
 
     // Use global regex patterns to guarantee clean substitution of all token instances
     userPrompt = userPrompt.replace(/\[\[chunk\]\]/g, richContextBlock);
-    userPrompt = userPrompt.replace(/\[\[ace_styles\]\]/g, APPROVED_STYLES_STRING);
+    // userPrompt = userPrompt.replace(/\[\[ace_styles\]\]/g, APPROVED_STYLES_STRING);
+    // REPLACE WITH THIS:
+const dynamicStylesString = getShuffledAceStyles();
+userPrompt = userPrompt.replace(/\[\[ace_styles\]\]/g, dynamicStylesString);
     userPrompt = userPrompt.replace(/\[\[act_number\]\]/g, nextActNumber.toString());
 
     // Inject active hypothesis tracking matrix
