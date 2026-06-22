@@ -1,56 +1,134 @@
 ---
-import BaseHead from '../components/BaseHead.astro';
-import Footer from '../components/Footer.astro';
-import Header from '../components/Header.astro';
-import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+// site/src/pages/index.astro
 
-// site/src/pages/index.astro (or your blog roll page)
-import { getCollection } from 'astro:content';
-import { getSortedPosts } from '../lib/sortPosts';
+// Route queries directly through the symlink inside the source tree
+const matches = import.meta.glob('../content/blog/*.md', { eager: true });
+const allPosts = Object.values(matches);
 
-const allPosts = await getCollection('blog');
-const sortedPosts = getSortedPosts(allPosts);
+// Unified reverse-chronological sort
+const sortedPosts = allPosts.sort((a, b) => {
+  const dateA = a.frontmatter.date ? Date.parse(a.frontmatter.date) : 0;
+  const dateB = b.frontmatter.date ? Date.parse(b.frontmatter.date) : 0;
+  
+  const validA = isNaN(dateA) ? 0 : dateA;
+  const validB = isNaN(dateB) ? 0 : dateB;
+
+  return validB - validA;
+});
 ---
 
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-	</head>
-	<body>
-		<Header />
-		<main>
-			<h1>🧑‍🚀 Hello, Astronaut!</h1>
-			<p>
-				Welcome to the official <a href="https://astro.build/">Astro</a> blog starter template. This template
-				serves as a lightweight, minimally-styled starting point for anyone looking to build a personal
-				website, blog, or portfolio with Astro.
-			</p>
-			<p>
-				This template comes with a few integrations already configured in your
-				<code>astro.config.mjs</code> file. You can customize your setup with
-				<a href="https://astro.build/integrations">Astro Integrations</a> to add tools like Tailwind,
-				React, or Vue to your project.
-			</p>
-			<p>Here are a few ideas on how to get started with the template:</p>
-			<ul>
-				<li>Edit this page in <code>src/pages/index.astro</code></li>
-				<li>Edit the site header items in <code>src/components/Header.astro</code></li>
-				<li>Add your name to the footer in <code>src/components/Footer.astro</code></li>
-				<li>Check out the included blog posts in <code>src/content/blog/</code></li>
-				<li>Customize the blog post page layout in <code>src/layouts/BlogPost.astro</code></li>
-			</ul>
-			<p>
-				Have fun! If you get stuck, remember to
-				<a href="https://docs.astro.build/">read the docs</a>
-				or <a href="https://astro.build/chat">join us on Discord</a> to ask questions.
-			</p>
-			<p>
-				Looking for a blog template with a bit more personality? Check out
-				<a href="https://github.com/Charca/astro-blog-template">astro-blog-template</a>
-				by <a href="https://twitter.com/Charca">Maxi Ferreira</a>.
-			</p>
-		</main>
-		<Footer />
-	</body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sourceverse Hub — Index Ledger</title>
+  <style>
+    :root {
+      --bg-primary: #0a0a0c;
+      --bg-surface: #121215;
+      --border-color: #222227;
+      --text-main: #e2e2e9;
+      --text-muted: #787885;
+      --accent-cyan: #00f0ff;
+    }
+    body {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 24px;
+      background: var(--bg-primary);
+      color: var(--text-main);
+      line-height: 1.6;
+    }
+    header {
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 24px;
+      margin-bottom: 40px;
+    }
+    h1 { font-size: 1.75rem; margin: 0; font-weight: 700; color: #fff; letter-spacing: -0.05em; }
+    nav { margin-top: 12px; }
+    nav a { color: var(--accent-cyan); text-decoration: none; margin-right: 20px; font-size: 0.9rem; }
+    nav a:hover { text-decoration: underline; }
+    .post-card {
+      background: var(--bg-surface);
+      padding: 24px;
+      border-radius: 8px;
+      margin-bottom: 24px;
+      border: 1px solid var(--border-color);
+    }
+    .post-title { margin: 0 0 10px 0; font-size: 1.35rem; font-weight: 600; }
+    .post-title a { color: #fff; text-decoration: none; }
+    .post-title a:hover { color: var(--accent-cyan); }
+    .meta-strip {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+    .badge {
+      background: #1a1a24;
+      color: var(--accent-cyan);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      border: 1px solid #222235;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>SOURCEVERSE</h1>
+    <nav>
+      <a href="/">[ root_feed ]</a>
+      <a href="/blog">[ archive_ledger ]</a>
+    </nav>
+  </header>
+
+  <main>
+    {sortedPosts.length === 0 ? (
+      <p style="color: var(--text-muted);">// No active markdown transmutations detected in target ledger.</p>
+    ) : (
+      sortedPosts.map((post) => {
+        const fallbackTitle = post.frontmatter.title || "Untitled Fragment";
+        const displayDate = post.frontmatter.date 
+          ? new Date(post.frontmatter.date).toISOString().split('T')[0]
+          : "0000-00-00";
+
+const extractedSlug = post.file ? post.file.split('/').pop().replace('.md', '') : '';
+        
+        // ADD .toLowerCase() HERE to safely match Astro's route ledger
+        const derivedUrl = `/blog/${extractedSlug}`.toLowerCase();
+
+        const rawTags = post.frontmatter.tags || [];
+        const normalizedTags = Array.isArray(rawTags) ? rawTags : [rawTags];
+
+        return (
+          <div class="post-card">
+            <h2 class="post-title">
+              <a href={derivedUrl}>{fallbackTitle}</a>
+            </h2>
+            <div class="meta-strip">
+              <span>[{displayDate}]</span>
+              <span>•</span>
+              <span>operator: {post.frontmatter.author || "system"}</span>
+              
+              {post.frontmatter.source && (
+                <span class="badge">src:{post.frontmatter.source}</span>
+              )}
+              {post.frontmatter.domain && (
+                <span class="badge">domain:{post.frontmatter.domain}</span>
+              )}
+              {normalizedTags.map((tag) => (
+                <span class="badge">#{tag}</span>
+              ))}
+            </div>
+          </div>
+        );
+      })
+    )}
+  </main>
+</body>
 </html>

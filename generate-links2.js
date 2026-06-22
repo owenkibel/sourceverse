@@ -841,7 +841,11 @@ tags:
       await fs.mkdir(OUTPUT_DIR, { recursive: true });
 
       // 3. Collision-Proof Resolution Loop (Asynchronous)
-      let baseFilename = `links-${safeTimestamp}`;
+// Find this line at the bottom of generate-links2.js:
+      // let baseFilename = `links-${safeTimestamp}`;
+
+      // Replace it with this lowercased version:
+      let baseFilename = `links-${safeTimestamp}`.toLowerCase();
       let finalFilePath = path.join(OUTPUT_DIR, `${baseFilename}.md`);
       let counter = 1;
 

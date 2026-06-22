@@ -1,11 +1,14 @@
 ---
+// src/pages/blog/[...slug].astro
 import { type CollectionEntry, getCollection, render } from 'astro:content';
 import BlogPost from '../../layouts/BlogPost.astro';
 
 export async function getStaticPaths() {
 	const posts = await getCollection('blog');
 	return posts.map((post) => ({
-		params: { slug: post.id },
+		// FIX: Force the path parameter registration to be completely lowercase.
+		// This eliminates the 404 error caused by uppercase ISO timestamps (T and Z).
+		params: { slug: post.id.toLowerCase() },
 		props: post,
 	}));
 }
@@ -20,7 +23,7 @@ const safeData = {
 	description: post.data.description || "Generated Asset",
 	// Fall back to the current date if your front matter lacks a pubDate property
 	pubDate: post.data.pubDate || new Date(), 
-	heroImage: post.data.image, // Map your 'image' key directly to the theme's 'heroImage' slot
+	heroImage: post.data.image, // Retains your exact 'image' mapping to the theme's 'heroImage' slot
 };
 ---
 
