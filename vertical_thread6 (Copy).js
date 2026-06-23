@@ -842,30 +842,6 @@ Target Format Blueprint:
     if (imgRes.success) frontMatter.push(`image: "/images/${imgRes.filename}"`);
     if (vidRes.success) frontMatter.push(`video: "/images/${vidRes.filename}"`);
 
-// === HUMAN-READABLE IDEOGRAM PROMPT EXTRACTION ===
-    let displayImagePrompt = parsed.image || '_No image prompt generated._';
-
-    if (useIdeogram && parsed.image.trim().startsWith('{')) {
-      try {
-        const jsonPromptObj = JSON.parse(parsed.image.trim());
-        if (jsonPromptObj.high_level_description) {
-          // Pull the clean natural sentence structure out of the JSON envelope
-          displayImagePrompt = jsonPromptObj.high_level_description;
-          
-          // Optional: If you want to also list the specific element descriptions, append them:
-          if (jsonPromptObj.compositional_deconstruction?.elements?.length > 0) {
-            displayImagePrompt += "<br><br><strong>Compositional Elements:</strong><ul>" + 
-              jsonPromptObj.compositional_deconstruction.elements
-                .map(el => `<li><code>${el.type.toUpperCase()}</code>: ${el.desc || el.text || ''}</li>`)
-                .join('') + "</ul>";
-          }
-        }
-      } catch (e) {
-        console.warn("⚠️ Failed to parse image layout JSON for markdown display view, using raw string.");
-        displayImagePrompt = parsed.image;
-      }
-    }    
-
     const markdownPost = `---
 ${frontMatter.join('\n')}
 ---
@@ -913,7 +889,7 @@ ${imgRes.markdown || '_Visual anchor asset rendering unavailable._'}
 
 ##### Image Generation Prompt (Visual Engine)
 <blockquote>
-<strong>Target Prompt Parameters:</strong> ${displayImagePrompt}
+<strong>Target Prompt Parameters:</strong> ${useIdeogram ? (parsed.image.length > 150 ? 'Structured Bounding Box Coordinate Matrix Object [Applied Directly]' : parsed.image) : parsed.image || '_No image prompt generated._'}
 </blockquote>
 
 ---
