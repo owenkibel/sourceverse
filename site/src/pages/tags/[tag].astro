@@ -1,0 +1,45 @@
+---
+// site/src/pages/tags/[tag].astro
+const allPosts = Object.values(import.meta.glob('../../content/blog/*.md', { eager: true }));
+
+export async function getStaticPaths() {
+  const allPosts = Object.values(import.meta.glob('../../content/blog/*.md', { eager: true }));
+  
+  const uniqueTags = [
+    ...new Set(
+      allPosts
+        .flatMap((post) => post.frontmatter?.tags || [])
+        .filter(Boolean)
+    )
+  ];
+
+  return uniqueTags.map((tag) => {
+    const filteredPosts = allPosts.filter((post) => 
+      post.frontmatter?.tags?.map(t => t.toLowerCase()).includes(tag.toLowerCase())
+    );
+    
+    return {
+      params: { tag: tag.toLowerCase() },
+      props: { posts: filteredPosts, tagName: tag }
+    };
+  });
+}
+
+const { tag } = Astro.params;
+const { posts, tagName } = Astro.props;
+---
+
+<h1>Posts Tagged With: {tagName}</h1>
+<ul>
+  {posts.map((post) => {
+    const filename = post.file.split('/').pop();
+    const slug = filename.replace('.md', '').toLowerCase();
+    
+    return (
+      <li>
+        <a href={`/blog/${slug}`}>{post.frontmatter.title}</a> 
+        <span>by {post.frontmatter.author}</span>
+      </li>
+    );
+  })}
+</ul>
