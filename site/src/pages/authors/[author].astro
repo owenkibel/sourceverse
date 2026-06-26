@@ -1,21 +1,21 @@
 ---
 // site/src/pages/authors/[author].astro
-const allPosts = Object.values(import.meta.glob('../../content/blog/*.md', { eager: true }));
+import { getCollection } from 'astro:content';
 
 export async function getStaticPaths() {
-  const allPosts = Object.values(import.meta.glob('../../content/blog/*.md', { eager: true }));
+  const allPosts = await getCollection('blog');
   
   const uniqueAuthors = [
     ...new Set(
       allPosts
-        .map((post) => post.frontmatter?.author)
+        .map((post) => post.data.author)
         .filter(Boolean)
     )
   ];
 
   return uniqueAuthors.map((author) => {
     const filteredPosts = allPosts.filter((post) => 
-      post.frontmatter?.author?.toLowerCase() === author.toLowerCase()
+      post.data.author?.toLowerCase() === author.toLowerCase()
     );
     
     return {
@@ -32,30 +32,22 @@ const { posts, authorName } = Astro.props;
 <h1>Posts Written By: {authorName}</h1>
 <ul>
   {posts.map((post) => {
-    const filename = post.file.split('/').pop();
-    const slug = filename.replace('.md', '').toLowerCase();
+    let parsedDate = new Date(post.data.date || post.data.pubDate);
     
-    // === Robust Date Fallback Pipeline ===
-    let rawDate = post.frontmatter?.date || post.frontmatter?.pubDate;
-    let parsedDate = new Date(rawDate);
-    
-    // If frontmatter date is missing/invalid, pull it straight from the title string
-    if (isNaN(parsedDate.getTime()) && post.frontmatter?.title) {
-      const titleTimestampMatch = post.frontmatter.title.match(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z?/i);
+    if (isNaN(parsedDate.getTime()) && post.data.title) {
+      const titleTimestampMatch = post.data.title.match(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z?/i);
       if (titleTimestampMatch) {
         parsedDate = new Date(titleTimestampMatch[0]);
       }
     }
     
-    // Format safely or print fallback text instead of breaking the layout
     const displayDate = !isNaN(parsedDate.getTime()) 
       ? parsedDate.toLocaleDateString('en-US', { year: 'numeric', month: 'numeric', day: 'numeric' })
       : "Unknown Date";
-    // =====================================
-    
+
     return (
       <li>
-        <a href={`/blog/${slug}`}>{post.frontmatter.title}</a>
+        <a href={`/blog/${post.id.toLowerCase()}`}>{post.data.title}</a>
         <span> On {displayDate}</span>
       </li>
     );

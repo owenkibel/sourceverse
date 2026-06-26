@@ -1,21 +1,21 @@
 ---
 // site/src/pages/tags/[tag].astro
-const allPosts = Object.values(import.meta.glob('../../content/blog/*.md', { eager: true }));
+import { getCollection } from 'astro:content';
 
 export async function getStaticPaths() {
-  const allPosts = Object.values(import.meta.glob('../../content/blog/*.md', { eager: true }));
+  const allPosts = await getCollection('blog');
   
   const uniqueTags = [
     ...new Set(
       allPosts
-        .flatMap((post) => post.frontmatter?.tags || [])
+        .flatMap((post) => post.data.tags || [])
         .filter(Boolean)
     )
   ];
 
   return uniqueTags.map((tag) => {
     const filteredPosts = allPosts.filter((post) => 
-      post.frontmatter?.tags?.map(t => t.toLowerCase()).includes(tag.toLowerCase())
+      post.data.tags?.map(t => t.toLowerCase()).includes(tag.toLowerCase())
     );
     
     return {
@@ -31,15 +31,11 @@ const { posts, tagName } = Astro.props;
 
 <h1>Posts Tagged With: {tagName}</h1>
 <ul>
-  {posts.map((post) => {
-    const filename = post.file.split('/').pop();
-    const slug = filename.replace('.md', '').toLowerCase();
-    
-    return (
-      <li>
-        <a href={`/blog/${slug}`}>{post.frontmatter.title}</a> 
-        <span>by {post.frontmatter.author}</span>
-      </li>
-    );
-  })}
+  {posts.map((post) => (
+    <li>
+      {/* post.id automatically provides the extensionless filename */}
+      <a href={`/blog/${post.id.toLowerCase()}`}>{post.data.title}</a> 
+      <span>by {post.data.author}</span>
+    </li>
+  ))}
 </ul>

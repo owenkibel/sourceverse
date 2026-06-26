@@ -1,24 +1,30 @@
 import { defineConfig } from 'astro/config';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
-import remarkHeadingId from 'remark-heading-id'; 
+import { satteri } from '@astrojs/markdown-satteri';
 
 export default defineConfig({
-  site: 'https://example.com', 
+  root: './site',
+  
+  // === RESTORE YOUR SITE URL HERE ===
+  // Replace this with your actual production domain (e.g., 'https://owenkibel.github.io')
+  site: 'http://localhost:4321', 
+  // ===================================
+
   integrations: [mdx(), sitemap()],
-  
   markdown: {
-    // Switch compiler to Prism to strip out pre-baked inline styles
-    syntaxHighlight: 'prism',
-    remarkPlugins: [remarkHeadingId],
+    processor: satteri({
+      features: {
+        smartPunctuation: true,
+        gfm: true
+      }
+    })
   },
-  
   vite: {
-    preserveSymlinks: true,
     server: {
       fs: {
-        allow: ['..'],
-      },
-    },
-  },
+        allow: ['..']
+      }
+    }
+  }
 });
