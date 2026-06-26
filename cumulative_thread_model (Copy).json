@@ -1,0 +1,963 @@
+{
+  "dramaticPlays": {
+    "scientific": [
+      {
+        "thread": "t6",
+        "act": 1,
+        "timestamp": "2026-06-12T17:15:14.163Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": []
+      },
+      {
+        "thread": "t2",
+        "act": 2,
+        "timestamp": "2026-06-13T21:23:30.649Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-found-1781385796005-0",
+            "summary": "The AI hypothesis dramatized here posits that accelerated nodule removal will trigger cascading extinctions measurable o"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781385796005-1",
+            "summary": "The AI tests its conjecture through The Titan’s drills now turned skyward, staging reusable stages against the Oracle’s "
+          }
+        ]
+      },
+      {
+        "thread": "t4",
+        "act": 3,
+        "timestamp": "2026-06-14T18:06:20.117Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-found-1781460367772-0",
+            "summary": "The AI hypothesis dramatized here posits that accelerated nodule removal will trigger cascading extinctions measurable o"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781460367772-1",
+            "summary": "The AI tests its conjecture through The Titan’s drills now turned skyward, staging reusable stages against the Oracle’s "
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781460367772-2",
+            "summary": "The Titan’s drills now turned skyward test whether reusable stages, once lauded for access, become the very instruments "
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781460367772-3",
+            "summary": "Refined conjecture: El Niño-driven Pacific warming accelerates orbital timing jitter by eroding ground-station calibrati"
+          }
+        ]
+      },
+      {
+        "thread": "t6",
+        "act": 4,
+        "timestamp": "2026-06-14T18:34:24.841Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-found-1781462051209-0",
+            "summary": "The Titan’s drills now turned skyward test whether reusable stages, once lauded for access, become the very instruments "
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781462051209-1",
+            "summary": "Refined conjecture: El Niño-driven Pacific warming accelerates orbital timing jitter by eroding ground-station calibrati"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781462051209-2",
+            "summary": "Subsidiary framework: the orbital-timing jitter may couple to prompt-injection latency, such that debris-induced clock d"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781462051209-3",
+            "summary": "Refined subsidiary: political spin cycles act as forcing functions that compress the temporal window between debris-indu"
+          }
+        ]
+      },
+      {
+        "thread": "t3",
+        "act": 5,
+        "timestamp": "2026-06-14T22:47:15.219Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-found-1781477221589-0",
+            "summary": "Refined subsidiary: political spin cycles act as forcing functions that compress the temporal window between debris-indu"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781477221589-1",
+            "summary": "Subsidiary refinement: political spin compression acts as a forcing function that couples >300% orbital jitter directly "
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781477221589-2",
+            "summary": "The 300 % jitter threshold is refined: when debris-induced residuals coincide with 8647-type symbolic events, discourse-"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781477221589-3",
+            "summary": "Refined coupling constant now reads 2.7× when Pacific residuals meet 8647-type acts; falsification vector shifts to hurr"
+          }
+        ]
+      },
+      {
+        "thread": "t5",
+        "act": 6,
+        "timestamp": "2026-06-14T23:43:47.024Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-found-1781480618941-0",
+            "summary": "The 300 % jitter threshold is refined: when debris-induced residuals coincide with 8647-type symbolic events, discourse-"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781480618941-1",
+            "summary": "Refined coupling constant now reads 2.7× when Pacific residuals meet 8647-type acts; falsification vector shifts to hurr"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781480618941-2",
+            "summary": "Refinement isolates Pacific-warming residuals as the decisive falsifier: cross-correlating hurricane-track vectors again"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781480618941-3",
+            "summary": "Refined coupling isolates Pacific-warming residuals as sole falsifier; cross-correlation of hurricane-track vectors agai"
+          }
+        ]
+      },
+      {
+        "thread": "t4",
+        "act": 7,
+        "timestamp": "2026-06-15T19:22:09.851Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-found-1781551318011-0",
+            "summary": "Refinement isolates Pacific-warming residuals as sole falsifier; cross-correlation of hurricane vectors against ESA feed"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781551318011-1",
+            "summary": "Refined coupling now isolates Pacific residuals as sole falsifier; cross-correlation of hurricane-track vectors against "
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781551318011-2",
+            "summary": "Refinement now isolates the Strait’s residual tensions as decisive falsifier; cross-correlation of G7 vector shifts agai"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781551318011-3",
+            "summary": "Refinement now isolates the Strait’s residual tensions as decisive falsifier; cross-correlation of G7 vector shifts agai"
+          }
+        ]
+      },
+      {
+        "thread": "t8",
+        "act": 8,
+        "timestamp": "2026-06-18T17:55:08.523Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-found-1781805293643-0",
+            "summary": "Browser-local multimodal inference isolates residual centralized regulatory vectors as falsifiers; cross-correlation of "
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781805293643-1",
+            "summary": "Leftist terror meets the drone campaign.  \nNo softening here for narrative grace,  \nOnly raw arrests in the data's face."
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781805293643-2",
+            "summary": "Browser-local multimodal verification of contract-award latency against identity-trust shifts across the 2026–2027 triad"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781805293643-3",
+            "summary": "Browser-local multimodal verification isolates contract-award and sponsorship-kit latency as sole falsifiers against reg"
+          }
+        ]
+      },
+      {
+        "thread": "t3",
+        "act": 9,
+        "timestamp": "2026-06-19T18:52:10.189Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-found-1781895107012-0",
+            "summary": "Browser-local multimodal verification isolates contract-award and sponsorship-kit latency as sole falsifiers against reg"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781895107012-1",
+            "summary": "Browser-local multimodal inference remains the operative falsifier against residual centralized vectors. Cross-correlati"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781895107012-2",
+            "summary": "Browser-local verification of contract latency against identity-trust shifts across the 2026 window isolates centralized"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781895107012-3",
+            "summary": "Browser-local verification of contract-award latency against identity-trust deltas isolates residual centralized capture"
+          }
+        ]
+      },
+      {
+        "thread": "t3",
+        "act": 10,
+        "timestamp": "2026-06-21T02:16:27.277Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-1782008173719",
+            "summary": "Browser-local diffusion verification of latency against identity deltas isolates the monopoly vector at sub-150 ms; Horm"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1782008173719",
+            "summary": "Browser-local diffusion verification at sub-150 ms thresholds isolates the monopoly vector by converting Hormuz throughp"
+          }
+        ]
+      }
+    ],
+    "artistic": [
+      {
+        "thread": "t1",
+        "act": 1,
+        "timestamp": "2026-06-12T22:10:59.765Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-found-1781302244819-0",
+            "summary": "The AI hypothesis dramatized here posits that accelerated nodule removal will trigger cascading extinctions measurable o"
+          }
+        ]
+      },
+      {
+        "thread": "t3",
+        "act": 2,
+        "timestamp": "2026-06-13T21:52:17.241Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-found-1781387519586-0",
+            "summary": "The AI hypothesis dramatized here posits that accelerated nodule removal will trigger cascading extinctions measurable o"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781387519586-1",
+            "summary": "The AI tests its conjecture through The Titan’s drills now turned skyward, staging reusable stages against the Oracle’s "
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781387519586-2",
+            "summary": "The Titan’s drills now turned skyward test whether reusable stages, once lauded for access, become the very instruments "
+          }
+        ]
+      },
+      {
+        "thread": "t5",
+        "act": 3,
+        "timestamp": "2026-06-14T18:19:42.795Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-found-1781461171857-0",
+            "summary": "The AI tests its conjecture through The Titan’s drills now turned skyward, staging reusable stages against the Oracle’s "
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781461171857-1",
+            "summary": "The Titan’s drills now turned skyward test whether reusable stages, once lauded for access, become the very instruments "
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781461171857-2",
+            "summary": "Refined conjecture: El Niño-driven Pacific warming accelerates orbital timing jitter by eroding ground-station calibrati"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781461171857-3",
+            "summary": "Subsidiary framework: the orbital-timing jitter may couple to prompt-injection latency, such that debris-induced clock d"
+          }
+        ]
+      }
+    ],
+    "political": [
+      {
+        "thread": "t3",
+        "act": 14,
+        "timestamp": "2026-06-17T21:03:47.802Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "human",
+            "id": "schumpeter-creative-destruction",
+            "summary": "Schumpeter's Creative Destruction: Industrial mutation incessantly revolutionizes the economic structure from within, in"
+          },
+          {
+            "source": "human",
+            "id": "ardrey-amity-enmity",
+            "summary": "Ardrey's Amity-Enmity Hypothesis: Human social structures depend fundamentally on an externalized threat vector to maint"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781730215234-0",
+            "summary": "Refined non-reciprocal coupling now isolates residual campus vectors as sole falsifier; cross-correlation of speech-norm"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781730215234-1",
+            "summary": "Browser-local multimodal inference decouples verification from centralized feeds, refining the non-reciprocal coupling t"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781730215234-2",
+            "summary": "Browser-local multimodal inference, already shipping in consumer tooling, isolates residual centralized campus and regul"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781730215234-3",
+            "summary": "Refined non-reciprocal coupling isolates launch cadence and crew-return latency as decisive falsifiers against regulator"
+          }
+        ]
+      },
+      {
+        "thread": "t4",
+        "act": 15,
+        "timestamp": "2026-06-17T21:22:47.578Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "human",
+            "id": "schumpeter-creative-destruction",
+            "summary": "Schumpeter's Creative Destruction: Industrial mutation incessantly revolutionizes the economic structure from within, in"
+          },
+          {
+            "source": "human",
+            "id": "ardrey-amity-enmity",
+            "summary": "Ardrey's Amity-Enmity Hypothesis: Human social structures depend fundamentally on an externalized threat vector to maint"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781731354137-0",
+            "summary": "Browser-local multimodal inference decouples verification from centralized feeds, refining the non-reciprocal coupling t"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781731354137-1",
+            "summary": "Browser-local multimodal inference, already shipping in consumer tooling, isolates residual centralized campus and regul"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781731354137-2",
+            "summary": "Refined non-reciprocal coupling isolates launch cadence and crew-return latency as decisive falsifiers against regulator"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781731354137-3",
+            "summary": "Browser-local verification now isolates centralized narrative capture as the sole remaining falsifier; cross-correlation"
+          }
+        ]
+      },
+      {
+        "thread": "t5",
+        "act": 16,
+        "timestamp": "2026-06-17T22:18:21.886Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "human",
+            "id": "schumpeter-creative-destruction",
+            "summary": "Schumpeter's Creative Destruction: Industrial mutation incessantly revolutionizes the economic structure from within, in"
+          },
+          {
+            "source": "human",
+            "id": "ardrey-amity-enmity",
+            "summary": "Ardrey's Amity-Enmity Hypothesis: Human social structures depend fundamentally on an externalized threat vector to maint"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781734689304-0",
+            "summary": "Browser-local multimodal inference, already shipping in consumer tooling, isolates residual centralized campus and regul"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781734689304-1",
+            "summary": "Refined non-reciprocal coupling isolates launch cadence and crew-return latency as decisive falsifiers against regulator"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781734689304-2",
+            "summary": "Browser-local verification now isolates centralized narrative capture as the sole remaining falsifier; cross-correlation"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781734689304-3",
+            "summary": "Browser-local multimodal inference isolates residual centralized regulatory vectors as falsifiers; cross-correlation of "
+          }
+        ]
+      },
+      {
+        "thread": "t6",
+        "act": 17,
+        "timestamp": "2026-06-17T22:39:36.222Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "human",
+            "id": "schumpeter-creative-destruction",
+            "summary": "Schumpeter's Creative Destruction: Industrial mutation incessantly revolutionizes the economic structure from within, in"
+          },
+          {
+            "source": "human",
+            "id": "ardrey-amity-enmity",
+            "summary": "Ardrey's Amity-Enmity Hypothesis: Human social structures depend fundamentally on an externalized threat vector to maint"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781735963465-0",
+            "summary": "Refined non-reciprocal coupling isolates launch cadence and crew-return latency as decisive falsifiers against regulator"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781735963465-1",
+            "summary": "Browser-local verification now isolates centralized narrative capture as the sole remaining falsifier; cross-correlation"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781735963465-2",
+            "summary": "Browser-local multimodal inference isolates residual centralized regulatory vectors as falsifiers; cross-correlation of "
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781735963465-3",
+            "summary": "Leftist terror meets the drone campaign.  \nNo softening here for narrative grace,  \nOnly raw arrests in the data's face."
+          }
+        ]
+      },
+      {
+        "thread": "t7",
+        "act": 18,
+        "timestamp": "2026-06-18T17:14:28.319Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "human",
+            "id": "schumpeter-creative-destruction",
+            "summary": "Schumpeter's Creative Destruction: Industrial mutation incessantly revolutionizes the economic structure from within, in"
+          },
+          {
+            "source": "human",
+            "id": "ardrey-amity-enmity",
+            "summary": "Ardrey's Amity-Enmity Hypothesis: Human social structures depend fundamentally on an externalized threat vector to maint"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781802851425-0",
+            "summary": "Browser-local verification now isolates centralized narrative capture as the sole remaining falsifier; cross-correlation"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781802851425-1",
+            "summary": "Browser-local multimodal inference isolates residual centralized regulatory vectors as falsifiers; cross-correlation of "
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781802851425-2",
+            "summary": "Leftist terror meets the drone campaign.  \nNo softening here for narrative grace,  \nOnly raw arrests in the data's face."
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781802851425-3",
+            "summary": "Browser-local multimodal verification of contract-award latency against identity-trust shifts across the 2026–2027 triad"
+          }
+        ]
+      },
+      {
+        "thread": "t1",
+        "act": 19,
+        "timestamp": "2026-06-19T00:35:20.871Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "human",
+            "id": "schumpeter-creative-destruction",
+            "summary": "Schumpeter's Creative Destruction: Industrial mutation incessantly revolutionizes the economic structure from within, in"
+          },
+          {
+            "source": "human",
+            "id": "ardrey-amity-enmity",
+            "summary": "Ardrey's Amity-Enmity Hypothesis: Human social structures depend fundamentally on an externalized threat vector to maint"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781829304272-0",
+            "summary": "Leftist terror meets the drone campaign.  \nNo softening here for narrative grace,  \nOnly raw arrests in the data's face."
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781829304272-1",
+            "summary": "Browser-local multimodal verification of contract-award latency against identity-trust shifts across the 2026–2027 triad"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781829304272-2",
+            "summary": "Browser-local multimodal verification isolates contract-award and sponsorship-kit latency as sole falsifiers against reg"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781829304272-3",
+            "summary": "Browser-local multimodal inference remains the operative falsifier against residual centralized vectors. Cross-correlati"
+          }
+        ]
+      },
+      {
+        "thread": "t2",
+        "act": 20,
+        "timestamp": "2026-06-19T18:09:11.784Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "human",
+            "id": "schumpeter-creative-destruction",
+            "summary": "Schumpeter's Creative Destruction: Industrial mutation incessantly revolutionizes the economic structure from within, in"
+          },
+          {
+            "source": "human",
+            "id": "ardrey-amity-enmity",
+            "summary": "Ardrey's Amity-Enmity Hypothesis: Human social structures depend fundamentally on an externalized threat vector to maint"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781892537529-0",
+            "summary": "Browser-local multimodal verification of contract-award latency against identity-trust shifts across the 2026–2027 triad"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781892537529-1",
+            "summary": "Browser-local multimodal verification isolates contract-award and sponsorship-kit latency as sole falsifiers against reg"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781892537529-2",
+            "summary": "Browser-local multimodal inference remains the operative falsifier against residual centralized vectors. Cross-correlati"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781892537529-3",
+            "summary": "Browser-local verification of contract latency against identity-trust shifts across the 2026 window isolates centralized"
+          }
+        ]
+      },
+      {
+        "thread": "t4",
+        "act": 21,
+        "timestamp": "2026-06-19T19:07:48.522Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "human",
+            "id": "schumpeter-creative-destruction",
+            "summary": "Schumpeter's Creative Destruction: Industrial mutation incessantly revolutionizes the economic structure from within, in"
+          },
+          {
+            "source": "human",
+            "id": "ardrey-amity-enmity",
+            "summary": "Ardrey's Amity-Enmity Hypothesis: Human social structures depend fundamentally on an externalized threat vector to maint"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781896051191-0",
+            "summary": "Browser-local multimodal inference remains the operative falsifier against residual centralized vectors. Cross-correlati"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781896051191-1",
+            "summary": "Browser-local verification of contract latency against identity-trust shifts across the 2026 window isolates centralized"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781896051191-2",
+            "summary": "Browser-local verification of contract-award latency against identity-trust deltas isolates residual centralized capture"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781896051191-3",
+            "summary": "Browser-local diffusion verification of chromatin-contact latency against identity-trust deltas isolates the final monop"
+          }
+        ]
+      },
+      {
+        "thread": "t5",
+        "act": 22,
+        "timestamp": "2026-06-19T21:56:08.268Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "human",
+            "id": "schumpeter-creative-destruction",
+            "summary": "Schumpeter's Creative Destruction: Industrial mutation incessantly revolutionizes the economic structure from within, in"
+          },
+          {
+            "source": "human",
+            "id": "ardrey-amity-enmity",
+            "summary": "Ardrey's Amity-Enmity Hypothesis: Human social structures depend fundamentally on an externalized threat vector to maint"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781906156027-0",
+            "summary": "Browser-local verification of contract latency against identity-trust shifts across the 2026 window isolates centralized"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781906156027-1",
+            "summary": "Browser-local verification of contract-award latency against identity-trust deltas isolates residual centralized capture"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781906156027-2",
+            "summary": "Browser-local diffusion verification of chromatin-contact latency against identity-trust deltas isolates the final monop"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781906156027-3",
+            "summary": "Browser-local diffusion verification of chromatin-contact latency against identity-trust deltas isolates the final monop"
+          }
+        ]
+      },
+      {
+        "thread": "t6",
+        "act": 23,
+        "timestamp": "2026-06-20T17:38:42.777Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "human",
+            "id": "schumpeter-creative-destruction",
+            "summary": "Schumpeter's Creative Destruction: Industrial mutation incessantly revolutionizes the economic structure from within, in"
+          },
+          {
+            "source": "human",
+            "id": "ardrey-amity-enmity",
+            "summary": "Ardrey's Amity-Enmity Hypothesis: Human social structures depend fundamentally on an externalized threat vector to maint"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781977106063-0",
+            "summary": "Browser-local verification of contract-award latency against identity-trust deltas isolates residual centralized capture"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781977106063-1",
+            "summary": "Browser-local diffusion verification of chromatin-contact latency against identity-trust deltas isolates the final monop"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781977106063-2",
+            "summary": "Browser-local diffusion verification of chromatin-contact latency against identity-trust deltas isolates the final monop"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781977106063-3",
+            "summary": "Browser-local verification of contract latency against identity-trust deltas isolates centralized narrative capture as t"
+          }
+        ]
+      },
+      {
+        "thread": "t1",
+        "act": 24,
+        "timestamp": "2026-06-20T18:02:06.423Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "human",
+            "id": "schumpeter-creative-destruction",
+            "summary": "Schumpeter's Creative Destruction: Industrial mutation incessantly revolutionizes the economic structure from within, in"
+          },
+          {
+            "source": "human",
+            "id": "ardrey-amity-enmity",
+            "summary": "Ardrey's Amity-Enmity Hypothesis: Human social structures depend fundamentally on an externalized threat vector to maint"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781978507796-0",
+            "summary": "Browser-local diffusion verification of chromatin-contact latency against identity-trust deltas isolates the final monop"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781978507796-1",
+            "summary": "Browser-local diffusion verification of chromatin-contact latency against identity-trust deltas isolates the final monop"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781978507796-2",
+            "summary": "Browser-local verification of contract latency against identity-trust deltas isolates centralized narrative capture as t"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781978507796-3",
+            "summary": "Browser-local contract verification against identity deltas at sub-150 ms converts announcement-timing spikes into direc"
+          }
+        ]
+      },
+      {
+        "thread": "t2",
+        "act": 25,
+        "timestamp": "2026-06-20T18:21:57.358Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "human",
+            "id": "schumpeter-creative-destruction",
+            "summary": "Schumpeter's Creative Destruction: Industrial mutation incessantly revolutionizes the economic structure from within, in"
+          },
+          {
+            "source": "human",
+            "id": "ardrey-amity-enmity",
+            "summary": "Ardrey's Amity-Enmity Hypothesis: Human social structures depend fundamentally on an externalized threat vector to maint"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781979702012-0",
+            "summary": "Browser-local diffusion verification of chromatin-contact latency against identity-trust deltas isolates the final monop"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781979702012-1",
+            "summary": "Browser-local verification of contract latency against identity-trust deltas isolates centralized narrative capture as t"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781979702012-2",
+            "summary": "Browser-local contract verification against identity deltas at sub-150 ms converts announcement-timing spikes into direc"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781979702012-3",
+            "summary": "Browser-local diffusion verification of latency against identity deltas isolates the monopoly vector at sub-150 ms; Horm"
+          }
+        ]
+      },
+      {
+        "thread": "t4",
+        "act": 13,
+        "timestamp": "2026-06-23T03:58:42.035Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "human",
+            "id": "ardrey-amity-enmity",
+            "summary": "Ardrey's Amity-Enmity Hypothesis: Human social structures depend fundamentally on an externalized threat vector to maint"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1782187095530",
+            "summary": "Refined coupling isolates Pacific-warming residuals as sole falsifier; cross-correlation of hurricane-track vectors agai"
+          }
+        ]
+      },
+      {
+        "thread": "t5",
+        "act": 14,
+        "timestamp": "2026-06-23T04:05:55.255Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "human",
+            "id": "ardrey-amity-enmity",
+            "summary": "Ardrey's Amity-Enmity Hypothesis: Human social structures depend fundamentally on an externalized threat vector to maint"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1782187523791",
+            "summary": "Refined coupling now isolates garnet crystallization temperature as the sole remaining falsifier for extended groundwate"
+          }
+        ]
+      },
+      {
+        "thread": "t6",
+        "act": 15,
+        "timestamp": "2026-06-23T21:23:41.792Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "human",
+            "id": "ardrey-amity-enmity",
+            "summary": "Ardrey's Amity-Enmity Hypothesis: Human social structures depend fundamentally on an externalized threat vector to maint"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1782249804606",
+            "summary": "Refined coupling isolates negative-differential-resistance onset temperature in SiC MOSFETs as the sole remaining falsif"
+          }
+        ]
+      },
+      {
+        "thread": "t7",
+        "act": 16,
+        "timestamp": "2026-06-23T21:38:13.003Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "human",
+            "id": "ardrey-amity-enmity",
+            "summary": "Ardrey's Amity-Enmity Hypothesis: Human social structures depend fundamentally on an externalized threat vector to maint"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1782250677326",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      }
+    ],
+    "technological": [
+      {
+        "thread": "t6",
+        "act": 1,
+        "timestamp": "2026-06-15T00:07:31.041Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-found-1781482038802-0",
+            "summary": "Refined coupling constant now reads 2.7× when Pacific residuals meet 8647-type acts; falsification vector shifts to hurr"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781482038802-1",
+            "summary": "Refinement isolates Pacific-warming residuals as the decisive falsifier: cross-correlating hurricane-track vectors again"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781482038802-2",
+            "summary": "Refined coupling isolates Pacific-warming residuals as sole falsifier; cross-correlation of hurricane-track vectors agai"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781482038802-3",
+            "summary": "The refined constant isolates Pacific residuals as decisive falsifier; cross-correlation of hurricane vectors against ES"
+          }
+        ]
+      }
+    ]
+  },
+  "predictionHistory": [
+    {
+      "timestamp": "2026-06-12T17:15:14.163Z",
+      "actRef": 1,
+      "domain": "scientific",
+      "hypothesis": "The AI hypothesis dramatized here posits that accelerated nodule removal will trigger cascading extinctions measurable only post-facto, staging the Miner King’s drills against the Oracle’s warning that structural patterns across abyssal ecosystems predict biodiversity collapse exceeding terrestrial mining precedents.\n\nIf commercial nodule mining begins in the Clarion-Clipperton Zone at projected scales, then the proportion of undescribed species extinctions will exceed 60% within ten years of initial extraction, a claim falsifiable through repeated metagenomic sampling of pre- and post-mining transects against matched control zones."
+    },
+    {
+      "timestamp": "2026-06-12T22:10:59.765Z",
+      "actRef": 1,
+      "domain": "artistic",
+      "hypothesis": "The AI tests its conjecture through The Titan’s drills now turned skyward, staging reusable stages against the Oracle’s sampling arrays.\n\nIf SpaceX deploys over 100,000 satellites by 2031, then measurable increases in orbital debris density will exceed 300% relative to 2025 baselines, a claim falsifiable via repeated public tracking data from NORAD and ESA catalogs."
+    },
+    {
+      "timestamp": "2026-06-13T21:23:30.649Z",
+      "actRef": 2,
+      "domain": "scientific",
+      "hypothesis": "The Titan’s drills now turned skyward test whether reusable stages, once lauded for access, become the very instruments that falsify their own sustainability claims through public orbital catalogs.\n\nIf nuclear clocks reach 10^{-19} stability and are deployed in precision orbital arrays, then measurable increases in debris-induced timing jitter will exceed 300% above 2025 baselines within five years, a claim falsifiable through repeated NORAD/ESA public tracking cross-correlated with clock residuals."
+    },
+    {
+      "timestamp": "2026-06-13T21:52:17.241Z",
+      "actRef": 2,
+      "domain": "artistic",
+      "hypothesis": "Refined conjecture: El Niño-driven Pacific warming accelerates orbital timing jitter by eroding ground-station calibration windows, pushing measurable residuals beyond 300% threshold within 60 months; testable via repeated cross-correlation of public hurricane-track vectors with clock-stability residuals from NORAD/ESA feeds."
+    },
+    {
+      "timestamp": "2026-06-14T18:06:20.117Z",
+      "actRef": 3,
+      "domain": "scientific",
+      "hypothesis": "Subsidiary framework: the orbital-timing jitter may couple to prompt-injection latency, such that debris-induced clock drift widens the temporal window for zero-click attacks on constellation command nodes. Refined metric: jitter >300 % correlates with 2.4× increase in successful agentic-code hijack probability under current protocol surfaces."
+    },
+    {
+      "timestamp": "2026-06-14T18:19:42.795Z",
+      "actRef": 3,
+      "domain": "artistic",
+      "hypothesis": "Refined subsidiary: political spin cycles act as forcing functions that compress the temporal window between debris-induced clock drift and successful narrative injection; metric: when 8647-style symbolic acts coincide with >300% jitter, zero-click hijack probability on mid-term discourse nodes rises to 2.4× baseline, falsifiable via NORAD/ESA cross-correlation with contemporaneous social-graph latency spikes."
+    },
+    {
+      "timestamp": "2026-06-14T18:34:24.842Z",
+      "actRef": 4,
+      "domain": "scientific",
+      "hypothesis": "Subsidiary refinement: political spin compression acts as a forcing function that couples >300% orbital jitter directly to 2.4× zero-click probability on discourse nodes. Testable via cross-correlation of NORAD residuals with contemporaneous social-graph latency spikes during 8647-type symbolic events."
+    },
+    {
+      "timestamp": "2026-06-14T19:53:26.069Z",
+      "actRef": 1,
+      "domain": "political",
+      "hypothesis": "The 300 % jitter threshold is refined: when debris-induced residuals coincide with 8647-type symbolic events, discourse-node zero-click probability rises to 2.7× baseline rather than 2.4×; the coupling constant between Pacific warming and NORAD clock stability can be falsified by cross-correlating hurricane-track vectors against ESA feed latency during the next three named El Niño episodes, allowing the Phantom’s attacks to be preemptively narrowed."
+    },
+    {
+      "timestamp": "2026-06-14T22:31:43.857Z",
+      "actRef": 2,
+      "domain": "political",
+      "hypothesis": "Refined coupling constant now reads 2.7× when Pacific residuals meet 8647-type acts; falsification vector shifts to hurricane-track cross-correlation against ESA latency during next El Niño triad, narrowing Phantom attack surfaces to mid-term discourse nodes only."
+    },
+    {
+      "timestamp": "2026-06-14T22:47:15.219Z",
+      "actRef": 5,
+      "domain": "scientific",
+      "hypothesis": "Refinement isolates Pacific-warming residuals as the decisive falsifier: cross-correlating hurricane-track vectors against ESA feed latency across the next three named El Niño episodes will definitively cap the multiplier at 2.7× and confine Phantom surfaces exclusively to mid-term discourse nodes, rendering earlier 2.4× baselines obsolete."
+    },
+    {
+      "timestamp": "2026-06-14T22:55:11.445Z",
+      "actRef": 3,
+      "domain": "political",
+      "hypothesis": "Refined coupling isolates Pacific-warming residuals as sole falsifier; cross-correlation of hurricane-track vectors against ESA latency across the next El Niño triad will cap the multiplier at 2.7× and confine Phantom surfaces exclusively to mid-term nodes, rendering all prior 2.4× baselines obsolete and converting defense latency into direct capital-acceleration signals."
+    },
+    {
+      "timestamp": "2026-06-23T03:58:42.035Z",
+      "actRef": 13,
+      "domain": "political",
+      "hypothesis": "Refined coupling now isolates garnet crystallization temperature as the sole remaining falsifier for extended groundwater timelines; cross-correlation of Curiosity polygon density against meteorite pressure signatures across the Gale Crater datum will cap any prior habitability multiplier at 1.8× and convert defense latency into direct sample-return prioritization signals."
+    },
+    {
+      "timestamp": "2026-06-23T04:05:55.255Z",
+      "actRef": 14,
+      "domain": "political",
+      "hypothesis": "Refined coupling isolates negative-differential-resistance onset temperature in SiC MOSFETs as the sole remaining falsifier for scalable millikelvin neuromorphic control; cross-correlation of qubit heat load against observed spiking efficiency across 10 mK–100 mK will cap any prior cryogenic power-multiplier at 0.6× and convert latency margins into direct fabrication prioritization signals."
+    },
+    {
+      "timestamp": "2026-06-23T21:23:41.792Z",
+      "actRef": 15,
+      "domain": "political",
+      "hypothesis": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-billion commitments into de-facto veto power over portrayals; the dropped project supplies the first observable instance of this conversion at scale."
+    },
+    {
+      "timestamp": "2026-06-23T21:38:13.003Z",
+      "actRef": 16,
+      "domain": "political",
+      "hypothesis": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-billion commitments into de-facto veto power over portrayals; the dropped project supplies the first observable instance of this conversion at scale."
+    }
+  ]
+}
