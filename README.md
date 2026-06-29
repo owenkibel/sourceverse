@@ -115,5 +115,5 @@ This is an active research project. The architecture continues to evolve around 
 
 ## Links
 
-- **Blog**: [Gramarye](https://gramarye.vercel.app/)
+- **Blog**: [Gramarye](example.com)
 - **Repository**: [sourceverse](https://github.com/owenkibel/sourceverse)
