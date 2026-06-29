@@ -10,6 +10,8 @@ dramatic-prompts
 1
 x
 cumulative_thread_model.json
+aphorisms*
+*hypotheses*
 
 # Ignore all hidden files...
 .*

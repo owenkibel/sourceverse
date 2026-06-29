@@ -6,16 +6,15 @@ const util = require('util');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const execFileAsync = util.promisify(execFile);
 
-const MAX_CANONICAL_HYPOTHESES = 2;   // Randomly sample up to this many human hypotheses
+const MAX_HUMAN_HYPOTHESES = 2;   // Randomly sample up to this many human hypotheses
 const MAX_AI_HYPOTHESES = 2;      // Take the most recent N AI hypotheses
 
 // --- CONFIGURATION MAPS ---
 // Change this line from 'prompts-new' to your V5 directory
 const PROMPTS_DIR = path.join(__dirname, 'prompts-dramatic-v5');
 
-// Canonical hypotheses directory (previously human-hypotheses)
-const CANONICAL_HYPOTHESES_DIR = path.join(__dirname, 'canonical-hypotheses');
-const CANONICAL_HYPOTHESES_FILE = path.join(__dirname, 'canonical-hypotheses.json');
+// Inject this right below your other file configuration constants
+const HUMAN_HYPOTHESES_FILE = path.join(__dirname, 'human-hypotheses.json');
 const POSTS_DIR = 'posts';
 const IMAGES_DIR = 'images';
 const X_DIR = './x';
@@ -109,128 +108,76 @@ function cleanVerseText(text) {
   return text.replace(/```[a-z]*\n?/gi, '').replace(/```/g, '').replace(/\*\*|__|###/g, '').replace(/<[^>]*>?/gm, '').split('\n').map(line => line.trim()).join('\n').replace(/\n{3,}/g, '\n\n').trim();
 }
 
-const HYPOTHESIS_COOLDOWN_ACTS = 8; // Increased from 7
-
-function deduplicateAndFilterHypotheses(hypotheses, cumulativeModel, maxItems = 4) {
+/**
+ * Light deduplication + recency filter for hypotheses.
+ * Removes near-duplicate AI hypotheses and caps repetitive patterns (e.g. "2.7×", "browser-local", "monopoly vector").
+ */
+function deduplicateAndFilterHypotheses(hypotheses, maxItems = 4) {
     if (!hypotheses || hypotheses.length === 0) return [];
 
-    const seen = [];
+    const seen = new Set();
     const result = [];
 
+    // Simple normalization for similarity check
     const normalize = (text) => text.toLowerCase()
         .replace(/[^a-z0-9\s]/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
 
-    function jaccardSimilarity(a, b) {
-        const setA = new Set(a.split(' '));
-        const setB = new Set(b.split(' '));
-        const intersection = new Set([...setA].filter(x => setB.has(x)));
-        const union = new Set([...setA, ...setB]);
-        return union.size === 0 ? 0 : intersection.size / union.size;
-    }
-
-    const recentHistory = (cumulativeModel?.predictionHistory || [])
-        .slice(-25)
-        .map(h => normalize(h.hypothesis || ''));
-
     for (const h of hypotheses) {
-        if (!h.claim || h.claim.length < 25) continue;
+        if (!h.claim) continue;
 
         const norm = normalize(h.claim);
 
-        // 1. Check against items already selected this run
+        // Skip if we've seen something very similar
         let isDuplicate = false;
         for (const existing of seen) {
-            if (jaccardSimilarity(norm, existing) > 0.65) { // More aggressive
+            // Simple overlap check (can be improved later with better similarity)
+            const overlap = norm.split(' ').filter(w => existing.includes(w)).length;
+            if (overlap > 8) { // tune this threshold if needed
                 isDuplicate = true;
                 break;
             }
         }
-        if (isDuplicate) continue;
 
-        // 2. Stronger time-based cooldown
-        let inCooldown = false;
-        for (const recent of recentHistory) {
-            if (jaccardSimilarity(norm, recent) > 0.70) {
-                inCooldown = true;
-                break;
-            }
+        // Extra filter: heavily penalize repetitive "2.7× / browser-local" style entries
+        const isRepetitivePattern = /2\.7|browser-local|monopoly vector|sub-150 ms|diffusion verification/i.test(h.claim);
+
+        if (!isDuplicate && (!isRepetitivePattern || result.length < 2)) {
+            seen.add(norm);
+            result.push(h);
+            if (result.length >= maxItems) break;
         }
-        if (inCooldown) continue;
-
-        // 3. Hard block on the specific repetitive claim family
-        const isGatekeepingClaim = /institutional gatekeeping|ai-origin cinema|dropped project|narrative containment|de-facto veto/i.test(h.claim);
-        if (isGatekeepingClaim && result.length > 0) {
-            continue; // Only allow it once per run at most
-        }
-
-        seen.push(norm);
-        result.push(h);
-
-        if (result.length >= maxItems) break;
     }
 
     return result;
 }
 
-/**
- * Returns true only if the hypothesis claim is substantial enough to be worth storing.
- * This helps reduce repetitive/low-value entries in predictionHistory.
- */
-function isStrongHypothesis(claim) {
-    if (!claim || typeof claim !== 'string') return false;
-
-    const trimmed = claim.trim();
-
-    // Minimum length threshold (adjust as needed)
-    if (trimmed.length < 120) return false;
-
-    // Skip very generic or low-information claims
-    const lower = trimmed.toLowerCase();
-    if (lower.includes('no new') || lower.includes('no hypothesis')) return false;
-
-    // Skip claims that are mostly the old repetitive pattern
-    if (/institutional gatekeeping|ai-origin cinema|dropped project|narrative containment/i.test(trimmed)) {
-        return false;
-    }
-
-    return true;
-}
-
-async function updateNarrativeArc(domain, newNarrativeText, parsedForecast, cumulativeModel) {
+async function updateNarrativeArc(domain, newNarrativeText, cumulativeModel) {
     if (!cumulativeModel.narrativeArcs[domain]) {
         cumulativeModel.narrativeArcs[domain] = {
             currentArc: "",
             lastUpdated: "",
-            forecastHistory: []
+            keyThemes: [],
+            actHistory: []
         };
     }
 
     const arc = cumulativeModel.narrativeArcs[domain];
 
-    // Append new prose
+    // Append new prose (with soft length limit to prevent unbounded growth)
     const combined = (arc.currentArc + "\n\n" + newNarrativeText).trim();
     arc.currentArc = combined.length > 4500 
         ? combined.slice(-4200) 
         : combined;
 
-    let forecastAppended = false;
-
-    // Append forecast summary if available
-    if (parsedForecast && parsedForecast.trim().length > 60) {
-        const shortForecast = parsedForecast.length > 260 
-            ? parsedForecast.substring(0, 257) + "..." 
-            : parsedForecast;
-
-        arc.currentArc += `\n\n[Recent Forecast Summary]: ${shortForecast}`;
-        forecastAppended = true;
-
-        console.log(`📜 Forecast summary appended to narrative arc for [${domain}]`);
-    }
-
     arc.lastUpdated = new Date().toISOString();
-    return forecastAppended; // ← Return true if we appended a forecast
+
+    // Optional: track which acts contributed
+    if (!arc.actHistory) arc.actHistory = [];
+    // You can push the current act number here if desired
+
+    return cumulativeModel;
 }
 
 async function freeComfyVRAM() {
@@ -274,9 +221,9 @@ async function loadPrompts() {
 function parseUnifiedOutput(text) {
   const sections = { 
     verse: '', 
-    forecast: '',           // ← NEW
+    forecast: '', 
     hypothesis: '', 
-    narrative_synthesis: '',
+    narrative_synthesis: '',   // ← ADD THIS
     image: '', 
     t2v: '', 
     music: '' 
@@ -288,14 +235,14 @@ function parseUnifiedOutput(text) {
     
     if (l.match(/^(#+|\*\*|__|-)*\s*narrative synthesis/i)) {
         current = 'narrative_synthesis';
-    } else if (l.match(/^(#+|\*\*|__|-)*\s*(forecast|prediction)/i)) {   // ← NEW
-        current = 'forecast';
     } else if (l.match(/^(#+|\*\*|__|-)*\s*(image|visual)( generation)? prompt/i)) {
         current = 'image';
     } else if (l.match(/^(#+|\*\*|__|-)*\s*(t2v|text[- ]to[- ]video|video)( generation)? prompt/i)) {
         current = 't2v';
     } else if (l.match(/^(#+|\*\*|__|-)*\s*(music|audio|song|soundtrack)( generation)? prompt/i)) {
         current = 'music';
+    } else if (l.match(/^(#+|\*\*|__|-)*\s*forecast/i)) {
+        current = 'forecast';
     } else if (l.match(/^(#+|\*\*|__|-)*\s*hypothesis/i)) {
         current = 'hypothesis';
     } else if (l.match(/^(#+|\*\*|__|-)*\s*(verse|poem|poetry|spoken text|reading|dramatic verse)/i)) {
@@ -305,24 +252,6 @@ function parseUnifiedOutput(text) {
     }
   });
 
-  // Clean verse
-  const verse = cleanVerseText(sections.verse);
-
-  // Clean forecast (new)
-  const forecast = sections.forecast
-    .replace(/```[a-z]*\n?/gi, '')
-    .replace(/```/g, '')
-    .replace(/\*\*|__|###/g, '')
-    .trim();
-
-  // Clean hypothesis
-  const hypothesis = sections.hypothesis
-    .replace(/```[a-z]*\n?/gi, '')
-    .replace(/```/g, '')
-    .replace(/\*\*|__|###/g, '')
-    .trim();
-
-  // Music parsing (unchanged)
   let rawMusic = sections.music.trim().replace(/```[a-z]*\n?/gi, '').replace(/```/g, '');
   let tags = "Electronic, rich synths, melodic pulse";
   let duration = "128"; 
@@ -336,17 +265,19 @@ function parseUnifiedOutput(text) {
   if (tagMatch) {
       let rawTags = tagMatch[1].replace(/[*_`#]/g, '').trim();
       let tagArray = rawTags.split(',').map(t => t.trim()).filter(t => t.length > 0);
-      if (tagArray.length > 0) tags = tagArray.join(', ');
+      if (tagArray.length > 0) {
+          tags = tagArray.join(', ');
+      }
   }
 
   const durMatch = metaText.match(/DURATION:\s*(\d+)/i);
   if (durMatch) duration = durMatch[1].trim();
 
-  return {
-    verse: verse,
-    forecast: forecast,                    // ← NEW
-    hypothesis: hypothesis,
-    narrative_synthesis: sections.narrative_synthesis.trim(),
+return {
+    verse: cleanVerseText(sections.verse),
+    forecast: sections.forecast.trim(),
+    hypothesis: sections.hypothesis.trim(),
+    narrative_synthesis: sections.narrative_synthesis.trim(),  // ← ADD THIS
     image: sections.image.trim(),
     t2v: sections.t2v.trim(), 
     musicTags: tags,
@@ -597,28 +528,22 @@ async function runAudioGen(tags, lyrics, slug, duration) {
 // ==========================================
 
 async function updateUnifiedDomainModel(domain, nextActNumber, folder, parsedOutput, activeHypotheses) {
-    let model = { dramaticPlays: {}, predictionHistory: [], narrativeArcs: {} };
+    // 1. Initialize the base structure outside the try block to establish scope
+    let model = { dramaticPlays: {}, predictionHistory: [] };
 
     try {
         const existing = await fs.readFile(MODEL_PATH, 'utf8');
         model = JSON.parse(existing);
-    } catch (e) {}
+    } catch (e) {
+        // If the file doesn't exist yet, we proceed with our initialized base structure
+    }
 
-    // Defensive initialization
+    // 2. Defensive structural verification to ensure arrays/objects exist on the parsed JSON
     if (!model.dramaticPlays) model.dramaticPlays = {};
     if (!model.predictionHistory) model.predictionHistory = [];
-    if (!model.narrativeArcs) model.narrativeArcs = {};
- if (!model.narrativeArcs[domain]) {
-    model.narrativeArcs[domain] = {
-        currentArc: "",
-        lastUpdated: "",
-        forecastHistory: []
-    };
-}
-
-    // Existing dramaticPlays logic (unchanged)
     if (!model.dramaticPlays[domain]) model.dramaticPlays[domain] = [];
 
+    // 3. Append execution ledger data to track context evolution
     model.dramaticPlays[domain].push({
         thread: folder,
         act: nextActNumber,
@@ -631,9 +556,9 @@ async function updateUnifiedDomainModel(domain, nextActNumber, folder, parsedOut
         }))
     });
 
-    // Store hypothesis in predictionHistory (existing logic)
+    // 4. Cycle new AI discoveries into rolling historical memory for prompt loops
     const prospectiveHypothesis = parsedOutput.hypothesis_elaboration_ai || parsedOutput.hypothesis;
-    if (prospectiveHypothesis && isStrongHypothesis(prospectiveHypothesis)) {
+    if (prospectiveHypothesis && prospectiveHypothesis.trim().length > 0) {
         model.predictionHistory.push({
             timestamp: new Date().toISOString(),
             actRef: nextActNumber,
@@ -642,65 +567,48 @@ async function updateUnifiedDomainModel(domain, nextActNumber, folder, parsedOut
         });
     }
 
-    // === NEW: Store forecast in narrativeArcs ===
-    if (parsedOutput.forecast && parsedOutput.forecast.trim().length > 40) {
-        const arc = model.narrativeArcs[domain];
-
-        if (!arc.forecastHistory) arc.forecastHistory = [];
-
-        arc.forecastHistory.push({
-            act: nextActNumber,
-            timestamp: new Date().toISOString(),
-            forecast: parsedOutput.forecast.trim()
-        });
-
-        // Keep only the last 6 forecasts per domain to avoid bloat
-        if (arc.forecastHistory.length > 6) {
-            arc.forecastHistory = arc.forecastHistory.slice(-6);
-        }
-    }
-
+    // 5. Commit serialized state back to disk
     await fs.writeFile(MODEL_PATH, JSON.stringify(model, null, 2), 'utf8');
     console.log(`💾 Ledger state tracking committed to ${MODEL_PATH}`);
 }
+
 /**
- * Asynchronously loads canonical hypotheses and merges them with historic AI claims.
+ * Asynchronously loads canonical human hypotheses and merges them with historic AI claims.
  * Preserves downstream execution tracking without pausing the pipeline node.
  */
 async function loadAndMergeHypotheses(domain, cumulativeModel, isTraditional = false) {
-    let canonicalHyps = [];
-    const HYPOTHESES_DIR = path.join(__dirname, 'canonical-hypotheses');   // ← Updated directory name
+    let humanHyps = [];
+    const HYPOTHESES_DIR = path.join(__dirname, 'human-hypotheses');
 
     try {
         const files = await fs.readdir(HYPOTHESES_DIR);
         for (const file of files) {
             if (!file.endsWith('.json')) continue;
             const content = JSON.parse(await fs.readFile(path.join(HYPOTHESES_DIR, file), 'utf8'));
-            if (content.hypotheses) canonicalHyps.push(...content.hypotheses);
+            if (content.hypotheses) humanHyps.push(...content.hypotheses);
         }
     } catch (e) {
         try {
-            // Fallback to single file if directory doesn't exist
             const unified = JSON.parse(await fs.readFile(
-                path.join(__dirname, 'canonical-hypotheses.json'), 'utf8'   // ← Updated fallback
+                path.join(__dirname, 'human-hypotheses.json'), 'utf8'
             ));
-            if (unified.hypotheses) canonicalHyps = unified.hypotheses;
+            if (unified.hypotheses) humanHyps = unified.hypotheses;
         } catch (_) {}
     }
 
     const domainLower = (domain || '').toLowerCase();
-    let filteredCanonical = canonicalHyps.filter(h =>
+    let filteredHuman = humanHyps.filter(h =>
         (h.domain || '').toLowerCase() === domainLower ||
         (h.domain || '').toLowerCase() === 'general'
     );
 
     // === Mode-aware selection ===
-    let selectedCanonical = filteredCanonical;   // ← renamed
+    let selectedHuman = filteredHuman;
     let selectedAI = [];
 
     if (isTraditional) {
-        // Traditional mode: keep only canonical + at most 1 recent AI
-        selectedCanonical = filteredCanonical.slice(0, MAX_CANONICAL_HYPOTHESES);
+        // Traditional mode: keep only canonical human + at most 1 recent AI
+        selectedHuman = filteredHuman.slice(0, MAX_HUMAN_HYPOTHESES);
         if (cumulativeModel?.predictionHistory) {
             const recent = cumulativeModel.predictionHistory
                 .filter(entry => entry.hypothesis && entry.hypothesis.length > 25)
@@ -712,12 +620,12 @@ async function loadAndMergeHypotheses(domain, cumulativeModel, isTraditional = f
             }));
         }
     } else {
-        // Dramatic mode: random sample canonical + recent AI with deduplication
-        if (filteredCanonical.length > MAX_CANONICAL_HYPOTHESES) {
-            selectedCanonical = filteredCanonical
+        // Dramatic mode: random sample humans + recent AI with deduplication
+        if (filteredHuman.length > MAX_HUMAN_HYPOTHESES) {
+            selectedHuman = filteredHuman
                 .map(h => ({ h, sort: Math.random() }))
                 .sort((a, b) => a.sort - b.sort)
-                .slice(0, MAX_CANONICAL_HYPOTHESES)
+                .slice(0, MAX_HUMAN_HYPOTHESES)
                 .map(item => item.h);
         }
 
@@ -732,12 +640,12 @@ async function loadAndMergeHypotheses(domain, cumulativeModel, isTraditional = f
                 source: "ai"
             }));
 
-            selectedAI = deduplicateAndFilterHypotheses(aiCandidates, cumulativeModel, MAX_AI_HYPOTHESES);
+            selectedAI = deduplicateAndFilterHypotheses(aiCandidates, MAX_AI_HYPOTHESES);
         }
     }
 
     const merged = [
-        ...selectedCanonical.map(h => ({ ...h, source: "canonical" })),   // ← changed source
+        ...selectedHuman.map(h => ({ ...h, source: "human" })),
         ...selectedAI
     ];
 
@@ -746,14 +654,13 @@ async function loadAndMergeHypotheses(domain, cumulativeModel, isTraditional = f
 
 async function buildNarrativeContext(domain, cumulativeModel) {
     if (!cumulativeModel.narrativeArcs || !cumulativeModel.narrativeArcs[domain]) {
-        return { context: "This is the beginning of the narrative arc for this domain.", injected: 0 };
+        return "This is the beginning of the narrative arc for this domain.";
     }
 
     const arc = cumulativeModel.narrativeArcs[domain];
     let context = `PREVIOUS STORY ARC:\n${arc.currentArc || ''}\n\n`;
-    let injectedCount = 0;
 
-    // Inject recent hypotheses as story seeds
+    // Inject a couple of recent hypotheses as story seeds
     const seeds = (cumulativeModel.predictionHistory || [])
         .filter(h => h.domain === domain)
         .slice(-2);
@@ -765,50 +672,11 @@ async function buildNarrativeContext(domain, cumulativeModel) {
         });
     }
 
-    // === Inject recent forecasts for continuity ===
-    if (arc.forecastHistory && arc.forecastHistory.length > 0) {
-        const recentForecasts = arc.forecastHistory.slice(-2);
-
-        context += "\nRECENT FORECASTS (for continuity, last 2 acts):\n";
-        recentForecasts.forEach((f, i) => {
-            const shortForecast = f.forecast.length > 220 
-                ? f.forecast.substring(0, 217) + "..." 
-                : f.forecast;
-            context += `${i + 1}. (Act ${f.act}) ${shortForecast}\n`;
-        });
-
-        injectedCount = recentForecasts.length;
-
-        console.log(`   📜 Injected ${injectedCount} recent forecast(s) into prompt for [${domain}]`);
-    }
-
-    return { context, injected: injectedCount };
+    return context;
 }
 
 async function main() {
   await Promise.all([fs.mkdir(POSTS_DIR, { recursive: true }), fs.mkdir(IMAGES_DIR, { recursive: true })]);
-
-  // ======================================================
-  // FORECAST LIFECYCLE METRICS
-  // These counters track the full journey of forecasts through the pipeline:
-  //
-  // - forecastsProcessedThisRun : How many forecasts the model actually generated
-  //                               and that were successfully parsed from the output.
-  //
-  // - forecastsAppendedThisRun  : How many of those forecasts were substantial enough
-  //                               to be appended to the persistent narrative arc
-  //                               (stored in cumulative_thread_model.json).
-  //
-  // - forecastsInjectedThisRun  : How many forecasts were pulled from the narrative arc
-  //                               and injected into the prompt context for future runs
-  //                               (via buildNarrativeContext). This measures continuity.
-  //
-  // These metrics help monitor forecast quality, storage behavior, and long-term
-  // narrative memory across multiple pipeline executions.
-  // ======================================================
-  let forecastsProcessedThisRun = 0;
-  let forecastsAppendedThisRun = 0;
-  let forecastsInjectedThisRun = 0;
 
   const prompts = await loadPrompts();
   if (prompts.length === 0) throw new Error("No files discovered inside prompts-dramatic-v5 directory.");
@@ -841,8 +709,7 @@ async function main() {
       continue;
     }
 
-const title = payload.title || folder.toUpperCase();
-const originalThematicPoem = payload.grok_poem || '';   // ← ADD THIS
+    const title = payload.title || folder.toUpperCase();
 
     // Build rich context
     let richContextBlock = `THEMATIC SUMMARY:\n${payload.grok_poem || ''}\n\nRAW SOURCES TO TRANSMUTE:\n`;
@@ -886,36 +753,32 @@ const originalThematicPoem = payload.grok_poem || '';   // ← ADD THIS
     // Load trimmed hypotheses
     const mergedHypotheses = await loadAndMergeHypotheses(domain, cumulativeModel, isTraditional);
 
-   // Audit log for active canonical hypotheses
-const activeCanonicalClaims = mergedHypotheses.filter(h => h.source === "canonical");
-if (activeCanonicalClaims.length > 0) {
-  console.log(`🔥 [CRITICAL] Canonical Hypothesis Active for Act ${nextActNumber}!`);
-  activeCanonicalClaims.forEach(h => {
-    console.log(`   📜 ID: [${h.id}] | Active Context: "${h.claim.substring(0, 95)}..."`);
-  });
-} else {
-  console.log(`ℹ️ No canonical hypotheses registered for the [${domain}] domain this run.`);
-}
+    // Audit log for active human hypotheses
+    const activeHumanClaims = mergedHypotheses.filter(h => h.source === "human");
+    if (activeHumanClaims.length > 0) {
+      console.log(`🔥 [CRITICAL] Canonical Human Hypothesis Active for Act ${nextActNumber}!`);
+      activeHumanClaims.forEach(h => {
+        console.log(`   📜 ID: [${h.id}] | Active Context: "${h.claim.substring(0, 95)}..."`);
+      });
+    } else {
+      console.log(`ℹ️ No human hypotheses registered for the [${domain}] domain this run.`);
+    }
 
     // Build hypothesis block
     let hypothesisBlock = '';
     if (mergedHypotheses.length > 0) {
       hypothesisBlock = `### RUNTIME HYPOTHESES IN PLAY\n`;
       mergedHypotheses.forEach((h, idx) => {
-        const originTag = h.source === "canonical" ? "CANONICAL" : "AI CONJECTURE";
+        const originTag = h.source === "human" ? "CANONICAL STRUCTURE" : "AI CONJECTURE";
         hypothesisBlock += `${idx + 1}. [${originTag}] ${h.claim}\n`;
       });
     }
 
     // === NEW: Build narrative context for story continuity ===
-    const narrativeResult = await buildNarrativeContext(domain, cumulativeModel);
-    const narrativeContext = narrativeResult.context;
-    forecastsInjectedThisRun += narrativeResult.injected;
+    const narrativeContext = await buildNarrativeContext(domain, cumulativeModel);
 
     // === USER PROMPT ASSEMBLY ===
     let userPrompt = selPrompt.chat;
-
-    // ... (rest of the prompt assembly remains the same)
 
     // IDEOGRAM INTERCEPTOR: If --ideogram is active, swap out the natural language 
     // image instructions for a strict minified layout JSON contract.
@@ -945,11 +808,6 @@ Target Format Blueprint:
     }
 
     // Token replacements
-        // === NEW: Inject narrative context ===
-    userPrompt = userPrompt.replace(/\[\[narrative_context\]\]/g, narrativeContext);
-    if (!userPrompt.includes('[[narrative_context]]')) {
-      userPrompt = narrativeContext + "\n\n" + userPrompt;
-    }
     userPrompt = userPrompt.replace(/\[\[chunk\]\]/g, richContextBlock);
 
     const dynamicStylesString = getShuffledAceStyles();
@@ -974,27 +832,22 @@ Target Format Blueprint:
     userPrompt += `\n\n--- MANDATORY DRAMATIC PRODUCTION REQUIREMENTS ---\n`;
     userPrompt += `- Write EXTENDED, substantial verse structured explicitly into separated stanzas.\n`;
     userPrompt += `- Infuse the text with sharp originality, observational wit, and oracular Grok-style humor.\n`;
-userPrompt += `- Write with compression and focus. Avoid numbering stanzas ("Stanza 1", "Stanza 2", etc.). A poem that deeply explores one or two tensions is preferred over a longer piece that lists many elements.\n`;
-userPrompt += `- Strongly resist automatically importing metaphors (multipliers, jitter, latency, spin compression, etc.) from previous arcs unless they are essential to this thread.\n`;
+    userPrompt += `- Target an active narrative depth of 8–16 stanzas minimum to flesh out the scene.\n`;
     if (!isTraditional) {
       userPrompt += `- The CHORUS/refrain section must directly articulate the collision of your active hypotheses and the underlying forecast.\n`;
     }
 
     // Generate
     const rawOutput = await generateText(selPrompt.system, userPrompt);
-       const parsed = parseUnifiedOutput(rawOutput);
+    const parsed = parseUnifiedOutput(rawOutput);
 
-    // Count processed forecasts
-    if (parsed.forecast && parsed.forecast.trim().length > 40) {
-        forecastsProcessedThisRun++;
+    // === NEW: Update narrative arc early (before media generation) ===
+    if (parsed.narrative_synthesis && parsed.narrative_synthesis.trim().length > 50) {
+      await updateNarrativeArc(domain, parsed.narrative_synthesis, cumulativeModel);
+      await fs.writeFile(MODEL_PATH, JSON.stringify(cumulativeModel, null, 2));
+      console.log(`📖 Narrative arc updated for [${domain}]`);
     }
-    
-        if (parsed.narrative_synthesis && parsed.narrative_synthesis.trim().length > 50) {
-        const appended = await updateNarrativeArc(domain, parsed.narrative_synthesis, parsed.forecast, cumulativeModel);
-        if (appended) forecastsAppendedThisRun++;
-        await fs.writeFile(MODEL_PATH, JSON.stringify(cumulativeModel, null, 2));
-        console.log(`📖 Narrative arc updated for [${domain}]`);
-    }
+
     // Music tag sanitization
     let cleanTagsArray = (parsed.musicTags || "")
       .split(',')
@@ -1105,9 +958,10 @@ const markdownPost = `---
 ${frontMatter.join('\n')}
 ---
 
-## Navigation
+## Navigation Indexes
 - [Ongoing Narrative Arc](#ongoing-narrative-arc)
 - [Primary Poetic Artifact](#primary-poetic-artifact)
+- [Falsifiable Structural Hypothesis](#falsifiable-structural-hypothesis)
 - [Kinetic Dynamic Video](#kinetic-dynamic-video)
 - [Visual Anchor Representation](#visual-anchor-representation)
 - [Generated Musical Score](#generated-musical-score)
@@ -1115,29 +969,12 @@ ${frontMatter.join('\n')}
 
 ---
 
-${originalThematicPoem && originalThematicPoem.length > 60 && originalThematicPoem.length < 700 ? `
-### Thematic Seed
-
-<div class="thematic-seed">
-${originalThematicPoem.split('\n').map(line => line.trim() ? `<p>${line}</p>` : '').join('')}
-</div>
-` : ''}
-
-## Ongoing Narrative Arc
-
-${parsed.narrative_synthesis || '_No narrative synthesis generated this cycle._'}
-
-${parsed.forecast && parsed.forecast.length > 30 ? `
-
-### Forecast
-
-${parsed.forecast}
-` : ''}
+## Ongoing Narrative Arc {#ongoing-narrative-arc}
+${parsed.narrative_synthesis || '_No narrative synthesis was generated this cycle._'}
 
 ---
 
-### Primary Poetic Artifact
-
+### Primary Poetic Artifact {#primary-poetic-artifact}
 <div class="poetry-verse">
 ${parsed.verse || '_Poetic text generation unavailable._'}
 </div>
@@ -1146,30 +983,32 @@ ${ttsRes.markdown || ''}
 
 ---
 
-### Kinetic Dynamic Video
+## Falsifiable Structural Hypothesis {#falsifiable-structural-hypothesis}
+> ${parsed.hypothesis || '_No new falsifiable claim generated this cycle._'}
 
+---
+
+### Kinetic Dynamic Video {#kinetic-dynamic-video}
 ${vidRes.markdown || '_Kinetic video tracking element skipped._'}
 
-##### Video Generation Prompt
+##### Video Generation Prompt (Text-to-Video Engine)
 <blockquote>
 <strong>Target Prompt Parameters:</strong> ${parsed.t2v || '_No video prompt generated._'}
 </blockquote>
 
 ---
 
-### Visual Anchor Representation
-
+### Visual Anchor Representation {#visual-anchor-representation}
 ${imgRes.markdown || '_Visual anchor asset rendering unavailable._'}
 
-##### Image Generation Prompt
+##### Image Generation Prompt (Visual Engine)
 <blockquote>
 <strong>Target Prompt Parameters:</strong> ${displayImagePrompt}
 </blockquote>
 
 ---
 
-### Generated Musical Score
-
+### Generated Musical Score {#generated-musical-score}
 ${audioRes.markdown || '_Generated background score audio embed is unavailable._'}
 
 ##### Musical Score Vocal & Instrument Prompt Mapping
@@ -1181,8 +1020,7 @@ ${audioRes.markdown || '_Generated background score audio embed is unavailable._
 
 ---
 
-<h2 id="pipeline-and-debug-analytics">Pipeline & Debug Analytics</h2>
-
+### Pipeline & Debug Analytics {#pipeline-and-debug-analytics}
 <strong>Active Text Inference Core Platform:</strong> <code>${actualModelUsed}</code><br>
 <strong>Style Context Profile:</strong> <code>${selPrompt.name}.json</code><br>
 <strong>Image Asset Processing Worker:</strong> <code>${imgRes.engine || 'Skipped/Failed'}</code><br>
@@ -1192,15 +1030,15 @@ ${audioRes.markdown || '_Generated background score audio embed is unavailable._
 
 <br>
 
-<details>
-<summary>Complete Core Prompt Log</summary>
+### Complete Core Prompt Log
+<details><summary>Expand Full Prompt Code Details Sent to Inference Engine</summary>
 
-#### System Directive
+#### System Directive Context Profile
 \`\`\`text
 ${selPrompt.system}
 \`\`\`
 
-#### Final Prompt Payload
+#### Final Assembled Chat Prompt Payload
 \`\`\`text
 ${userPrompt}
 \`\`\`
@@ -1227,9 +1065,6 @@ ${userPrompt}
     console.log(`💾 Build completed. Post synchronized cleanly with audio embed: ${path.basename(finalFilePath)}`);
     await freeComfyVRAM();
   }
-
-  // === One-line summary log ===
-  console.log(`\n📊 Run complete — ${forecastsProcessedThisRun} processed | ${forecastsAppendedThisRun} appended | ${forecastsInjectedThisRun} injected.`);
 }
 
 main().catch(err => { console.error("Fatal pipeline loop exception:", err); process.exit(1); });

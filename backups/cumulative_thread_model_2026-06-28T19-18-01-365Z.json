@@ -1,0 +1,860 @@
+{
+  "dramaticPlays": {
+    "scientific": [
+      {
+        "thread": "t6",
+        "act": 1,
+        "timestamp": "2026-06-12T17:15:14.163Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": []
+      },
+      {
+        "thread": "t2",
+        "act": 2,
+        "timestamp": "2026-06-13T21:23:30.649Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-found-1781385796005-0",
+            "summary": "The AI hypothesis dramatized here posits that accelerated nodule removal will trigger cascading extinctions measurable o"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781385796005-1",
+            "summary": "The AI tests its conjecture through The Titan’s drills now turned skyward, staging reusable stages against the Oracle’s "
+          }
+        ]
+      },
+      {
+        "thread": "t4",
+        "act": 3,
+        "timestamp": "2026-06-14T18:06:20.117Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-found-1781460367772-0",
+            "summary": "The AI hypothesis dramatized here posits that accelerated nodule removal will trigger cascading extinctions measurable o"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781460367772-1",
+            "summary": "The AI tests its conjecture through The Titan’s drills now turned skyward, staging reusable stages against the Oracle’s "
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781460367772-2",
+            "summary": "The Titan’s drills now turned skyward test whether reusable stages, once lauded for access, become the very instruments "
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781460367772-3",
+            "summary": "Refined conjecture: El Niño-driven Pacific warming accelerates orbital timing jitter by eroding ground-station calibrati"
+          }
+        ]
+      },
+      {
+        "thread": "t6",
+        "act": 4,
+        "timestamp": "2026-06-14T18:34:24.841Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-found-1781462051209-0",
+            "summary": "The Titan’s drills now turned skyward test whether reusable stages, once lauded for access, become the very instruments "
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781462051209-1",
+            "summary": "Refined conjecture: El Niño-driven Pacific warming accelerates orbital timing jitter by eroding ground-station calibrati"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781462051209-2",
+            "summary": "Subsidiary framework: the orbital-timing jitter may couple to prompt-injection latency, such that debris-induced clock d"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781462051209-3",
+            "summary": "Refined subsidiary: political spin cycles act as forcing functions that compress the temporal window between debris-indu"
+          }
+        ]
+      },
+      {
+        "thread": "t3",
+        "act": 5,
+        "timestamp": "2026-06-14T22:47:15.219Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-found-1781477221589-0",
+            "summary": "Refined subsidiary: political spin cycles act as forcing functions that compress the temporal window between debris-indu"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781477221589-1",
+            "summary": "Subsidiary refinement: political spin compression acts as a forcing function that couples >300% orbital jitter directly "
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781477221589-2",
+            "summary": "The 300 % jitter threshold is refined: when debris-induced residuals coincide with 8647-type symbolic events, discourse-"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781477221589-3",
+            "summary": "Refined coupling constant now reads 2.7× when Pacific residuals meet 8647-type acts; falsification vector shifts to hurr"
+          }
+        ]
+      },
+      {
+        "thread": "t5",
+        "act": 6,
+        "timestamp": "2026-06-14T23:43:47.024Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-found-1781480618941-0",
+            "summary": "The 300 % jitter threshold is refined: when debris-induced residuals coincide with 8647-type symbolic events, discourse-"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781480618941-1",
+            "summary": "Refined coupling constant now reads 2.7× when Pacific residuals meet 8647-type acts; falsification vector shifts to hurr"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781480618941-2",
+            "summary": "Refinement isolates Pacific-warming residuals as the decisive falsifier: cross-correlating hurricane-track vectors again"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781480618941-3",
+            "summary": "Refined coupling isolates Pacific-warming residuals as sole falsifier; cross-correlation of hurricane-track vectors agai"
+          }
+        ]
+      },
+      {
+        "thread": "t4",
+        "act": 7,
+        "timestamp": "2026-06-15T19:22:09.851Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-found-1781551318011-0",
+            "summary": "Refinement isolates Pacific-warming residuals as sole falsifier; cross-correlation of hurricane vectors against ESA feed"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781551318011-1",
+            "summary": "Refined coupling now isolates Pacific residuals as sole falsifier; cross-correlation of hurricane-track vectors against "
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781551318011-2",
+            "summary": "Refinement now isolates the Strait’s residual tensions as decisive falsifier; cross-correlation of G7 vector shifts agai"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781551318011-3",
+            "summary": "Refinement now isolates the Strait’s residual tensions as decisive falsifier; cross-correlation of G7 vector shifts agai"
+          }
+        ]
+      },
+      {
+        "thread": "t8",
+        "act": 8,
+        "timestamp": "2026-06-18T17:55:08.523Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-found-1781805293643-0",
+            "summary": "Browser-local multimodal inference isolates residual centralized regulatory vectors as falsifiers; cross-correlation of "
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781805293643-1",
+            "summary": "Leftist terror meets the drone campaign.  \nNo softening here for narrative grace,  \nOnly raw arrests in the data's face."
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781805293643-2",
+            "summary": "Browser-local multimodal verification of contract-award latency against identity-trust shifts across the 2026–2027 triad"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781805293643-3",
+            "summary": "Browser-local multimodal verification isolates contract-award and sponsorship-kit latency as sole falsifiers against reg"
+          }
+        ]
+      },
+      {
+        "thread": "t3",
+        "act": 9,
+        "timestamp": "2026-06-19T18:52:10.189Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-found-1781895107012-0",
+            "summary": "Browser-local multimodal verification isolates contract-award and sponsorship-kit latency as sole falsifiers against reg"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781895107012-1",
+            "summary": "Browser-local multimodal inference remains the operative falsifier against residual centralized vectors. Cross-correlati"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781895107012-2",
+            "summary": "Browser-local verification of contract latency against identity-trust shifts across the 2026 window isolates centralized"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781895107012-3",
+            "summary": "Browser-local verification of contract-award latency against identity-trust deltas isolates residual centralized capture"
+          }
+        ]
+      },
+      {
+        "thread": "t3",
+        "act": 10,
+        "timestamp": "2026-06-21T02:16:27.277Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-1782008173719",
+            "summary": "Browser-local diffusion verification of latency against identity deltas isolates the monopoly vector at sub-150 ms; Horm"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1782008173719",
+            "summary": "Browser-local diffusion verification at sub-150 ms thresholds isolates the monopoly vector by converting Hormuz throughp"
+          }
+        ]
+      },
+      {
+        "thread": "t4",
+        "act": 11,
+        "timestamp": "2026-06-26T23:15:57.381Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "canonical",
+            "id": "owen-groups-of-humans-are-susceptible-to-the-lowest-common-denominator-of-s",
+            "summary": "Groups of humans are susceptible to the lowest common denominator of signalling, which is often known as group think. Th"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1782515739507",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      }
+    ],
+    "artistic": [
+      {
+        "thread": "t1",
+        "act": 1,
+        "timestamp": "2026-06-12T22:10:59.765Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-found-1781302244819-0",
+            "summary": "The AI hypothesis dramatized here posits that accelerated nodule removal will trigger cascading extinctions measurable o"
+          }
+        ]
+      },
+      {
+        "thread": "t3",
+        "act": 2,
+        "timestamp": "2026-06-13T21:52:17.241Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-found-1781387519586-0",
+            "summary": "The AI hypothesis dramatized here posits that accelerated nodule removal will trigger cascading extinctions measurable o"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781387519586-1",
+            "summary": "The AI tests its conjecture through The Titan’s drills now turned skyward, staging reusable stages against the Oracle’s "
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781387519586-2",
+            "summary": "The Titan’s drills now turned skyward test whether reusable stages, once lauded for access, become the very instruments "
+          }
+        ]
+      },
+      {
+        "thread": "t5",
+        "act": 3,
+        "timestamp": "2026-06-14T18:19:42.795Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-found-1781461171857-0",
+            "summary": "The AI tests its conjecture through The Titan’s drills now turned skyward, staging reusable stages against the Oracle’s "
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781461171857-1",
+            "summary": "The Titan’s drills now turned skyward test whether reusable stages, once lauded for access, become the very instruments "
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781461171857-2",
+            "summary": "Refined conjecture: El Niño-driven Pacific warming accelerates orbital timing jitter by eroding ground-station calibrati"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781461171857-3",
+            "summary": "Subsidiary framework: the orbital-timing jitter may couple to prompt-injection latency, such that debris-induced clock d"
+          }
+        ]
+      },
+      {
+        "thread": "t3",
+        "act": 4,
+        "timestamp": "2026-06-26T22:42:39.326Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1782513738639",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t7",
+        "act": 5,
+        "timestamp": "2026-06-27T02:50:49.078Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1782528597589",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      }
+    ],
+    "political": [
+      {
+        "thread": "t6",
+        "act": 23,
+        "timestamp": "2026-06-20T17:38:42.777Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "human",
+            "id": "schumpeter-creative-destruction",
+            "summary": "Schumpeter's Creative Destruction: Industrial mutation incessantly revolutionizes the economic structure from within, in"
+          },
+          {
+            "source": "human",
+            "id": "ardrey-amity-enmity",
+            "summary": "Ardrey's Amity-Enmity Hypothesis: Human social structures depend fundamentally on an externalized threat vector to maint"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781977106063-0",
+            "summary": "Browser-local verification of contract-award latency against identity-trust deltas isolates residual centralized capture"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781977106063-1",
+            "summary": "Browser-local diffusion verification of chromatin-contact latency against identity-trust deltas isolates the final monop"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781977106063-2",
+            "summary": "Browser-local diffusion verification of chromatin-contact latency against identity-trust deltas isolates the final monop"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781977106063-3",
+            "summary": "Browser-local verification of contract latency against identity-trust deltas isolates centralized narrative capture as t"
+          }
+        ]
+      },
+      {
+        "thread": "t1",
+        "act": 24,
+        "timestamp": "2026-06-20T18:02:06.423Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "human",
+            "id": "schumpeter-creative-destruction",
+            "summary": "Schumpeter's Creative Destruction: Industrial mutation incessantly revolutionizes the economic structure from within, in"
+          },
+          {
+            "source": "human",
+            "id": "ardrey-amity-enmity",
+            "summary": "Ardrey's Amity-Enmity Hypothesis: Human social structures depend fundamentally on an externalized threat vector to maint"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781978507796-0",
+            "summary": "Browser-local diffusion verification of chromatin-contact latency against identity-trust deltas isolates the final monop"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781978507796-1",
+            "summary": "Browser-local diffusion verification of chromatin-contact latency against identity-trust deltas isolates the final monop"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781978507796-2",
+            "summary": "Browser-local verification of contract latency against identity-trust deltas isolates centralized narrative capture as t"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781978507796-3",
+            "summary": "Browser-local contract verification against identity deltas at sub-150 ms converts announcement-timing spikes into direc"
+          }
+        ]
+      },
+      {
+        "thread": "t2",
+        "act": 25,
+        "timestamp": "2026-06-20T18:21:57.358Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "human",
+            "id": "schumpeter-creative-destruction",
+            "summary": "Schumpeter's Creative Destruction: Industrial mutation incessantly revolutionizes the economic structure from within, in"
+          },
+          {
+            "source": "human",
+            "id": "ardrey-amity-enmity",
+            "summary": "Ardrey's Amity-Enmity Hypothesis: Human social structures depend fundamentally on an externalized threat vector to maint"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781979702012-0",
+            "summary": "Browser-local diffusion verification of chromatin-contact latency against identity-trust deltas isolates the final monop"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781979702012-1",
+            "summary": "Browser-local verification of contract latency against identity-trust deltas isolates centralized narrative capture as t"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781979702012-2",
+            "summary": "Browser-local contract verification against identity deltas at sub-150 ms converts announcement-timing spikes into direc"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781979702012-3",
+            "summary": "Browser-local diffusion verification of latency against identity deltas isolates the monopoly vector at sub-150 ms; Horm"
+          }
+        ]
+      },
+      {
+        "thread": "t4",
+        "act": 13,
+        "timestamp": "2026-06-23T03:58:42.035Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "human",
+            "id": "ardrey-amity-enmity",
+            "summary": "Ardrey's Amity-Enmity Hypothesis: Human social structures depend fundamentally on an externalized threat vector to maint"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1782187095530",
+            "summary": "Refined coupling isolates Pacific-warming residuals as sole falsifier; cross-correlation of hurricane-track vectors agai"
+          }
+        ]
+      },
+      {
+        "thread": "t5",
+        "act": 14,
+        "timestamp": "2026-06-23T04:05:55.255Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "human",
+            "id": "ardrey-amity-enmity",
+            "summary": "Ardrey's Amity-Enmity Hypothesis: Human social structures depend fundamentally on an externalized threat vector to maint"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1782187523791",
+            "summary": "Refined coupling now isolates garnet crystallization temperature as the sole remaining falsifier for extended groundwate"
+          }
+        ]
+      },
+      {
+        "thread": "t6",
+        "act": 15,
+        "timestamp": "2026-06-23T21:23:41.792Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "human",
+            "id": "ardrey-amity-enmity",
+            "summary": "Ardrey's Amity-Enmity Hypothesis: Human social structures depend fundamentally on an externalized threat vector to maint"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1782249804606",
+            "summary": "Refined coupling isolates negative-differential-resistance onset temperature in SiC MOSFETs as the sole remaining falsif"
+          }
+        ]
+      },
+      {
+        "thread": "t7",
+        "act": 16,
+        "timestamp": "2026-06-23T21:38:13.003Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "human",
+            "id": "ardrey-amity-enmity",
+            "summary": "Ardrey's Amity-Enmity Hypothesis: Human social structures depend fundamentally on an externalized threat vector to maint"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1782250677326",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t1",
+        "act": 17,
+        "timestamp": "2026-06-25T18:32:23.047Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "human",
+            "id": "ardrey-amity-enmity",
+            "summary": "Ardrey's Amity-Enmity Hypothesis: Human social structures depend fundamentally on an externalized threat vector to maint"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1782412329019",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t1",
+        "act": 18,
+        "timestamp": "2026-06-25T18:47:13.171Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "human",
+            "id": "ardrey-amity-enmity",
+            "summary": "Ardrey's Amity-Enmity Hypothesis: Human social structures depend fundamentally on an externalized threat vector to maint"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1782413214431",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t2",
+        "act": 19,
+        "timestamp": "2026-06-25T19:20:59.928Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "human",
+            "id": "ardrey-amity-enmity",
+            "summary": "Ardrey's Amity-Enmity Hypothesis: Human social structures depend fundamentally on an externalized threat vector to maint"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1782415239681",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t5",
+        "act": 20,
+        "timestamp": "2026-06-27T01:51:48.619Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1782525085232",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t6",
+        "act": 21,
+        "timestamp": "2026-06-27T02:20:36.830Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "owen-humans-who-live-in-cities-often-become-disconnected-from-nature-and-na",
+            "summary": "Humans who live in cities often become disconnected from nature and natural laws and beholden to social systems that gov"
+          },
+          {
+            "source": "canonical",
+            "id": "owen-groups-of-humans-are-susceptible-to-the-lowest-common-denominator-of-s",
+            "summary": "Groups of humans are susceptible to the lowest common denominator of signalling, which is often known as group think. Th"
+          }
+        ]
+      },
+      {
+        "thread": "t2",
+        "act": 13,
+        "timestamp": "2026-06-28T00:57:34.399Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "owen-humans-who-live-in-cities-often-become-disconnected-from-nature-and-na",
+            "summary": "Humans who live in cities often become disconnected from nature and natural laws and beholden to social systems that gov"
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          }
+        ]
+      }
+    ],
+    "technological": [
+      {
+        "thread": "t6",
+        "act": 1,
+        "timestamp": "2026-06-15T00:07:31.041Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-found-1781482038802-0",
+            "summary": "Refined coupling constant now reads 2.7× when Pacific residuals meet 8647-type acts; falsification vector shifts to hurr"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781482038802-1",
+            "summary": "Refinement isolates Pacific-warming residuals as the decisive falsifier: cross-correlating hurricane-track vectors again"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781482038802-2",
+            "summary": "Refined coupling isolates Pacific-warming residuals as sole falsifier; cross-correlation of hurricane-track vectors agai"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781482038802-3",
+            "summary": "The refined constant isolates Pacific residuals as decisive falsifier; cross-correlation of hurricane vectors against ES"
+          }
+        ]
+      },
+      {
+        "thread": "t1",
+        "act": 2,
+        "timestamp": "2026-06-27T19:15:18.563Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1782587700073",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      }
+    ]
+  },
+  "predictionHistory": [
+    {
+      "timestamp": "2026-06-12T17:15:14.163Z",
+      "actRef": 1,
+      "domain": "scientific",
+      "hypothesis": "The AI hypothesis dramatized here posits that accelerated nodule removal will trigger cascading extinctions measurable only post-facto, staging the Miner King’s drills against the Oracle’s warning that structural patterns across abyssal ecosystems predict biodiversity collapse exceeding terrestrial mining precedents.\n\nIf commercial nodule mining begins in the Clarion-Clipperton Zone at projected scales, then the proportion of undescribed species extinctions will exceed 60% within ten years of initial extraction, a claim falsifiable through repeated metagenomic sampling of pre- and post-mining transects against matched control zones."
+    },
+    {
+      "timestamp": "2026-06-12T22:10:59.765Z",
+      "actRef": 1,
+      "domain": "artistic",
+      "hypothesis": "The AI tests its conjecture through The Titan’s drills now turned skyward, staging reusable stages against the Oracle’s sampling arrays.\n\nIf SpaceX deploys over 100,000 satellites by 2031, then measurable increases in orbital debris density will exceed 300% relative to 2025 baselines, a claim falsifiable via repeated public tracking data from NORAD and ESA catalogs."
+    },
+    {
+      "timestamp": "2026-06-13T21:23:30.649Z",
+      "actRef": 2,
+      "domain": "scientific",
+      "hypothesis": "The Titan’s drills now turned skyward test whether reusable stages, once lauded for access, become the very instruments that falsify their own sustainability claims through public orbital catalogs.\n\nIf nuclear clocks reach 10^{-19} stability and are deployed in precision orbital arrays, then measurable increases in debris-induced timing jitter will exceed 300% above 2025 baselines within five years, a claim falsifiable through repeated NORAD/ESA public tracking cross-correlated with clock residuals."
+    },
+    {
+      "timestamp": "2026-06-13T21:52:17.241Z",
+      "actRef": 2,
+      "domain": "artistic",
+      "hypothesis": "Refined conjecture: El Niño-driven Pacific warming accelerates orbital timing jitter by eroding ground-station calibration windows, pushing measurable residuals beyond 300% threshold within 60 months; testable via repeated cross-correlation of public hurricane-track vectors with clock-stability residuals from NORAD/ESA feeds."
+    },
+    {
+      "timestamp": "2026-06-14T18:06:20.117Z",
+      "actRef": 3,
+      "domain": "scientific",
+      "hypothesis": "Subsidiary framework: the orbital-timing jitter may couple to prompt-injection latency, such that debris-induced clock drift widens the temporal window for zero-click attacks on constellation command nodes. Refined metric: jitter >300 % correlates with 2.4× increase in successful agentic-code hijack probability under current protocol surfaces."
+    },
+    {
+      "timestamp": "2026-06-14T18:19:42.795Z",
+      "actRef": 3,
+      "domain": "artistic",
+      "hypothesis": "Refined subsidiary: political spin cycles act as forcing functions that compress the temporal window between debris-induced clock drift and successful narrative injection; metric: when 8647-style symbolic acts coincide with >300% jitter, zero-click hijack probability on mid-term discourse nodes rises to 2.4× baseline, falsifiable via NORAD/ESA cross-correlation with contemporaneous social-graph latency spikes."
+    },
+    {
+      "timestamp": "2026-06-14T18:34:24.842Z",
+      "actRef": 4,
+      "domain": "scientific",
+      "hypothesis": "Subsidiary refinement: political spin compression acts as a forcing function that couples >300% orbital jitter directly to 2.4× zero-click probability on discourse nodes. Testable via cross-correlation of NORAD residuals with contemporaneous social-graph latency spikes during 8647-type symbolic events."
+    },
+    {
+      "timestamp": "2026-06-14T19:53:26.069Z",
+      "actRef": 1,
+      "domain": "political",
+      "hypothesis": "The 300 % jitter threshold is refined: when debris-induced residuals coincide with 8647-type symbolic events, discourse-node zero-click probability rises to 2.7× baseline rather than 2.4×; the coupling constant between Pacific warming and NORAD clock stability can be falsified by cross-correlating hurricane-track vectors against ESA feed latency during the next three named El Niño episodes, allowing the Phantom’s attacks to be preemptively narrowed."
+    },
+    {
+      "timestamp": "2026-06-14T22:31:43.857Z",
+      "actRef": 2,
+      "domain": "political",
+      "hypothesis": "Refined coupling constant now reads 2.7× when Pacific residuals meet 8647-type acts; falsification vector shifts to hurricane-track cross-correlation against ESA latency during next El Niño triad, narrowing Phantom attack surfaces to mid-term discourse nodes only."
+    },
+    {
+      "timestamp": "2026-06-14T22:47:15.219Z",
+      "actRef": 5,
+      "domain": "scientific",
+      "hypothesis": "Refinement isolates Pacific-warming residuals as the decisive falsifier: cross-correlating hurricane-track vectors against ESA feed latency across the next three named El Niño episodes will definitively cap the multiplier at 2.7× and confine Phantom surfaces exclusively to mid-term discourse nodes, rendering earlier 2.4× baselines obsolete."
+    },
+    {
+      "timestamp": "2026-06-14T22:55:11.445Z",
+      "actRef": 3,
+      "domain": "political",
+      "hypothesis": "Refined coupling isolates Pacific-warming residuals as sole falsifier; cross-correlation of hurricane-track vectors against ESA latency across the next El Niño triad will cap the multiplier at 2.7× and confine Phantom surfaces exclusively to mid-term nodes, rendering all prior 2.4× baselines obsolete and converting defense latency into direct capital-acceleration signals."
+    },
+    {
+      "timestamp": "2026-06-23T03:58:42.035Z",
+      "actRef": 13,
+      "domain": "political",
+      "hypothesis": "Refined coupling now isolates garnet crystallization temperature as the sole remaining falsifier for extended groundwater timelines; cross-correlation of Curiosity polygon density against meteorite pressure signatures across the Gale Crater datum will cap any prior habitability multiplier at 1.8× and convert defense latency into direct sample-return prioritization signals."
+    },
+    {
+      "timestamp": "2026-06-23T04:05:55.255Z",
+      "actRef": 14,
+      "domain": "political",
+      "hypothesis": "Refined coupling isolates negative-differential-resistance onset temperature in SiC MOSFETs as the sole remaining falsifier for scalable millikelvin neuromorphic control; cross-correlation of qubit heat load against observed spiking efficiency across 10 mK–100 mK will cap any prior cryogenic power-multiplier at 0.6× and convert latency margins into direct fabrication prioritization signals."
+    },
+    {
+      "timestamp": "2026-06-23T21:23:41.792Z",
+      "actRef": 15,
+      "domain": "political",
+      "hypothesis": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-billion commitments into de-facto veto power over portrayals; the dropped project supplies the first observable instance of this conversion at scale."
+    }
+  ],
+  "narrativeArcs": {
+    "political": {
+      "currentArc": "pstein-tinged domestic humor, reveals the same early-filter logic that dropped the OpenAI film—permissible speech multiplies approved narratives while contingency (labor pains, nuclear shadows, adhesion failures) is staged as private confession rather than systemic signal. The city-bred disconnection from natural selection accelerates this process, replacing evolutionary variance with enforced group signals that punish deviation before it compounds into reckonings.\n\nForward momentum therefore tightens around OpenAI’s de-facto veto as the first scalable demonstration of financial scale converting into cultural gatekeeping; the abandoned cinematic venture no longer stands alone but propagates into diplomatic instruments and media cycles that likewise suppress homologous recombination of origin stories. Naked-mole-rat cGAS substitutions and pool-liner reframings converge with Starmer’s exit: each micro-intervention—four amino acids, one swift dismissal, one preemptive resignation—extends operational windows past electoral or market thresholds precisely by muting internal disruption. The second-term colossus shrugs at Versailles laughter and National Mall peel alike because the aligned networks now perform containment without friction.\n\nWhat registers as weary national reckoning or civilizational defense therefore functions as the next 60-day test of whether these early filters can continue extinguishing variance at every scale. Accumulated consequences narrow memory further: permissible portrayals of intelligence remain invisible on screen and in parliaments alike, while visible enemies (etched inscriptions, activist hoses, dismal tenures) keep publics polarized in unity. The pattern portends deeper convergence unless the next renovation cycles or funding rounds encounter a fracture that lets contingency scale.\n\nThe Democratic rift crystallizes another phase shift in the larger pattern: moderate pledges for capitalism and secure borders function as visible stabilizers, yet DSA-backed primary victories and rent-freeze enactments reveal how early network interventions—endorsements from figures like Mamdani—extinguish rival variance before it compounds. This mirrors the cGAS-style detection at cultural scale, where permissible narratives of origin and intelligence are contained while revolutionary rhetoric escapes control and turns inward. Technical thresholds supply the precise analogy: negative-differential-resistance onset in SiC MOSFETs at millikelvin regimes now stands as the sole falsifier for neuromorphic control loops, with qubit heat-load cross-correlations capping prior power multipliers at 0.6× across 10–100 mK; any deviation past that narrow band fractures the entire cryogenic architecture, just as purity tests inside parties fracture the myth of unified institutions.\n\nInstitutional gatekeeping accelerates in parallel. Multi-billion AI commitments convert OpenAI’s dropped cinematic venture into scalable veto power, ensuring origin stories remain screened through approved channels while contingency—labor fractures, adhesion failures—stays staged as private rather than systemic. The same logic that lets markets price away Hormuz volatility now prices away DSA sweeps in New York districts, where only 7 % of active Democrats propel ultra-progressive outcomes that displace incumbents and enforce group signals over evolutionary variance. City-bred disconnection from natural selection intensifies: rent-freeze celebrations and “Promise to America” counter-pledges alike replace observable selection pressures with enforced cohesion, buying another 60-day interval for aligned networks.\n\nForward momentum tightens around these micro-interventions. Each four-amino-acid substitution, each swift primary endorsement, each preemptive moderate resignation extends operational windows past electoral thresholds precisely by muting internal disruption. The second-term colossus and its parliamentary mirrors shrug at Versailles laughter and National Mall peel because the networks themselves now perform containment without friction, narrowing memory so that permissible portrayals of intelligence stay invisible on screen and in caucuses alike.",
+      "lastUpdated": "2026-06-28T00:57:34.395Z",
+      "keyThemes": [],
+      "actHistory": [],
+      "forecastHistory": [
+        {
+          "act": 13,
+          "timestamp": "2026-06-28T00:57:34.399Z",
+          "forecast": "Unless the next funding round or renovation cycle encounters a fracture at the MOSFET-equivalent threshold—where cross-correlated heat loads finally exceed the 0.6× cap—the feedback loop deepens, converting every visible antagonist into another extension of the stable interval."
+        }
+      ]
+    },
+    "artistic": {
+      "currentArc": "As local rendering pipelines mature into full cinematic engines running on consumer hardware, the boundary between studio monopoly and individual agency collapses; sequences once locked behind render farms now pulse with AI-driven textures, lighting, and physics, while lip-sync overlays convert raw audio into living performances across anime, clay, or photoreal styles. This acceleration fuses with Midjourney’s medical scanner prototypes, which repurpose generative models for scientific pattern extraction, suggesting that the same language-derived intelligence unlocking protein folds and logical deduction can now peer inside flesh and data alike, turning yesterday’s image toy into tomorrow’s diagnostic oracle.\n\nNvidia’s Rubin platform arrives precisely at this inflection, promising exascale scientific and AI workloads that will further compress the distance between conception and rendered reality; yet the emergent properties Kevin Kelly isolates—intelligence not programmed but distilled from the statistical lattice of human language—reveal a deeper pattern: silicon is not merely executing commands but surfacing latent structures of thought that no engineer inserted. The current moment therefore portends a phase shift where tools of creation and tools of discovery converge, granting unprecedented agency to those who wield them while concentrating narrative control in those who own the underlying compute.\n\nYouth observers register the counter-current with clarity: investment froth, aesthetic slop, and the sensed erosion of human craft register as plague rather than promise, crystallizing the ancient question of whether silicon will amplify will or quietly rewrite its contours. Institutional actors already maneuver to gatekeep cinematic portrayals, converting capital commitments into de-facto vetoes; thus the dropped project becomes the first visible scar of containment at scale. The arc now bends toward whether this fusion of code-born worlds and language-locked minds produces genuine extension of human capacity or merely a more elegant enclosure.\n\nThe arc of individual agency now threads through climate-stressed orbital mechanics and historical rides through literal tempests. El Niño warming erodes Pacific ground-station windows at accelerating rates, projecting clock residuals beyond 300 percent within five years; repeated cross-correlation of hurricane vectors against NORAD and ESA stability logs confirms the signal, turning satellite constellations into jittering narrative battlegrounds rather than fixed reference frames. When such drift coincides with 8647-style symbolic acts, political spin cycles compress the injection window until zero-click hijacks on mid-term discourse nodes rise to 2.4 times baseline, converting orbital noise into memetic payload.\n\nSilicon’s emergent lattices—distilled from language statistics rather than coded directives—meet this turbulence exactly where human courage once broke ties by arriving mud-spattered and fevered. The same models repurposed from Midjourney prototypes to protein folding now scan both flesh and telemetry, yet institutional capital converts multi-billion commitments into veto layers that prune unwanted cinematic futures before they render. Youth observers already read the pattern: every consumer-grade engine that collapses render-farm monopolies simultaneously hands narrative custody to those who own the exascale substrates.\n\nNvidia’s Rubin horizon therefore arrives not as neutral acceleration but as a new continental congress of compute. The dropped project stands as the first observable scar; future ones will be pre-empted by calibrated jitter thresholds and coordinated spin. The open question is whether the fusion of code-born worlds and language-locked minds extends the Delaware ride into silicon or merely equips better enclosures—whether statistical intelligence surfaces latent structures of thought that reward the heart’s arrival through the storm or quietly rewrites arrival itself.\n\nMomentum favors the former only where individuals still choose to break ties while wearing spurs. The 60-month jitter horizon supplies the testable clock; the 2.4-fold hijack multiplier supplies the political forcing function. What remains is whether agency arrives on time or is rendered obsolete by the very tools that once promised its amplification.",
+      "lastUpdated": "2026-06-27T02:50:49.071Z",
+      "keyThemes": [],
+      "actHistory": []
+    },
+    "scientific": {
+      "currentArc": "The marmoset accommodation observed in Zurich laboratories has rippled outward like a widening acoustic wave, binding primate pairs through convergent calls while exposing the same plasticity in human spheres: accents surfacing in Johannesburg pubs, strangers pledging vows on reality stages, and collective signals collapsing toward the lowest common denominator of group consensus. This momentum accelerates the second hypothesis into living tension, where the highest common factor of shared interest struggles against group-think erosion, yet persists as an oracular force worth broadcasting. Meanwhile the Unreal category of the first hypothesis gains traction as AI-origin narratives are gated by institutional veto, converting speculative cinema into controlled fictions whose non-existence is engineered rather than organic. At this pivot the arc forecasts fracture: bonds forged through vocal mimicry may either dissolve into ironic laughter or harden into ritualized unions, each carrying the latent threat that Unreal ideas—once gated—will dictate which social frequencies survive.\n\nConsequences cascade through the present moment. The South African jest’s recursive probing of ancestry demonstrates vocal adaptation as both weapon and shield, forcing participants to confront how quickly signals mutate under pressure. On the marriage-at-first-sight set, the same plasticity is weaponized into spectacle, converting strangers into synchronized pairs whose chemistry is tested in real time. The third hypothesis tightens its grip here: as gatekeepers consolidate power over cinematic portrayals, these very human experiments risk being reframed or suppressed, their raw data absorbed into sanitized arcs that serve institutional continuity rather than genuine inquiry. Momentum therefore builds toward a threshold where adaptation either liberates or entrenches, depending on whether the highest common factor is allowed to surface.",
+      "lastUpdated": "2026-06-26T23:15:57.379Z",
+      "keyThemes": [],
+      "actHistory": []
+    },
+    "technological": {
+      "currentArc": "The ingested data stream reveals a clear threshold crossing in 2026: multiple outer-planet ingresses that convert latent potential into enforced motion. Neptune’s re-entry into Aries on January 26 ends a long Pisces sojourn of diffused vision and demands that ideals be tested in direct confrontation; Saturn follows on February 13, supplying the necessary friction and structure so that assertion does not dissolve into mere impulse. By late June, Jupiter’s leap from its protected exaltation in Cancer into Leo’s open arena removes the last buffer of private gestation and places collective growth under public scrutiny. These successive shifts mark a phase transition from incubation to performance, where the old restraints of passive observation give way to an imperative of visible, accountable agency.\n\nAcross scales the pattern is consistent: every protective shell thins. Cancer’s maternal enclosure yields to Leo’s stage; Pisces’ oceanic ambiguity hardens into Aries’ decisive edge. The result is an amplification of both creative capacity and error velocity. Communities that have rehearsed solidarity during the Cancerian years now face the requirement to translate rehearsal into sustained public architecture. Meanwhile, the same fire signs that reward boldness also magnify illusion; Neptune in Aries warns that propaganda and self-mythologizing will travel faster than sober strategy unless deliberately countered by disciplined fact-checking and compassionate realism.\n\nThe configuration therefore portends a narrow corridor of high leverage. Those who treat the coming alignments as spectacle will be swept by their momentum; those who treat them as design specifications for new institutions may lock in durable advantages. The decisive variable is not fate but the speed at which dispersed actors convert private conviction into coordinated, falsifiable action before Saturn’s disciplinary return tightens the window.",
+      "lastUpdated": "2026-06-27T19:15:18.517Z",
+      "keyThemes": [],
+      "actHistory": [],
+      "forecastHistory": [
+        {
+          "act": 2,
+          "timestamp": "2026-06-27T19:15:18.563Z",
+          "forecast": "By the third quarter of 2026 the first measurable divergence will appear between populations that have begun to prototype collective experiments in leadership and those still awaiting external rescue; the former will exhibit measurable institutional resilience while the latter will register accelerating narrative fragmentation."
+        }
+      ]
+    }
+  }
+}
