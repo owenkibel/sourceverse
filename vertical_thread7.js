@@ -970,15 +970,11 @@ Target Format Blueprint:
       userPrompt += `\n\n${hypothesisBlock}`;
     }
 
-    // Mandatory requirements
-    userPrompt += `\n\n--- MANDATORY DRAMATIC PRODUCTION REQUIREMENTS ---\n`;
-    userPrompt += `- Write EXTENDED, substantial verse structured explicitly into separated stanzas.\n`;
-    userPrompt += `- Infuse the text with sharp originality, observational wit, and oracular Grok-style humor.\n`;
-userPrompt += `- Write with compression and focus. Avoid numbering stanzas ("Stanza 1", "Stanza 2", etc.). A poem that deeply explores one or two tensions is preferred over a longer piece that lists many elements.\n`;
-userPrompt += `- Strongly resist automatically importing metaphors (multipliers, jitter, latency, spin compression, etc.) from previous arcs unless they are essential to this thread.\n`;
-    if (!isTraditional) {
-      userPrompt += `- The CHORUS/refrain section must directly articulate the collision of your active hypotheses and the underlying forecast.\n`;
-    }
+// Mode-specific mandatory instructions (kept minimal to avoid conflicting with prompt files)
+if (!isTraditional) {
+  userPrompt += `\n\n--- MODE-SPECIFIC REQUIREMENTS ---\n`;
+  userPrompt += `- The CHORUS/refrain section must directly articulate the collision of your active hypotheses and the underlying forecast.\n`;
+}
 
     // Generate
     const rawOutput = await generateText(selPrompt.system, userPrompt);
