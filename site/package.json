@@ -1,5 +1,6 @@
 {
-  "name": "site",
+  "name": "threadcraft",
+"description": "Dynamic static site engine for metrical theater and text curation",
   "type": "module",
   "version": "0.0.1",
   "engines": {
