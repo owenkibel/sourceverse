@@ -98,7 +98,7 @@ Sourceverse maintains continuity through `cumulative_thread_model.json`. Each do
 
 ## Blog
 
-The output is published at [Sourceverse](https://Sourceverse.vercel.app/).
+The output is published at [Threadcraft Verse](https://threadcraft-verse.vercel.app/).
 
 The blog supports both AI-generated oracular posts and human-written contributions.
 
