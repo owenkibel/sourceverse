@@ -1,6 +1,6 @@
-# Gramarye
+# Sourceverse
 
-**Gramarye** is an experimental system for generating long-form oracular narrative. It transforms streams of current events, scientific developments, and political signals into sustained story arcs, metrical verse, and forward-looking forecasts.
+**Sourceverse** is an experimental system for generating long-form oracular narrative. It transforms streams of current events, scientific developments, and political signals into sustained story arcs, metrical verse, and forward-looking forecasts.
 
 The project explores how **persistent memory** and pattern recognition can produce coherent, evolving narratives across multiple cycles rather than isolated posts.
 
@@ -94,17 +94,17 @@ bun vertical_thread7.js --grok --ideogram --thread=t4
 
 ## Persistent Memory
 
-Gramarye maintains continuity through `cumulative_thread_model.json`. Each domain keeps its own evolving narrative arc and recent forecast history. This allows later posts to reference and build upon earlier ones rather than starting from scratch.
+Sourceverse maintains continuity through `cumulative_thread_model.json`. Each domain keeps its own evolving narrative arc and recent forecast history. This allows later posts to reference and build upon earlier ones rather than starting from scratch.
 
 ## Blog
 
-The output is published at [Gramarye](https://gramarye.vercel.app/).
+The output is published at [Sourceverse](https://Sourceverse.vercel.app/).
 
 The blog supports both AI-generated oracular posts and human-written contributions.
 
 ## Philosophy
 
-Gramarye treats current events as signals within larger patterns. It attempts to maintain living narrative threads that can surface thresholds, phase shifts, and latent forces over time.
+Sourceverse treats current events as signals within larger patterns. It attempts to maintain living narrative threads that can surface thresholds, phase shifts, and latent forces over time.
 
 The system combines large language model generation with explicit persistent memory and structured prompt engineering.
 
@@ -115,5 +115,5 @@ This is an active research project. The architecture continues to evolve around 
 
 ## Links
 
-- **Blog**: [Gramarye](example.com)
+- **Blog**: [Threadcraft Verse](https://threadcraft-verse.vercel.app/)
 - **Repository**: [sourceverse](https://github.com/owenkibel/sourceverse)

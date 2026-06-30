@@ -1,14 +1,14 @@
 ---
 // site/src/pages/index.astro
+import { getCollection } from 'astro:content';
 
-// Route queries directly through the symlink inside the source tree
-const matches = import.meta.glob('../content/blog/*.md', { eager: true });
-const allPosts = Object.values(matches);
+// 1. Fetch posts natively through the modern Content Layer cache
+const allPosts = await getCollection('blog');
 
-// Unified reverse-chronological sort
+// 2. Unified reverse-chronological sort using data properties
 const sortedPosts = allPosts.sort((a, b) => {
-  const dateA = a.frontmatter.date ? Date.parse(a.frontmatter.date) : 0;
-  const dateB = b.frontmatter.date ? Date.parse(b.frontmatter.date) : 0;
+  const dateA = a.data.date || a.data.pubDate ? Date.parse(a.data.date || a.data.pubDate) : 0;
+  const dateB = b.data.date || b.data.pubDate ? Date.parse(b.data.date || b.data.pubDate) : 0;
   
   const validA = isNaN(dateA) ? 0 : dateA;
   const validB = isNaN(dateB) ? 0 : dateB;
@@ -22,7 +22,8 @@ const sortedPosts = allPosts.sort((a, b) => {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sourceverse Hub — Index Ledger</title>
+  {/* Updated Title Metadata */}
+  <title>Threadcraft Verse — Index Ledger</title>
   <style>
     :root {
       --bg-primary: #0a0a0c;
@@ -80,7 +81,8 @@ const sortedPosts = allPosts.sort((a, b) => {
 </head>
 <body>
   <header>
-    <h1>SOURCEVERSE</h1>
+    {/* Rebranded Visual Heading */}
+    <h1>THREADCRAFT VERSE</h1>
     <nav>
       <a href="/">[ root_feed ]</a>
       <a href="/blog">[ archive_ledger ]</a>
@@ -92,17 +94,20 @@ const sortedPosts = allPosts.sort((a, b) => {
       <p style="color: var(--text-muted);">// No active markdown transmutations detected in target ledger.</p>
     ) : (
       sortedPosts.map((post) => {
-        const fallbackTitle = post.frontmatter.title || "Untitled Fragment";
-        const displayDate = post.frontmatter.date 
-          ? new Date(post.frontmatter.date).toISOString().split('T')[0]
+        // Updated mappings from old .frontmatter definitions to Content Layer .data properties
+        const fallbackTitle = post.data.title || "Untitled Fragment";
+        
+        // Formats the active collection timestamp safely
+        const rawDate = post.data.date || post.data.pubDate;
+        const displayDate = rawDate 
+          ? new Date(rawDate).toISOString().split('T')[0]
           : "0000-00-00";
 
-const extractedSlug = post.file ? post.file.split('/').pop().replace('.md', '') : '';
-        
-        // ADD .toLowerCase() HERE to safely match Astro's route ledger
-        const derivedUrl = `/blog/${extractedSlug}`.toLowerCase();
+        // Astro 7 handles slug resolution via post.id natively.
+        // Forcing lowercase avoids strict routing mismatches on case-sensitive filesystems.
+        const derivedUrl = `/blog/${post.id.toLowerCase()}`;
 
-        const rawTags = post.frontmatter.tags || [];
+        const rawTags = post.data.tags || [];
         const normalizedTags = Array.isArray(rawTags) ? rawTags : [rawTags];
 
         return (
@@ -113,13 +118,13 @@ const extractedSlug = post.file ? post.file.split('/').pop().replace('.md', '') 
             <div class="meta-strip">
               <span>[{displayDate}]</span>
               <span>•</span>
-              <span>operator: {post.frontmatter.author || "system"}</span>
+              <span>operator: {post.data.author || "system"}</span>
               
-              {post.frontmatter.source && (
-                <span class="badge">src:{post.frontmatter.source}</span>
+              {post.data.source && (
+                <span class="badge">src:{post.data.source}</span>
               )}
-              {post.frontmatter.domain && (
-                <span class="badge">domain:{post.frontmatter.domain}</span>
+              {post.data.type && (
+                <span class="badge">type:{post.data.type}</span>
               )}
               {normalizedTags.map((tag) => (
                 <span class="badge">#{tag}</span>
