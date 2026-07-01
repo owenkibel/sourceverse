@@ -21,7 +21,7 @@ export async function GET(context) {
       return {
         // === UPDATE PROPERTY ACCESS MAPS TO USE .data ===
         title: post.data.title,
-        description: post.data.description || 'Threadcraft narrative stream.',
+        description: post.data.description || 'Verse Grown in Latent Space',
         pubDate: parsedDate || new Date(),
         // Force lowercased ID structure to prevent 404 routing mismatches
         link: `/blog/${post.id.toLowerCase()}/`,
