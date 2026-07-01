@@ -134,6 +134,13 @@ const sortedPosts = allPosts.sort((a, b) => {
         );
       })
     )}
+
   </main>
+
+  <!-- Add Vercel Analytics tracking injection here -->
+  <script>
+    import { inject } from '@vercel/analytics';
+    inject();
+  </script>
 </body>
 </html>

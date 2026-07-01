@@ -1,6 +1,6 @@
 {
   "name": "threadcraft",
-"description": "Dynamic static site engine for metrical theater and text curation",
+  "description": "Dynamic static site engine for metrical theater and text curation",
   "type": "module",
   "version": "0.0.1",
   "engines": {
@@ -16,6 +16,7 @@
     "@astrojs/mdx": "7.0.0",
     "@astrojs/rss": "^4.0.18",
     "@astrojs/sitemap": "^3.7.3",
+    "@vercel/analytics": "^2.0.1",
     "astro": "7.0.3",
     "sharp": "^0.34.3"
   },

@@ -4,8 +4,6 @@
 
 The project explores how **persistent memory** and pattern recognition can produce coherent, evolving narratives across multiple cycles rather than isolated posts.
 
-The code is evolved through iterative testing of scripts that emerge out of directed and continuing conversations with the latest Gemini and Grok models in their regular portals. These models are also directly addressed in the scripts through their APIs.
-
 ## Core Ideas
 
 - **Persistent Narrative Memory**: A cumulative model (`cumulative_thread_model.json`) maintains domain-specific narrative arcs, recent forecasts, and hypothesis history. This allows the system to build continuity across runs.
@@ -96,9 +94,41 @@ bun vertical_thread7.js --grok --ideogram --thread=t4
 
 Sourceverse maintains continuity through `cumulative_thread_model.json`. Each domain keeps its own evolving narrative arc and recent forecast history. This allows later posts to reference and build upon earlier ones rather than starting from scratch.
 
+## How Verse Is Grown in Latent Space
+
+Modern large language models don’t “retrieve” poetry from a database. Instead, they **grow** it iteratively inside a high-dimensional continuous space (latent space). Here’s how it actually works:
+
+### 1. Initial Seeding
+
+- The prompt, system instructions, previous narrative arc, hypotheses, and recent forecasts are all encoded into vectors.
+- These vectors create an initial position and direction in latent space. This is the “seed” of the poem.
+
+### 2. Iterative Growth (Token by Token)
+
+- The model doesn’t generate the entire poem at once. It predicts one token at a time.
+- At each step, the model updates its internal state (the evolving latent representation) based on everything generated so far.
+- This creates a trajectory through latent space. Each new token slightly shifts the model’s position and momentum in that space.
+
+### 3. Shaping the Growth
+
+Several factors act like “nutrients” or “pruning forces” that guide how the verse grows:
+
+- **System prompt & artistic mode** (dramatic vs traditional): These act as strong structural constraints on the growth pattern.
+- **Narrative context** (previous arc + recent forecasts): This pulls the generation toward thematic continuity.
+- **Hypotheses block**: These function as thematic “nutrients” that bias the direction of growth.
+- **Temperature / sampling parameters**: These control how wild or constrained the branching is at each step.
+- **Persistent memory** (`cumulative_thread_model.json`): This is especially important — it gives the model a kind of “long-term memory” of previous thresholds and patterns, so the verse doesn’t grow in isolation.
+
+### 4. Emergence
+
+Because the model is navigating a very high-dimensional space with complex learned patterns, coherent structure (meter, rhyme, thematic development, even recurring metaphors) can **emerge** without being explicitly programmed at every step. This is why it can feel like the poem is being *grown* rather than assembled.
+
+**In short:**
+Verse generation is a guided trajectory through latent space. The better the conditioning (prompts, memory, hypotheses), the more coherent and interesting the growth becomes.
+
 ## Blog
 
-The output is published at [Threadcraft Verse](https://threadcraft-verse.vercel.app/).
+The output is published at [Latent Verse](https://latent-verse.vercel.app/).
 
 The blog supports both AI-generated oracular posts and human-written contributions.
 
@@ -110,10 +140,9 @@ The system combines large language model generation with explicit persistent mem
 
 ## Status
 
-This is an active research project. The architecture continues to evolve around better long-term coherence, more grounded forecasting, and a cleaner relationship between raw input and expanded oracular output. A previous version without persistent memory is at 
-[sourceverse0](https://github.com/owenkibel/sourceverse0).
+This is an active research project. The architecture continues to evolve around better long-term coherence, more grounded forecasting, and a cleaner relationship between raw input and expanded oracular output.
 
 ## Links
 
-- **Blog**: [Threadcraft Verse](https://threadcraft-verse.vercel.app/)
+- **Blog**: [Latent Verse](https://latent-verse.vercel.app/)
 - **Repository**: [sourceverse](https://github.com/owenkibel/sourceverse)

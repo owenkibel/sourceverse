@@ -8,8 +8,8 @@ export default defineConfig({
   
   // === RESTORE YOUR SITE URL HERE ===
   // Replace this with your actual production domain (e.g., 'https://owenkibel.github.io')
-  site: 'http://localhost:4321',
-  // site: 'https://threadcraft-placeholder.vercel.app',
+  // site: 'http://localhost:4321',
+  site: 'https://threadcraft-verse.vercel.app/',
   // ===================================
 
   integrations: [mdx(), sitemap()],
