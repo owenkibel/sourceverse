@@ -1,0 +1,97 @@
+---
+import { getCollection } from 'astro:content';
+
+const allPosts = await getCollection('blog');
+
+// Dynamically isolate core machine operators
+const authorCounts: Record<string, number> = {};
+allPosts.forEach(post => {
+  const author = post.data.author || 'system';
+  const cleanAuthor = author.trim();
+  if (cleanAuthor) {
+    authorCounts[cleanAuthor] = (authorCounts[cleanAuthor] || 0) + 1;
+  }
+});
+
+const sortedAuthors = Object.keys(authorCounts).sort();
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Authors Ledger — Latent Verse</title>
+  <style>
+    :root {
+      --bg-primary: #0a0a0c;
+      --bg-surface: #121215;
+      --border-color: #222227;
+      --text-main: #e2e2e9;
+      --text-muted: #787885;
+      --accent-cyan: #00f0ff;
+    }
+    body {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 24px;
+      background: var(--bg-primary);
+      color: var(--text-main);
+      line-height: 1.6;
+    }
+    header {
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 24px;
+      margin-bottom: 40px;
+    }
+    h1 { font-size: 1.75rem; margin: 0; font-weight: 700; color: #fff; letter-spacing: -0.05em; text-transform: uppercase; }
+    nav { margin-top: 12px; }
+    nav a { color: var(--accent-cyan); text-decoration: none; margin-right: 20px; font-size: 0.9rem; }
+    nav a:hover { text-decoration: underline; }
+    h2 { font-size: 1.25rem; color: #fff; border-left: 3px solid var(--accent-cyan); padding-left: 10px; margin-bottom: 24px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+    }
+    .author-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      padding: 16px;
+      border-radius: 6px;
+      text-decoration: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: border-color 0.15s ease;
+    }
+    .author-card:hover { border-color: var(--accent-cyan); }
+    .author-name { color: #fff; font-weight: 600; }
+    .author-count { color: var(--text-muted); font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Latent Verse</h1>
+    <nav>
+      <a href="/">[ root_feed ]</a>
+      <a href="/blog">[ archive_ledger ]</a>
+      <a href="/tags">[ tags_index ]</a>
+      <a href="/authors">[ authors_index ]</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>Operator Registry</h2>
+    <div class="grid">
+      {sortedAuthors.map(author => (
+        <a href={`/authors/${author.toLowerCase()}`} class="author-card">
+          <span class="author-name">operator: {author}</span>
+          <span class="author-count">[{authorCounts[author]} entries]</span>
+        </a>
+      ))}
+    </div>
+  </main>
+</body>
+</html>

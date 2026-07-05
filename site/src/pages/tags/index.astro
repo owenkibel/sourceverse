@@ -1,0 +1,101 @@
+---
+import { getCollection } from 'astro:content';
+
+// Query all processed markdown records
+const allPosts = await getCollection('blog');
+
+// Dynamically compile tag frequencies
+const tagCounts: Record<string, number> = {};
+allPosts.forEach(post => {
+  const tags = post.data.tags || [];
+  const normalizedTags = Array.isArray(tags) ? tags : [tags];
+  normalizedTags.forEach(tag => {
+    const cleanTag = tag.trim();
+    if (cleanTag) {
+      tagCounts[cleanTag] = (tagCounts[cleanTag] || 0) + 1;
+    }
+  });
+});
+
+const sortedTags = Object.keys(tagCounts).sort();
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tags Ledger — Latent Verse</title>
+  <style>
+    :root {
+      --bg-primary: #0a0a0c;
+      --bg-surface: #121215;
+      --border-color: #222227;
+      --text-main: #e2e2e9;
+      --text-muted: #787885;
+      --accent-cyan: #00f0ff;
+    }
+    body {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 24px;
+      background: var(--bg-primary);
+      color: var(--text-main);
+      line-height: 1.6;
+    }
+    header {
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 24px;
+      margin-bottom: 40px;
+    }
+    h1 { font-size: 1.75rem; margin: 0; font-weight: 700; color: #fff; letter-spacing: -0.05em; text-transform: uppercase; }
+    nav { margin-top: 12px; }
+    nav a { color: var(--accent-cyan); text-decoration: none; margin-right: 20px; font-size: 0.9rem; }
+    nav a:hover { text-decoration: underline; }
+    h2 { font-size: 1.25rem; color: #fff; border-left: 3px solid var(--accent-cyan); padding-left: 10px; margin-bottom: 24px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+    }
+    .tag-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      padding: 16px;
+      border-radius: 6px;
+      text-decoration: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: border-color 0.15s ease;
+    }
+    .tag-card:hover { border-color: var(--accent-cyan); }
+    .tag-name { color: var(--accent-cyan); font-weight: 600; }
+    .tag-count { color: var(--text-muted); font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Latent Verse</h1>
+    <nav>
+      <a href="/">[ root_feed ]</a>
+      <a href="/blog">[ archive_ledger ]</a>
+      <a href="/tags">[ tags_index ]</a>
+      <a href="/authors">[ authors_index ]</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>System Tags Register</h2>
+    <div class="grid">
+      {sortedTags.map(tag => (
+        <a href={`/tags/${tag.toLowerCase()}`} class="tag-card">
+          <span class="tag-name">#{tag}</span>
+          <span class="tag-count">[{tagCounts[tag]} units]</span>
+        </a>
+      ))}
+    </div>
+  </main>
+</body>
+</html>

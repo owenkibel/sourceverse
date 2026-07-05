@@ -1219,9 +1219,9 @@ if (!useGeminiImage) await freeComfyVRAM();
 
     // === BUILD ASTRO MARKDOWN POST ===
     const postDate = new Date().toISOString();
-
-    const frontMatter = [
-      `title: ${JSON.stringify(`${title} – Transmuted Pass`)}`,
+const frontMatter = [
+      // SWAPPED: Unicode en-dash (–) replaced with a safe ASCII hyphen (-)
+      `title: ${JSON.stringify(`${title} - Transmuted Pass`)}`,
       `date: "${postDate}"`,
       `pubDate: "${postDate.split('T')[0]}"`,
       `author: ${JSON.stringify((useGrok ? 'Grok' : 'Gemini') + ' + Core Single Pass Pipeline')}`,
