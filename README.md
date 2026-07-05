@@ -4,6 +4,8 @@
 
 The project explores how **persistent memory** and pattern recognition can produce coherent, evolving narratives across multiple cycles rather than isolated posts.
 
+The code is evolved through iterative testing of scripts that emerge out of directed and continuing conversations with the latest Gemini and Grok models in their regular portals. These models are also directly addressed in the scripts through their APIs.
+
 ## Core Ideas
 
 - **Persistent Narrative Memory**: A cumulative model (`cumulative_thread_model.json`) maintains domain-specific narrative arcs, recent forecasts, and hypothesis history. This allows the system to build continuity across runs.
@@ -144,5 +146,5 @@ This is an active research project. The architecture continues to evolve around 
 
 ## Links
 
-- **Blog**: [Latent Verse](https://latent-verse.vercel.app/)
+- **Blog**: [Latent Verse](https://latent-verse.vercel.app)
 - **Repository**: [sourceverse](https://github.com/owenkibel/sourceverse)

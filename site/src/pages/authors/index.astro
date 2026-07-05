@@ -1,9 +1,11 @@
 ---
+// site/src/pages/authors/index.astro
 import { getCollection } from 'astro:content';
+// 1. LINK THE SHARED VARIABLES AND BASE DOCUMENT STYLES
+import '../../styles/global.css';
 
 const allPosts = await getCollection('blog');
 
-// Dynamically isolate core machine operators
 const authorCounts: Record<string, number> = {};
 allPosts.forEach(post => {
   const author = post.data.author || 'system';
@@ -21,69 +23,23 @@ const sortedAuthors = Object.keys(authorCounts).sort();
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Authors Ledger — Latent Verse</title>
-  <style>
-    :root {
-      --bg-primary: #0a0a0c;
-      --bg-surface: #121215;
-      --border-color: #222227;
-      --text-main: #e2e2e9;
-      --text-muted: #787885;
-      --accent-cyan: #00f0ff;
-    }
-    body {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      max-width: 900px;
-      margin: 40px auto;
-      padding: 0 24px;
-      background: var(--bg-primary);
-      color: var(--text-main);
-      line-height: 1.6;
-    }
-    header {
-      border-bottom: 1px solid var(--border-color);
-      padding-bottom: 24px;
-      margin-bottom: 40px;
-    }
-    h1 { font-size: 1.75rem; margin: 0; font-weight: 700; color: #fff; letter-spacing: -0.05em; text-transform: uppercase; }
-    nav { margin-top: 12px; }
-    nav a { color: var(--accent-cyan); text-decoration: none; margin-right: 20px; font-size: 0.9rem; }
-    nav a:hover { text-decoration: underline; }
-    h2 { font-size: 1.25rem; color: #fff; border-left: 3px solid var(--accent-cyan); padding-left: 10px; margin-bottom: 24px; }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 16px;
-    }
-    .author-card {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-color);
-      padding: 16px;
-      border-radius: 6px;
-      text-decoration: none;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      transition: border-color 0.15s ease;
-    }
-    .author-card:hover { border-color: var(--accent-cyan); }
-    .author-name { color: #fff; font-weight: 600; }
-    .author-count { color: var(--text-muted); font-size: 0.85rem; }
-  </style>
+  <title>Authors Register — Latent Verse</title>
 </head>
 <body>
-  <header>
-    <h1>Latent Verse</h1>
-    <nav>
+<header>
+    <span class="site-title"><a href="/">LATENT VERSE</a></span>
+    <div class="internal-links">
       <a href="/">[ root_feed ]</a>
       <a href="/blog">[ archive_ledger ]</a>
       <a href="/tags">[ tags_index ]</a>
       <a href="/authors">[ authors_index ]</a>
-    </nav>
+      <a href="/about">[ about_manifesto ]</a>
+      <a href="/search">[ search_blog ]</a>
+    </div>
   </header>
 
   <main>
-    <h2>Operator Registry</h2>
+    <h2 class="section-heading">Operator Registry</h2>
     <div class="grid">
       {sortedAuthors.map(author => (
         <a href={`/authors/${author.toLowerCase()}`} class="author-card">
@@ -95,3 +51,38 @@ const sortedAuthors = Object.keys(authorCounts).sort();
   </main>
 </body>
 </html>
+
+<style>
+  /* Local grid structures scoped exclusively to the Operators view */
+  .section-heading {
+    font-size: 1.25rem;
+    border-left: 3px solid var(--accent-color);
+    padding-left: 10px;
+    margin-bottom: 24px;
+    text-transform: uppercase;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+  }
+  .author-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 2px solid var(--border-color);
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+  :global(.dark) .author-card {
+    background: #111111;
+  }
+  .author-card:hover { 
+    background: var(--text-color);
+  }
+  .author-card:hover .author-name { color: var(--bg-color); }
+  .author-card:hover .author-count { color: var(--bg-color); }
+  .author-name { color: var(--text-color); font-weight: 700; }
+  .author-count { color: var(--text-muted); font-size: 0.85rem; }
+</style>

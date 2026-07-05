@@ -105,12 +105,8 @@ header nav {
 	align-items: center;
 	justify-content: space-between;
 	width: 100%;
-	
-	/* Infinite fix: clamp internal elements directly to your site content column */
 	max-width: 760px !important; 
 	margin: 0 auto !important;
-	
-	/* Pad elements internally so they align with your article borders perfectly */
 	padding: 1.5rem 1.5rem !important;
 	background-color: var(--bg-color) !important;
 	color: var(--text-color) !important;
@@ -128,53 +124,44 @@ header nav {
 
 .internal-links {
 	display: flex;
-	gap: 2rem !important; 
+	gap: 1.25rem !important; 
 	align-items: center;
-	flex-wrap: nowrap !important;   
-	white-space: nowrap !important; 
+	flex-wrap: wrap !important; /* Protects smaller phone displays from layout breakage */
 }
 
-header h2, 
 .site-title {
 	margin: 0 !important;
 	white-space: nowrap !important; 
+	font-weight: 700;
 }
 
-/* Navigation Link Anchors high-contrast visibility overrides */
+/* Navigation Link Anchors: Enforced monospaced aesthetic tracking */
 header nav a,
 .internal-links a {
+	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
 	color: var(--text-color) !important;
 	font-weight: 700;
-	text-transform: uppercase;
-	letter-spacing: 0.05em;
-	font-size: 0.9rem;
+	text-transform: lowercase; /* Forces matching look across terminal styles */
+	letter-spacing: 0.02em;
+	font-size: 0.85rem;
 	opacity: 0.8;
 	border-bottom: 2px solid transparent !important;
 	text-decoration: none !important;
+	transition: opacity 0.15s ease;
 }
 
-header nav a:hover {
-	opacity: 1 !important;
-	color: var(--accent-light) !important;
-	border-bottom-color: var(--accent-light) !important;
-}
-
-/* Clear Dark Mode active navigation item highlights */
-header nav a.active {
+header nav a:hover,
+.internal-links a:hover {
 	opacity: 1 !important;
 	color: var(--text-color) !important;
-	border-bottom: 2px solid var(--text-color) !important;
-}
-
-:root.dark header nav a.active {
-	border-bottom-color: #ffffff !important;
+	border-bottom-color: var(--border-color) !important;
 }
 
 header h2 a, 
 .site-title a {
-	font-size: 1.3rem !important;
+	font-size: 1.15rem !important;
 	letter-spacing: -0.02em !important;
-	text-transform: none !important;
+	text-transform: uppercase !important; /* Retains uppercase visibility for the main title logo */
 	opacity: 1 !important;
 	border-bottom: none !important;
 }
@@ -184,7 +171,7 @@ header h2 a,
 	background: transparent;
 	border: 2px solid var(--border-color);
 	color: var(--text-color);
-	padding: 6px 10px;
+	padding: 4px 8px;
 	cursor: pointer;
 	display: flex;
 	align-items: center;
@@ -402,10 +389,14 @@ p > code, li > code {
 
 
 .poetry-verse {
-  max-height: 450px;
-  overflow-y: auto;
-  padding-right: 15px;
-  border-left: 3px solid var(--accent-color, #444);
-  margin-bottom: 20px;
-  scrollbar-width: thin;
+	font-family: var(--font-sans);
+	white-space: pre-wrap !important;
+	line-height: 1.7;
+	font-size: 1.15rem;
+	font-style: italic;
+	color: var(--text-color);
+	margin: 2rem 0;
+	padding-left: 1.25rem;
+	border-left: 3px solid var(--accent-color);
+	/* Vertically unconstrained to display long stanzas naturally */
 }

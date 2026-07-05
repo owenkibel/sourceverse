@@ -1,10 +1,11 @@
 ---
+// site/src/pages/tags/index.astro
 import { getCollection } from 'astro:content';
+// 1. LINK THE SHARED VARIABLES AND BASE DOCUMENT STYLES
+import '../../styles/global.css';
 
-// Query all processed markdown records
 const allPosts = await getCollection('blog');
 
-// Dynamically compile tag frequencies
 const tagCounts: Record<string, number> = {};
 allPosts.forEach(post => {
   const tags = post.data.tags || [];
@@ -25,69 +26,23 @@ const sortedTags = Object.keys(tagCounts).sort();
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tags Ledger — Latent Verse</title>
-  <style>
-    :root {
-      --bg-primary: #0a0a0c;
-      --bg-surface: #121215;
-      --border-color: #222227;
-      --text-main: #e2e2e9;
-      --text-muted: #787885;
-      --accent-cyan: #00f0ff;
-    }
-    body {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      max-width: 900px;
-      margin: 40px auto;
-      padding: 0 24px;
-      background: var(--bg-primary);
-      color: var(--text-main);
-      line-height: 1.6;
-    }
-    header {
-      border-bottom: 1px solid var(--border-color);
-      padding-bottom: 24px;
-      margin-bottom: 40px;
-    }
-    h1 { font-size: 1.75rem; margin: 0; font-weight: 700; color: #fff; letter-spacing: -0.05em; text-transform: uppercase; }
-    nav { margin-top: 12px; }
-    nav a { color: var(--accent-cyan); text-decoration: none; margin-right: 20px; font-size: 0.9rem; }
-    nav a:hover { text-decoration: underline; }
-    h2 { font-size: 1.25rem; color: #fff; border-left: 3px solid var(--accent-cyan); padding-left: 10px; margin-bottom: 24px; }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 16px;
-    }
-    .tag-card {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-color);
-      padding: 16px;
-      border-radius: 6px;
-      text-decoration: none;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      transition: border-color 0.15s ease;
-    }
-    .tag-card:hover { border-color: var(--accent-cyan); }
-    .tag-name { color: var(--accent-cyan); font-weight: 600; }
-    .tag-count { color: var(--text-muted); font-size: 0.85rem; }
-  </style>
+  <title>Tags Register — Latent Verse</title>
 </head>
 <body>
-  <header>
-    <h1>Latent Verse</h1>
-    <nav>
+<header>
+    <span class="site-title"><a href="/">LATENT VERSE</a></span>
+    <div class="internal-links">
       <a href="/">[ root_feed ]</a>
       <a href="/blog">[ archive_ledger ]</a>
       <a href="/tags">[ tags_index ]</a>
       <a href="/authors">[ authors_index ]</a>
-    </nav>
+      <a href="/about">[ about_manifesto ]</a>
+      <a href="/search">[ search_blog ]</a>
+    </div>
   </header>
 
   <main>
-    <h2>System Tags Register</h2>
+    <h2 class="section-heading">System Tags Register</h2>
     <div class="grid">
       {sortedTags.map(tag => (
         <a href={`/tags/${tag.toLowerCase()}`} class="tag-card">
@@ -99,3 +54,38 @@ const sortedTags = Object.keys(tagCounts).sort();
   </main>
 </body>
 </html>
+
+<style>
+  /* Local grid structures scoped exclusively to the Tags view */
+  .section-heading {
+    font-size: 1.25rem;
+    border-left: 3px solid var(--accent-color);
+    padding-left: 10px;
+    margin-bottom: 24px;
+    text-transform: uppercase;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+  }
+  .tag-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 2px solid var(--border-color);
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+  :global(.dark) .tag-card {
+    background: #111111;
+  }
+  .tag-card:hover { 
+    background: var(--text-color);
+  }
+  .tag-card:hover .tag-name { color: var(--bg-color); }
+  .tag-card:hover .tag-count { color: var(--bg-color); }
+  .tag-name { color: var(--text-color); font-weight: 700; text-transform: lowercase; }
+  .tag-count { color: var(--text-muted); font-size: 0.85rem; }
+</style>

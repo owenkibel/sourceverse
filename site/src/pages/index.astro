@@ -1,11 +1,12 @@
 ---
 // site/src/pages/index.astro
 import { getCollection } from 'astro:content';
+// 1. LINK THE SHARED VARIABLES AND BASE DOCUMENT STYLES
+import '../styles/global.css';
 
-// 1. Fetch posts natively through the modern Content Layer cache
 const allPosts = await getCollection('blog');
 
-// 2. Unified reverse-chronological sort using data properties
+// Unified reverse-chronological sort
 const sortedPosts = allPosts.sort((a, b) => {
   const dateA = a.data.date || a.data.pubDate ? Date.parse(a.data.date || a.data.pubDate) : 0;
   const dateB = b.data.date || b.data.pubDate ? Date.parse(b.data.date || b.data.pubDate) : 0;
@@ -22,71 +23,19 @@ const sortedPosts = allPosts.sort((a, b) => {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  {/* Updated Title Metadata */}
-  <title>Latent Verse — Index Ledger</title>
-  <style>
-    :root {
-      --bg-primary: #0a0a0c;
-      --bg-surface: #121215;
-      --border-color: #222227;
-      --text-main: #e2e2e9;
-      --text-muted: #787885;
-      --accent-cyan: #00f0ff;
-    }
-    body {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      max-width: 900px;
-      margin: 40px auto;
-      padding: 0 24px;
-      background: var(--bg-primary);
-      color: var(--text-main);
-      line-height: 1.6;
-    }
-    header {
-      border-bottom: 1px solid var(--border-color);
-      padding-bottom: 24px;
-      margin-bottom: 40px;
-    }
-    h1 { font-size: 1.75rem; margin: 0; font-weight: 700; color: #fff; letter-spacing: -0.05em; }
-    nav { margin-top: 12px; }
-    nav a { color: var(--accent-cyan); text-decoration: none; margin-right: 20px; font-size: 0.9rem; }
-    nav a:hover { text-decoration: underline; }
-    .post-card {
-      background: var(--bg-surface);
-      padding: 24px;
-      border-radius: 8px;
-      margin-bottom: 24px;
-      border: 1px solid var(--border-color);
-    }
-    .post-title { margin: 0 0 10px 0; font-size: 1.35rem; font-weight: 600; }
-    .post-title a { color: #fff; text-decoration: none; }
-    .post-title a:hover { color: var(--accent-cyan); }
-    .meta-strip {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      align-items: center;
-    }
-    .badge {
-      background: #1a1a24;
-      color: var(--accent-cyan);
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: 0.75rem;
-      border: 1px solid #222235;
-    }
-  </style>
+  <title>Latent Verse Ledger</title>
 </head>
 <body>
-  <header>
-    {/* Rebranded Visual Heading */}
-    <h1>LATENT VERSE</h1>
-    <nav>
+<header>
+    <span class="site-title"><a href="/">LATENT VERSE</a></span>
+    <div class="internal-links">
       <a href="/">[ root_feed ]</a>
       <a href="/blog">[ archive_ledger ]</a>
-    </nav>
+      <a href="/tags">[ tags_index ]</a>
+      <a href="/authors">[ authors_index ]</a>
+      <a href="/about">[ about_manifesto ]</a>
+      <a href="/search">[ search_blog ]</a>
+    </div>
   </header>
 
   <main>
@@ -94,17 +43,11 @@ const sortedPosts = allPosts.sort((a, b) => {
       <p style="color: var(--text-muted);">// No active markdown transmutations detected in target ledger.</p>
     ) : (
       sortedPosts.map((post) => {
-        // Updated mappings from old .frontmatter definitions to Content Layer .data properties
         const fallbackTitle = post.data.title || "Untitled Fragment";
-        
-        // Formats the active collection timestamp safely
         const rawDate = post.data.date || post.data.pubDate;
-        const displayDate = rawDate 
-          ? new Date(rawDate).toISOString().split('T')[0]
-          : "0000-00-00";
-
-        // Astro 7 handles slug resolution via post.id natively.
-        // Forcing lowercase avoids strict routing mismatches on case-sensitive filesystems.
+        const displayDate = rawDate ? new Date(rawDate).toISOString().split('T')[0] : "0000-00-00";
+        
+        // Lowercased ID routing matches case-sensitive production environments cleanly
         const derivedUrl = `/blog/${post.id.toLowerCase()}`;
 
         const rawTags = post.data.tags || [];
@@ -123,8 +66,8 @@ const sortedPosts = allPosts.sort((a, b) => {
               {post.data.source && (
                 <span class="badge">src:{post.data.source}</span>
               )}
-              {post.data.type && (
-                <span class="badge">type:{post.data.type}</span>
+              {post.data.domain && (
+                <span class="badge">domain:{post.data.domain}</span>
               )}
               {normalizedTags.map((tag) => (
                 <span class="badge">#{tag}</span>
@@ -134,13 +77,44 @@ const sortedPosts = allPosts.sort((a, b) => {
         );
       })
     )}
-
   </main>
-
-  <!-- Add Vercel Analytics tracking injection here -->
-  <script>
-    import { inject } from '@vercel/analytics';
-    inject();
-  </script>
 </body>
 </html>
+
+<style>
+  /* Local layout components scoped exclusively to this document */
+  .post-card {
+    background: rgba(255, 255, 255, 0.02);
+    padding: 24px;
+    margin-bottom: 24px;
+    border: 2px solid var(--border-color);
+  }
+  :global(.dark) .post-card {
+    background: #111111;
+  }
+  .post-title { 
+    margin: 0 0 10px 0; 
+    font-size: 1.25rem; 
+    font-weight: 700;
+  }
+  .post-title a { 
+    border-bottom: none !important; 
+  }
+  .meta-strip {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+  }
+  .badge {
+    background: rgba(0, 68, 136, 0.05);
+    color: var(--text-color);
+    padding: 2px 8px;
+    font-size: 0.75rem;
+    border: 1px solid var(--border-color);
+    text-transform: lowercase;
+  }
+</style>
