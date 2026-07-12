@@ -27,9 +27,10 @@ const MODEL_PATH = 'cumulative_thread_model.json';
 const HEART_INBOX = '/home/owen/ai-projects/heartmula/inbox';
 const HEART_OUTBOX = '/home/owen/ai-projects/heartmula/outbox';
 
-const MODEL_GROK = "grok-4.3";
+// Near the top
+const MODEL_GROK = "grok-4.5";   // was "grok-4.3"
 const MAX_CHARS_GEMINI = 1900000;
-const MAX_CHARS_GROK = 35000;
+const MAX_CHARS_GROK = 50000;   // was 35000
 
 // --- ACE-STEP VALID STYLES ---
 const RAW_ACE_STYLES = [
@@ -81,7 +82,9 @@ const useGeminiImage = args.includes('--gemini-image');
 const useGeminiAudio = args.includes('--gemini-audio');
 const useGeminiVideo = args.includes('--gemini-video');
 const useGrokImagine = args.includes('--grok-imagine');
-const useLimericks = args.includes('--limericks'); // <-- Swapped from useFortuneOracle
+const useLimericks = args.includes('--limericks');   // Multi-mode Switch 1: Explicit Subversion
+const useCanonical = args.includes('--canonical');   // Multi-mode Switch 2: Historical Memory
+const useFortune = args.includes('--fortune');       // Multi-mode Switch 3: Scriptorium Proverbs
 
 let refAudioPath = null;
 const refArg = args.find(a => a.startsWith('--ref-audio='));
@@ -503,12 +506,13 @@ async function generateText(system, user) {
 
   if (useGrok) {
     console.log(`Generating with Grok (${MODEL_GROK})...`);
-    const payload = {
-      model: MODEL_GROK,
-      messages: [{ role: "system", content: system }, { role: "user", content: truncatedUser }],
-      temperature: 1.0,
-      providerOptions: { xai: { reasoningEffort: "none" } }
-    };
+const payload = {
+  model: MODEL_GROK,
+  messages: [{ role: "system", content: system }, { role: "user", content: truncatedUser }],
+  temperature: 1.0,
+  reasoning_effort: "low",           // ← ADD THIS (use "medium" only if you want deeper thinking)
+  max_tokens: 8192,           // ← ADD THIS (or 12288 for longer dramatic outputs)
+};
     const res = await fetch('https://api.x.ai/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.XAI_API_KEY}` },
@@ -999,46 +1003,91 @@ const originalThematicPoem = payload.grok_poem || '';   // ← ADD THIS
 
 console.log(`📡 Domain Classification Segment settled: [${domain.toUpperCase()}]`);
 
-    // --- Dynamic Scriptorium Limerick Interceptor ---
-    let systemLimerick = null;
-    if (useLimericks) {
-      try {
-        console.log("   🎲 [--limericks] Active. Invoking path shell for fortune metrics...");
-        // Synchronously call your native CachyOS fortune binary via Fish shell path
-        const rawResult = execSync('fortune limericks', { encoding: 'utf8' });
-        systemLimerick = rawResult.trim();
-        console.log(`      ↳ Ingested Subversion Signal: "${systemLimerick.split('\n')[0]}..."`);
-      } catch (e) {
-        console.warn("   ⚠️ Shell Exception: Failed to read fortune files on path:", e.message);
-        systemLimerick = "There once was a thread built of code,\nWhose data had failed to unload.\nIt looked for a sign,\nIn a script or design,\nAnd threw a default on the road.";
-      }
-    }
-
-    // === Load cumulative model with narrativeArcs support ===
+    // =========================================================================
+    // 1. CUMULATIVE MODEL INITIALIZATION (MOVED UP TO RECTIFY TDZ REFERENCE ERROR)
+    // =========================================================================
     let cumulativeModel = { dramaticPlays: {}, predictionHistory: [], narrativeArcs: {} };
     try {
       const existing = await fs.readFile(MODEL_PATH, 'utf8');
       const parsed = JSON.parse(existing);
-      cumulativeModel.dramaticPlays   = parsed.dramaticPlays   || {};
+      cumulativeModel.dramaticPlays     = parsed.dramaticPlays   || {};
       cumulativeModel.predictionHistory = parsed.predictionHistory || [];
-      cumulativeModel.narrativeArcs   = parsed.narrativeArcs   || {};
+      cumulativeModel.narrativeArcs     = parsed.narrativeArcs   || {};
     } catch (e) {}
 
-    // Defensive initialization
+    // Defensive initialization guardrails
     if (!cumulativeModel.dramaticPlays)   cumulativeModel.dramaticPlays = {};
     if (!cumulativeModel.predictionHistory) cumulativeModel.predictionHistory = [];
     if (!cumulativeModel.narrativeArcs)   cumulativeModel.narrativeArcs = {};
 
     const nextActNumber = (cumulativeModel.dramaticPlays?.[domain]?.length || 0) + 1;
 
-    // === Load canonical hypotheses and merge with historic AI claims ===
-    const mergedHypotheses = await loadAndMergeHypotheses(domain, cumulativeModel, isTraditional);
+    // =========================================================================
+    // 2. THE SCRIPTORIUM ORACLE COUPLER (LIMERICKS / CANONICAL / FORTUNE / CLEAN)
+    // =========================================================================
+    let activeHypothesisPayload = "";
+    let activeHypothesisMode = "CLEAN CORE RUN (No Paradigm Injection)";
 
-// Build hypothesis block matrix safely without stacking markdown headers
+    // Route A: Explicit Limerick Subversion via Shell Pipeline
+    if (useLimericks) {
+      try {
+        activeHypothesisPayload = execSync('fortune limericks', { encoding: 'utf8' }).trim();
+        activeHypothesisMode = "SYSTEM LIMERICK SUBVERSION ACTIVE";
+      } catch (err) {
+        console.warn("   ⚠️ Scriptorium Alert: fortune limericks execution failed.");
+      }
+    } 
+    // Route B: Canonical Ledger Selection with Fortune Fallback
+    else if (useCanonical) {
+      const parsedModelHistory = await loadAndMergeHypotheses(domain, cumulativeModel, isTraditional);
+      const canonicalClaims = parsedModelHistory.filter(h => h.source === "canonical");
+      
+      if (canonicalClaims.length > 0) {
+        activeHypothesisPayload = canonicalClaims[Math.floor(Math.random() * canonicalClaims.length)].claim;
+        activeHypothesisMode = `CANONICAL SYSTEM LOG Matrix ON [Domain: ${domain.toUpperCase()}]`;
+      } else {
+        console.log("   🔄 Canonical ledger empty for target domain. Initializing Fortune fallback routine...");
+        try {
+          const targetDbs = ["wisdom", "tao", "paradoxum", "politics", "humorists"];
+          const selectedDb = targetDbs[Math.floor(Math.random() * targetDbs.length)];
+          activeHypothesisPayload = execSync(`fortune ${selectedDb}`, { encoding: 'utf8' }).trim().replace(/\s+/g, ' ');
+          activeHypothesisMode = `CANONICAL FALLBACK: System Fortune Proverbs [File: ${selectedDb}]`;
+        } catch (_) {}
+      }
+    } 
+    // Route C: Pure Philosophical Fortune Stream
+    else if (useFortune) {
+      try {
+        const targetDbs = ["wisdom", "tao", "paradoxum", "politics", "humorists"];
+        const selectedDb = targetDbs[Math.floor(Math.random() * targetDbs.length)];
+        activeHypothesisPayload = execSync(`fortune ${selectedDb}`, { encoding: 'utf8' }).trim().replace(/\s+/g, ' ');
+        activeHypothesisMode = `SYSTEM FORTUNE PROVERBS ACTIVE [File: ${selectedDb}]`;
+      } catch (err) {
+        console.warn("   ⚠️ Scriptorium Alert: fortune path execution failed.");
+      }
+    }
+
+    // --- HIGH-VISIBILITY TERMINAL REPORTERS PANEL ---
+    console.log(`\n======================================================================`);
+    console.log(`🔮 [ORACLE ENGINE] EXECUTION NODE INITIALIZATION METRICS:`);
+    console.log(`   👉 Target Execution Node  : ${folder.toUpperCase()}`);
+    console.log(`   👉 Active Scriptorium Mode: ${activeHypothesisMode}`);
+    if (activeHypothesisPayload) {
+      console.log(`   👉 Active Injected Frame  :\n\n${activeHypothesisPayload}\n`);
+    } else {
+      console.log(`   👉 Active Injected Frame  : [Pure Data Pass - Completely Clean Arena]`);
+    }
+    console.log(`======================================================================\n`);
+
+    // =========================================================================
+    // 3. HYPOTHESIS BLOCK STRING COMPILATION
+    // =========================================================================
+    const mergedHypotheses = await loadAndMergeHypotheses(domain, cumulativeModel, isTraditional);
     let hypothesisBlock = '';
-    if (useLimericks && systemLimerick) {
+    
+    if (activeHypothesisPayload) {
       hypothesisBlock = `### RUNTIME HYPOTHESES IN PLAY\n`;
-      hypothesisBlock += `1. [UNREAL ONTOLOGICAL PROPOSITION] An un-conceived philosophical premise has materialized within the scene layout to be actively debated or metrics-tested: \n${systemLimerick}\n\n`;
+      hypothesisBlock += `1. [SYSTEM INTEGRATED CONJECTURE] The context window has absorbed this active underlying proposition, which must explicitly filter and color all subsequent prose and metrical text blocks:\n"${activeHypothesisPayload}"\n\n`;
       
       const aiConjectures = mergedHypotheses.filter(h => h.source === "ai");
       aiConjectures.forEach((h, idx) => {
@@ -1051,6 +1100,16 @@ console.log(`📡 Domain Classification Segment settled: [${domain.toUpperCase()
         hypothesisBlock += `${idx + 1}. [${originTag}] ${h.claim}\n`;
       });
     }
+
+    const activeCanonicalClaims = mergedHypotheses.filter(h => h.source === "canonical");
+    if (activeCanonicalClaims.length > 0 && !useLimericks && !useCanonical && !useFortune) {
+      console.log(`🔥 [CRITICAL] Canonical Hypothesis Active for Act ${nextActNumber}!`);
+      activeCanonicalClaims.forEach(h => {
+        console.log(`   📜 ID: [${h.id}] | Active Context: "${h.claim.substring(0, 95)}..."`);
+      });
+    }
+    
+    
     // === NEW: Build narrative context for story continuity ===
     const narrativeResult = await buildNarrativeContext(domain, cumulativeModel);
     const narrativeContext = narrativeResult.context;
@@ -1312,6 +1371,15 @@ ${frontMatter.join('\n')}
 - [Pipeline & Debug Analytics](#pipeline-and-debug-analytics)
 
 ---
+
+${activeHypothesisPayload ? `
+### Active Underlying Paradigm
+
+> **Scriptorium Operational Parameter [${activeHypothesisMode}]:**
+> ${activeHypothesisPayload.split('\n').join('\n> ')}
+
+---
+` : ''}
 
 ${originalThematicPoem && originalThematicPoem.length > 60 && originalThematicPoem.length < 700 ? `
 ### Thematic Seed
