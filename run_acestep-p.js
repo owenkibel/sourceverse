@@ -1,11 +1,14 @@
 import fs from 'fs';
 import path from 'path';
-import os from 'os';                 // <-- ADD THIS
-import { execSync } from 'child_process'; // <-- ADD THIS
 
 const COMFY_URL = "http://127.0.0.1:8188";
 const OUTPUT_DIR = "./images";
 
+/**
+ * Classical/Baroque Vocal Registry
+ * Custom descriptive text blocks are routed through the "extra" free-form field 
+ * to bypass strict backend dropdown validation rules.
+ */
 const CLASSICAL_VOICES = [
     {
         name: "Bass-Baritone",
@@ -29,26 +32,31 @@ const CLASSICAL_VOICES = [
     }
 ];
 
-function buildPayload(styleTag, lyrics, seed, duration, selectedVoice, refAudioPath = null) {
+function buildPayload(styleTag, lyrics, seed, duration, selectedVoice) {
     const timeStamp = new Date().toISOString().replace(/[-:T.]/g, '').slice(0, 14); 
+    
+    // Ensure duration is a multiple of 16 to prevent tensor mismatches!
     const safeDuration = Math.ceil(duration / 16) * 16; 
+
+    // Keeps style strictly bound to a single keyword matching the backend list selection
     const cleanStyle = styleTag.split(',')[0].replace(/\[|\]/g, '').trim().substring(0, 50);
 
-    // Baseline execution nodes common to both structural approaches
-    const nodes = {
-        "18": {
+    return {
+        "client_id": "acestep_4b_prod",
+        "prompt": {
+          "18": {
             "inputs": { "samples": ["111", 0], "vae": ["106", 0] },
             "class_type": "VAEDecodeAudio"
-        },
-        "47": {
+          },
+          "47": {
             "inputs": { "conditioning": ["94", 0] },
             "class_type": "ConditioningZeroOut"
-        },
-        "78": {
+          },
+          "78": {
             "inputs": { "shift": 3, "model": ["104", 0] },
             "class_type": "ModelSamplingAuraFlow"
-        },
-        "94": {
+          },
+          "94": {
             "inputs": {
               "tags": ["110", 0], 
               "lyrics": lyrics,
@@ -67,6 +75,10 @@ function buildPayload(styleTag, lyrics, seed, duration, selectedVoice, refAudioP
               "clip": ["105", 0] 
             },
             "class_type": "TextEncodeAceStepAudio1.5"
+          },
+          "98": {
+            "inputs": { "seconds": safeDuration, "batch_size": 1 },
+            "class_type": "EmptyAceStep1.5LatentAudio"
           },
           "104": {
             "inputs": {
@@ -97,35 +109,22 @@ function buildPayload(styleTag, lyrics, seed, duration, selectedVoice, refAudioP
           },
           "110": {
             "inputs": {
+              // Passes only the validated keyword preset (e.g., "Celtic Folk")
               "style": cleanStyle, 
+              // Custom text injections live here inside the open string box safely
               "extra": `${selectedVoice.tags}, masterfully mixed, high fidelity, pristine acoustic room spacing, wide stereo image, no modern pop processing`, 
               "voice_style": selectedVoice.gender 
             },
             "class_type": "AceStepPromptGen"
-          }
-    };
-
-    // Dynamic Latent Routing: Fork execution pipeline structure based on reference payload data
-    if (refAudioPath && fs.existsSync(refAudioPath)) {
-        console.log(`🔗 Injecting Audio Reference Track Nodes: ${refAudioPath}`);
-        nodes["120"] = {
-            "inputs": { "audio": refAudioPath },
-            "class_type": "LoadAudio"
-        };
-        nodes["121"] = {
-            "inputs": { "audio": ["120", 0], "vae": ["106", 0] },
-            "class_type": "VAEEncodeAudio"
-        };
-        
-        // Connect VAEEncode output to the KSampler and drop denoise to permit styling modifications
-        nodes["111"] = {
+          },
+          "111": {
             "inputs": {
               "seed": seed, 
               "steps": 20, 
               "cfg": 2.0, 
               "sampler_name": "euler",
               "scheduler": "simple",
-              "denoise": 0.65, // <-- Lowered to allow the reference audio structure to shine through
+              "denoise": 1,
               "use_apg": true, 
               "use_cfg_rescale": false,
               "cfg_rescale_multiplier": 0.25,
@@ -139,56 +138,22 @@ function buildPayload(styleTag, lyrics, seed, duration, selectedVoice, refAudioP
               "temporal_smoothing": 0.1,     
               "beat_stability": 0.5,
               "enable_quality_check": false,
-              "model": ["78", 0],
-              "positive": ["94", 0],
-              "negative": ["47", 0],
-              "latent": ["121", 0] // <-- Routed from Audio Encoder
-            },
-            "class_type": "AceStepKSampler"
-        };
-    } else {
-        console.log("💨 No reference track requested. Generating empty space baseline matrix.");
-        nodes["98"] = {
-            "inputs": { "seconds": safeDuration, "batch_size": 1 },
-            "class_type": "EmptyAceStep1.5LatentAudio"
-        };
-        nodes["111"] = {
-            "inputs": {
-              "seed": seed, 
-              "steps": 20, 
-              "cfg": 2.0, 
-              "sampler_name": "euler",
-              "scheduler": "simple",
-              "denoise": 1.0, 
-              "use_apg": true, 
-              "use_cfg_rescale": false,
-              "cfg_rescale_multiplier": 0.25,
-              "enable_dynamic_cfg": true,
-              "enable_latent_normalization": true,
-              "use_vocoder": false,
-              "noise_ema": 0.08,
-              "noise_norm_threshold": 2,
-              "anti_autotune_strength": 0.15,
-              "frequency_damping": 0.18,      
-              "temporal_smoothing": 0.1,     
-              "beat_stability": 0.5,
-              "enable_quality_check": false,
+              "quality_check_target": 0.85,
+              "quality_check_min": 40,
+              "quality_check_max": 150,
+              "quality_check_interval": 5,
               "model": ["78", 0],
               "positive": ["94", 0],
               "negative": ["47", 0],
               "latent": ["98", 0]
             },
             "class_type": "AceStepKSampler"
-        };
-    }
-
-    return { "client_id": "acestep_4b_prod", "prompt": nodes };
+          }
+        }
+    };
 }
 
 async function main() {
-    // 1. Declare the variable here at the top level of the function scope
-    let conformedRefPath = null; 
-
     try {
         console.log("--- Starting ACE-Step 4B Generation ---");
         const args = process.argv.slice(2);
@@ -197,6 +162,7 @@ async function main() {
         const stateFilePath = stateFileIndex !== -1 ? args[stateFileIndex + 1] : 'acestep_state.json';
         
         const tagsIndex = args.findIndex(a => a === '--tags');
+        // Changed default fallback to a known-valid dropdown preset from your workflow
         const tags = tagsIndex !== -1 ? args[tagsIndex + 1] : "Celtic Folk";
         
         const lyricsIndex = args.findIndex(a => a === '--lyrics');
@@ -205,47 +171,30 @@ async function main() {
         const durationIndex = args.findIndex(a => a === '--duration');
         const duration = durationIndex !== -1 ? parseInt(args[durationIndex + 1], 10) : 96;
 
-        const refAudioIndex = args.findIndex(a => a === '--ref-audio');
-        const refAudioPath = refAudioIndex !== -1 ? args[refAudioIndex + 1] : null;
-
         const seed = Math.floor(Math.random() * 1000000000);
 
-        // =========================================================================
-        // AUDIO CONFORMANCE INTERCEPTOR
-        // =========================================================================
-        const safeDuration = Math.ceil(duration / 16) * 16;
-        let finalRefPath = refAudioPath;
-        
-        // 2. REMOVE the 'let' keyword from here so it updates the top-scoped variable
-        if (refAudioPath && fs.existsSync(refAudioPath)) {
-            conformedRefPath = path.join(os.tmpdir(), `acestep_conformed_${Date.now()}.flac`);
-            console.log(`⚡ Conforming reference track to exactly ${safeDuration}s at 48kHz...`);
-            try {
-                // Pad with silence if short, truncate if long, force 48kHz stereo
-                execSync(`ffmpeg -y -i "${refAudioPath}" -ar 48000 -ac 2 -af "apad" -t ${safeDuration} "${conformedRefPath}"`, { stdio: 'ignore' });
-                finalRefPath = conformedRefPath;
-            } catch (err) {
-                console.error(`⚠️ Conformance failed: ${err.message}. Falling back to raw file.`);
-            }
-        }
+        // const selectedVoice = CLASSICAL_VOICES[Math.floor(Math.random() * CLASSICAL_VOICES.length)];
+// CHANGE THIS OLD LINE:
+// const selectedVoice = CLASSICAL_VOICES[Math.floor(Math.random() * CLASSICAL_VOICES.length)];
 
-        let selectedVoice = CLASSICAL_VOICES[1]; 
-        // ... rest of your try block logic remains identical
-        const lowerTags = tags.toLowerCase();
-        if (lowerTags.includes('baritone') || (lowerTags.includes('male') && lowerTags.includes('bass'))) {
-            selectedVoice = CLASSICAL_VOICES[0]; 
-        } else if (lowerTags.includes('tenor') || lowerTags.includes('male')) {
-            selectedVoice = CLASSICAL_VOICES[2]; 
-        } else if (lowerTags.includes('soprano') && lowerTags.includes('dramatic')) {
-            selectedVoice = CLASSICAL_VOICES[3]; 
-        } else if (lowerTags.includes('soprano') || lowerTags.includes('female')) {
-            selectedVoice = CLASSICAL_VOICES[1]; 
-        }
+// TO THIS SMART SELECTOR:
+let selectedVoice = CLASSICAL_VOICES[1]; // Default to Mezzo-Soprano fallback
 
-console.log(`🎭 Selected Vocal Profile: ${selectedVoice.name} -> Routing as [${selectedVoice.gender}]`);
+const lowerTags = tags.toLowerCase();
+if (lowerTags.includes('baritone') || (lowerTags.includes('male') && lowerTags.includes('bass'))) {
+    selectedVoice = CLASSICAL_VOICES[0]; // Bass-Baritone
+} else if (lowerTags.includes('tenor') || lowerTags.includes('male')) {
+    selectedVoice = CLASSICAL_VOICES[2]; // Lyric Tenor
+} else if (lowerTags.includes('soprano') && lowerTags.includes('dramatic')) {
+    selectedVoice = CLASSICAL_VOICES[3]; // Dramatic Soprano
+} else if (lowerTags.includes('soprano') || lowerTags.includes('female')) {
+    selectedVoice = CLASSICAL_VOICES[1]; // Mezzo-Soprano
+}
 
-        // CHANGED: Pass finalRefPath instead of refAudioPath
-        const payload = buildPayload(tags, lyrics, seed, duration, selectedVoice, finalRefPath);
+
+        console.log(`🎭 Selected Vocal Profile: ${selectedVoice.name} -> Routing as [${selectedVoice.gender}]`);
+
+        const payload = buildPayload(tags, lyrics, seed, duration, selectedVoice);
         
         const res = await fetch(`${COMFY_URL}/prompt`, { 
             method: 'POST', 
@@ -283,6 +232,7 @@ console.log(`🎭 Selected Vocal Profile: ${selectedVoice.name} -> Routing as [$
             
             if (foundAudio) {
                 const dlRes = await fetch(`${COMFY_URL}/view?filename=${foundAudio.filename}&subfolder=${foundAudio.subfolder}&type=${foundAudio.type}`);
+                
                 if (!fs.existsSync(OUTPUT_DIR)) fs.mkdirSync(OUTPUT_DIR, { recursive: true });
                 
                 const savePath = path.join(OUTPUT_DIR, foundAudio.filename);
@@ -290,23 +240,22 @@ console.log(`🎭 Selected Vocal Profile: ${selectedVoice.name} -> Routing as [$
                 fs.writeFileSync(savePath, Buffer.from(buffer));
                 
                 outputInfo = { savedFilePath: savePath, filename: foundAudio.filename, vocalProfile: selectedVoice.name };
+                
                 console.log(`\n✅ Success! Audio saved to ${savePath}`);
                 success = true;
                 break;
             }
+            
             process.stdout.write(".");
         }
-if (!success) throw new Error("Timeout: ACE-Step 4B generation took too long.");
+
+        if (!success) throw new Error("Timeout: ACE-Step 4B generation took too long.");
+        
         fs.writeFileSync(stateFilePath, JSON.stringify(outputInfo, null, 2));
 
     } catch (e) {
         console.error(`\n❌ Run Failed: ${e.message}`);
         process.exit(1);
-    } finally {
-        // CLEANUP: Wipe the temporary conformed flac file if it exists
-        if (conformedRefPath && fs.existsSync(conformedRefPath)) {
-            try { fs.unlinkSync(conformedRefPath); } catch (_) {}
-        }
     }
 }
 

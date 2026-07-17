@@ -1,7 +1,5 @@
 import fs from 'fs';
 import path from 'path';
-import os from 'os';                 // <-- ADD THIS
-import { execSync } from 'child_process'; // <-- ADD THIS
 
 const COMFY_URL = "http://127.0.0.1:8188";
 const OUTPUT_DIR = "./images";
@@ -186,9 +184,6 @@ function buildPayload(styleTag, lyrics, seed, duration, selectedVoice, refAudioP
 }
 
 async function main() {
-    // 1. Declare the variable here at the top level of the function scope
-    let conformedRefPath = null; 
-
     try {
         console.log("--- Starting ACE-Step 4B Generation ---");
         const args = process.argv.slice(2);
@@ -210,27 +205,7 @@ async function main() {
 
         const seed = Math.floor(Math.random() * 1000000000);
 
-        // =========================================================================
-        // AUDIO CONFORMANCE INTERCEPTOR
-        // =========================================================================
-        const safeDuration = Math.ceil(duration / 16) * 16;
-        let finalRefPath = refAudioPath;
-        
-        // 2. REMOVE the 'let' keyword from here so it updates the top-scoped variable
-        if (refAudioPath && fs.existsSync(refAudioPath)) {
-            conformedRefPath = path.join(os.tmpdir(), `acestep_conformed_${Date.now()}.flac`);
-            console.log(`⚡ Conforming reference track to exactly ${safeDuration}s at 48kHz...`);
-            try {
-                // Pad with silence if short, truncate if long, force 48kHz stereo
-                execSync(`ffmpeg -y -i "${refAudioPath}" -ar 48000 -ac 2 -af "apad" -t ${safeDuration} "${conformedRefPath}"`, { stdio: 'ignore' });
-                finalRefPath = conformedRefPath;
-            } catch (err) {
-                console.error(`⚠️ Conformance failed: ${err.message}. Falling back to raw file.`);
-            }
-        }
-
         let selectedVoice = CLASSICAL_VOICES[1]; 
-        // ... rest of your try block logic remains identical
         const lowerTags = tags.toLowerCase();
         if (lowerTags.includes('baritone') || (lowerTags.includes('male') && lowerTags.includes('bass'))) {
             selectedVoice = CLASSICAL_VOICES[0]; 
@@ -242,10 +217,9 @@ async function main() {
             selectedVoice = CLASSICAL_VOICES[1]; 
         }
 
-console.log(`🎭 Selected Vocal Profile: ${selectedVoice.name} -> Routing as [${selectedVoice.gender}]`);
+        console.log(`🎭 Selected Vocal Profile: ${selectedVoice.name} -> Routing as [${selectedVoice.gender}]`);
 
-        // CHANGED: Pass finalRefPath instead of refAudioPath
-        const payload = buildPayload(tags, lyrics, seed, duration, selectedVoice, finalRefPath);
+        const payload = buildPayload(tags, lyrics, seed, duration, selectedVoice, refAudioPath);
         
         const res = await fetch(`${COMFY_URL}/prompt`, { 
             method: 'POST', 
@@ -296,17 +270,13 @@ console.log(`🎭 Selected Vocal Profile: ${selectedVoice.name} -> Routing as [$
             }
             process.stdout.write(".");
         }
-if (!success) throw new Error("Timeout: ACE-Step 4B generation took too long.");
+
+        if (!success) throw new Error("Timeout: ACE-Step 4B generation took too long.");
         fs.writeFileSync(stateFilePath, JSON.stringify(outputInfo, null, 2));
 
     } catch (e) {
         console.error(`\n❌ Run Failed: ${e.message}`);
         process.exit(1);
-    } finally {
-        // CLEANUP: Wipe the temporary conformed flac file if it exists
-        if (conformedRefPath && fs.existsSync(conformedRefPath)) {
-            try { fs.unlinkSync(conformedRefPath); } catch (_) {}
-        }
     }
 }
 
