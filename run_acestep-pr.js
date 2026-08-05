@@ -34,16 +34,7 @@ function buildPayload(styleTag, lyrics, seed, duration, selectedVoice, refAudioP
     const safeDuration = Math.ceil(duration / 16) * 16; 
     const cleanStyle = styleTag.split(',')[0].replace(/\[|\]/g, '').trim().substring(0, 50);
 
-    // Strictly compliant major and minor key pool (Safe harmonic variety)
-    const KEY_SCALES = [
-        "C major", "G major", "D major", "A major", "E major", "F major", "B flat major",
-        "A minor", "E minor", "D minor", "B minor", "G minor", "C minor", "F sharp minor"
-    ];
-    const selectedKey = KEY_SCALES[Math.floor(Math.random() * KEY_SCALES.length)];
-    const dynamicBpm = Math.floor(Math.random() * (135 - 105 + 1)) + 105; // Expressive 105–135 BPM range
-
-    console.log(`🎼 Generation Parameters: Key [${selectedKey}] | Tempo [${dynamicBpm} BPM]`);
-
+    // Baseline execution nodes common to both structural approaches
     const nodes = {
         "18": {
             "inputs": { "samples": ["111", 0], "vae": ["106", 0] },
@@ -62,16 +53,16 @@ function buildPayload(styleTag, lyrics, seed, duration, selectedVoice, refAudioP
               "tags": ["110", 0], 
               "lyrics": lyrics,
               "seed": seed,
-              "bpm": dynamicBpm,            // Dynamic tempo (105-135 BPM)
+              "bpm": 190, 
               "duration": safeDuration,
               "timesignature": "4",
               "language": "en",
-              "keyscale": selectedKey,      // Dynamic key scale
+              "keyscale": "E minor",
               "generate_audio_codes": true,
-              "cfg_scale": 2.0,             // Restored for solid lyric adherence
-              "temperature": 0.85,          // Restored to stable vocal-code token generation
+              "cfg_scale": 2,
+              "temperature": 0.85,
               "top_p": 0.9,
-              "top_k": 0,                   // Disabled to prevent code hallucination
+              "top_k": 0,
               "min_p": 0,
               "clip": ["105", 0] 
             },
@@ -114,6 +105,7 @@ function buildPayload(styleTag, lyrics, seed, duration, selectedVoice, refAudioP
           }
     };
 
+    // Dynamic Latent Routing: Fork execution pipeline structure based on reference payload data
     if (refAudioPath && fs.existsSync(refAudioPath)) {
         console.log(`🔗 Injecting Audio Reference Track Nodes: ${refAudioPath}`);
         nodes["120"] = {
@@ -125,14 +117,15 @@ function buildPayload(styleTag, lyrics, seed, duration, selectedVoice, refAudioP
             "class_type": "VAEEncodeAudio"
         };
         
+        // Connect VAEEncode output to the KSampler and drop denoise to permit styling modifications
         nodes["111"] = {
             "inputs": {
               "seed": seed, 
-              "steps": 20,                   
+              "steps": 20, 
               "cfg": 2.0, 
               "sampler_name": "euler",
               "scheduler": "simple",
-              "denoise": 0.68,               // Balanced denoise for reference tracks
+              "denoise": 0.65, // <-- Lowered to allow the reference audio structure to shine through
               "use_apg": true, 
               "use_cfg_rescale": false,
               "cfg_rescale_multiplier": 0.25,
@@ -141,19 +134,20 @@ function buildPayload(styleTag, lyrics, seed, duration, selectedVoice, refAudioP
               "use_vocoder": false,
               "noise_ema": 0.08,
               "noise_norm_threshold": 2,
-              "anti_autotune_strength": 0.15, 
-              "frequency_damping": 0.18,      // Restored for clean harmonic resonance
-              "temporal_smoothing": 0.10,     
-              "beat_stability": 0.50,        // Restored for steady vocal rhythm
+              "anti_autotune_strength": 0.15,
+              "frequency_damping": 0.18,      
+              "temporal_smoothing": 0.1,     
+              "beat_stability": 0.5,
               "enable_quality_check": false,
               "model": ["78", 0],
               "positive": ["94", 0],
               "negative": ["47", 0],
-              "latent": ["121", 0] 
+              "latent": ["121", 0] // <-- Routed from Audio Encoder
             },
             "class_type": "AceStepKSampler"
         };
     } else {
+        console.log("💨 No reference track requested. Generating empty space baseline matrix.");
         nodes["98"] = {
             "inputs": { "seconds": safeDuration, "batch_size": 1 },
             "class_type": "EmptyAceStep1.5LatentAudio"
@@ -175,9 +169,9 @@ function buildPayload(styleTag, lyrics, seed, duration, selectedVoice, refAudioP
               "noise_ema": 0.08,
               "noise_norm_threshold": 2,
               "anti_autotune_strength": 0.15,
-              "frequency_damping": 0.18,      // Restored for clean harmonic resonance
-              "temporal_smoothing": 0.10,     
-              "beat_stability": 0.50,        // Restored for steady vocal rhythm
+              "frequency_damping": 0.18,      
+              "temporal_smoothing": 0.1,     
+              "beat_stability": 0.5,
               "enable_quality_check": false,
               "model": ["78", 0],
               "positive": ["94", 0],

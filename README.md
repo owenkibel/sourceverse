@@ -20,6 +20,8 @@ The code is evolved through iterative testing of scripts that emerge out of dire
 - [Bun](https://bun.sh/) (recommended) or Node.js
 - API access to **Grok** (xAI) and/or **Gemini** (Google)
 - (Optional) A running instance of **ComfyUI** for local image/video/music generation
+- (Optional) A running instance of **llama.cpp** for local audio extraction and analysis
+- (Optional) System installed binaries of ffmpeg and yt-dlp
 
 ### Installation
 
@@ -48,12 +50,14 @@ The code is evolved through iterative testing of scripts that emerge out of dire
 The main workflow uses two scripts:
 
 - **`generate-links*.js`** — Ingests bookmarks or URLs and creates initial thematic groupings.
-- **`vertical_thread7.js`** — The core script that generates narrative arcs, verse, forecasts, and media.
+- **`vertical_thread*.js`** — The core script that generates narrative arcs, verse, forecasts, and media.
+
+The Asterisk is a version number. Use the higher more evolved versions when feasible.
 
 **Example run:**
 
 ```bash
-bun vertical_thread7.js --grok --ideogram --thread=t4
+bun vertical_thread15.js --grok --ideogram --thread=t4
 ```
 
 ### Common Flags
@@ -79,7 +83,7 @@ bun vertical_thread7.js --grok --ideogram --thread=t4
 ## Pipeline Overview
 
 1. **Ingestion** — `generate-links*.js` processes Chrome bookmarks or specific URLs and produces an initial thematic summary/poem.
-2. **Vertical Processing** — `vertical_thread7.js` runs candidate threads through structured prompts using Grok or Gemini.
+2. **Vertical Processing** — `vertical_thread*.js` runs candidate threads through structured prompts using Grok or Gemini.
 3. **Persistent State** — Narrative arcs, forecasts, and hypotheses are read from and written to `cumulative_thread_model.json`.
 4. **Media Generation** — Images, video, TTS, and music are generated and embedded in the output.
 5. **Output** — Clean Markdown posts ready for a static site.
@@ -88,8 +92,8 @@ bun vertical_thread7.js --grok --ideogram --thread=t4
 
 | Script                    | Purpose                                      | Example Command |
 |---------------------------|----------------------------------------------|-----------------|
-| `generate-links*.js`      | Thematic grouping + initial poem from bookmarks/URLs | `bun generate-links2.js` |
-| `vertical_thread7.js`     | Main orchestration (narrative, verse, media, state) | `bun vertical_thread7.js --grok --ideogram --thread=t4` |
+| `generate-links*.js`      | Thematic grouping + initial poem from bookmarks/URLs | `bun generate-links7.js` |
+| `vertical_thread*.js`     | Main orchestration (narrative, verse, media, state) | `bun vertical_thread15.js --grok --ideogram --thread=t4` |
 | `cleanup_*.js`            | Maintenance (hypothesis pruning, model cleanup) | — |
 
 ## Persistent Memory
