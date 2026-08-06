@@ -34,13 +34,13 @@ function buildPayload(styleTag, lyrics, seed, duration, selectedVoice, refAudioP
     const safeDuration = Math.ceil(duration / 16) * 16; 
     const cleanStyle = styleTag.split(',')[0].replace(/\[|\]/g, '').trim().substring(0, 50);
 
-    // Strictly compliant major and minor key pool (Safe harmonic variety)
+    // Verified 14-key natural scale pool
     const KEY_SCALES = [
-        "C major", "G major", "D major", "A major", "E major", "F major", "B flat major",
-        "A minor", "E minor", "D minor", "B minor", "G minor", "C minor", "F sharp minor"
+        "C major", "D major", "E major", "F major", "G major", "A major", "B major",
+        "C minor", "D minor", "E minor", "F minor", "G minor", "A minor", "B minor"
     ];
     const selectedKey = KEY_SCALES[Math.floor(Math.random() * KEY_SCALES.length)];
-    const dynamicBpm = Math.floor(Math.random() * (135 - 105 + 1)) + 105; // Expressive 105–135 BPM range
+    const dynamicBpm = Math.floor(Math.random() * (135 - 105 + 1)) + 105; 
 
     console.log(`🎼 Generation Parameters: Key [${selectedKey}] | Tempo [${dynamicBpm} BPM]`);
 
