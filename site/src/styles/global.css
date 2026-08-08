@@ -77,6 +77,13 @@ hr {
 	margin: 2rem 0;
 }
 
+/* Preserve literal newlines inside Markdown paragraphs (for poetic verses) */
+article p, 
+main p, 
+.main-content p {
+    white-space: pre-line;
+}
+
 /* ==========================================================================
    3. SITE STRUCTURE & CONTENT LAYOUT PANES
    ========================================================================== */
