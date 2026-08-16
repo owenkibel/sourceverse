@@ -28,7 +28,7 @@ const HEART_INBOX = '/home/owen/ai-projects/heartmula/inbox';
 const HEART_OUTBOX = '/home/owen/ai-projects/heartmula/outbox';
 
 // Near the top
-const MODEL_GROK = "grok-4.5";   // was "grok-4.3"
+const MODEL_GROK = "grok-4.6";   // was "grok-4.3"
 const MAX_CHARS_GEMINI = 1900000;
 const MAX_CHARS_GROK = 50000;   // was 35000
 
@@ -1335,147 +1335,50 @@ let audioRes = useGeminiAudio
   : await runAceStepGen(safeMusicTagsString, parsed.musicLyrics, slugify(title), finalDuration, refAudioPath);
     if (!useGeminiAudio) await freeComfyVRAM();
 
-    // // MP4 stitching (optional)
-    // if (imgRes.success && audioRes.success) {
-    //   try {
-    //     await execFileAsync('ffmpeg', [
-    //       '-loop', '1', '-framerate', '1',
-    //       '-i', path.join(IMAGES_DIR, imgRes.filename),
-    //       '-i', path.join(IMAGES_DIR, audioRes.filename),
-    //       '-c:v', 'libx264', '-tune', 'stillimage',
-    //       '-c:a', 'aac', '-b:a', '192k',
-    //       '-pix_fmt', 'yuv420p', '-shortest', '-y',
-    //       path.join(IMAGES_DIR, `x_ready_music_${slugify(title)}_${Date.now()}.mp4`)
-    //     ]);
-    //   } catch (e) {}
-    // }
-
-    // // Dynamic Video/Image MP4 Stitching Core
-    // if (audioRes.success && (vidRes.success || imgRes.success)) {
-    //   try {
-    //     const outputMp4Name = `x_ready_media_${slugify(title)}_${Date.now()}.mp4`;
-    //     const outputMp4Path = path.join(IMAGES_DIR, outputMp4Name);
-
-    //     if (vidRes.success) {
-    //       console.log(`🎬 Stitching 128s audio with looped 8s kinetic video (${vidRes.filename})...`);
-    //       await execFileAsync('ffmpeg', [
-    //         '-y',
-    //         '-stream_loop', '-1', // Loop the video input infinitely
-    //         '-i', path.join(IMAGES_DIR, vidRes.filename),
-    //         '-i', path.join(IMAGES_DIR, audioRes.filename),
-    //         '-c:v', 'libx264',
-    //         '-preset', 'fast',
-    //         '-crf', '26', // Higher CRF controls file size while preserving AI video quality
-    //         '-c:a', 'aac',
-    //         '-b:a', '192k',
-    //         '-pix_fmt', 'yuv420p',
-    //         '-shortest', // Cut off the video loop when the 128s audio finishes
-    //         outputMp4Path
-    //       ]);
-    //     } else {
-    //       console.log(`🖼️ Video unavailable. Falling back to still image stitch (${imgRes.filename})...`);
-    //       await execFileAsync('ffmpeg', [
-    //         '-y',
-    //         '-loop', '1',
-    //         '-framerate', '1',
-    //         '-i', path.join(IMAGES_DIR, imgRes.filename),
-    //         '-i', path.join(IMAGES_DIR, audioRes.filename),
-    //         '-c:v', 'libx264',
-    //         '-tune', 'stillimage',
-    //         '-c:a', 'aac',
-    //         '-b:a', '192k',
-    //         '-pix_fmt', 'yuv420p',
-    //         '-shortest',
-    //         outputMp4Path
-    //       ]);
-    //     }
-    //     console.log(`✅ Stitched video asset ready: ${outputMp4Name}`);
-    //   } catch (e) {
-    //     console.error(`⚠️ Media stitching pass failed: ${e.message}`);
-    //   }
-    // }
-
-  //  // Dynamic Video/Image MP4 Stitching Core (Freeze Last Frame Mode)
-  //   if (audioRes.success && (vidRes.success || imgRes.success)) {
-  //     try {
-  //       const outputMp4Name = `x_ready_media_${slugify(title)}_${Date.now()}.mp4`;
-  //       const outputMp4Path = path.join(IMAGES_DIR, outputMp4Name);
-
-  //       if (vidRes.success) {
-  //         console.log(`🎬 Stitching 128s audio with 8s video (freezing last frame after 8s)...`);
-  //         await execFileAsync('ffmpeg', [
-  //           '-y',
-  //           '-i', path.join(IMAGES_DIR, vidRes.filename),
-  //           '-i', path.join(IMAGES_DIR, audioRes.filename),
-  //           '-vf', 'tpad=stop_mode=clone:stop=-1', // 'stop=-1' pads infinite frames until -shortest triggers
-  //           '-c:v', 'libx264',
-  //           '-preset', 'fast',
-  //           '-crf', '26',
-  //           '-c:a', 'aac',
-  //           '-b:a', '192k',
-  //           '-pix_fmt', 'yuv420p',
-  //           '-shortest', // Cuts the padded video stream when the 128s audio finishes
-  //           outputMp4Path
-  //         ]);
-  //       } else {
-  //         console.log(`🖼️ Video unavailable. Falling back to still image stitch (${imgRes.filename})...`);
-  //         await execFileAsync('ffmpeg', [
-  //           '-y',
-  //           '-loop', '1',
-  //           '-framerate', '1',
-  //           '-i', path.join(IMAGES_DIR, imgRes.filename),
-  //           '-i', path.join(IMAGES_DIR, audioRes.filename),
-  //           '-c:v', 'libx264',
-  //           '-tune', 'stillimage',
-  //           '-c:a', 'aac',
-  //           '-b:a', '192k',
-  //           '-pix_fmt', 'yuv420p',
-  //           '-shortest',
-  //           outputMp4Path
-  //         ]);
-  //       }
-  //       console.log(`✅ Stitched media asset ready: ${outputMp4Name}`);
-  //     } catch (e) {
-  //       console.error(`⚠️ Media stitching pass failed: ${e.message}`);
-  //     }
-  //   }
-
-  // Dynamic Video/Image MP4 Stitching Core (Reversed Video -> Freeze Anchor Image)
+// ==========================================
+    // DYNAMIC VIDEO/IMAGE MP4 STITCHING CORE
+    // ==========================================
     if (audioRes.success && (vidRes.success || imgRes.success)) {
       try {
         const outputMp4Name = `x_ready_media_${slugify(title)}_${Date.now()}.mp4`;
         const outputMp4Path = path.join(IMAGES_DIR, outputMp4Name);
 
         if (vidRes.success) {
-          console.log(`🎬 Stitching 128s audio: Reversing 8s video to freeze on pristine anchor frame...`);
+          console.log(`🎬 Stitching 128s audio: Reversing video to freeze on pristine anchor frame...`);
           await execFileAsync('ffmpeg', [
             '-y',
             '-i', path.join(IMAGES_DIR, vidRes.filename),
             '-i', path.join(IMAGES_DIR, audioRes.filename),
-            '-vf', 'reverse,tpad=stop_mode=clone:stop=-1', // Reverses video, then holds the final (anchor) frame infinitely
+            '-map', '0:v:0',
+            '-map', '1:a:0',
+            '-vf', 'reverse,setpts=PTS-STARTPTS,tpad=stop_mode=clone:stop=-1',
             '-c:v', 'libx264',
             '-preset', 'fast',
             '-crf', '26',
             '-c:a', 'aac',
             '-b:a', '192k',
             '-pix_fmt', 'yuv420p',
-            '-shortest', // Terminates the stream when 128s audio finishes
+            '-shortest',
+            '-movflags', '+faststart',
             outputMp4Path
           ]);
         } else {
-          console.log(`🖼️ Video unavailable. Falling back to still image stitch (${imgRes.filename})...`);
+          console.log(`🖼️ Video unavailable. Falling back to still-image stitch (${imgRes.filename})...`);
           await execFileAsync('ffmpeg', [
             '-y',
             '-loop', '1',
-            '-framerate', '1',
+            '-framerate', '24',
             '-i', path.join(IMAGES_DIR, imgRes.filename),
             '-i', path.join(IMAGES_DIR, audioRes.filename),
+            '-map', '0:v:0',
+            '-map', '1:a:0',
             '-c:v', 'libx264',
             '-tune', 'stillimage',
             '-c:a', 'aac',
             '-b:a', '192k',
             '-pix_fmt', 'yuv420p',
             '-shortest',
+            '-movflags', '+faststart',
             outputMp4Path
           ]);
         }
@@ -1484,6 +1387,7 @@ let audioRes = useGeminiAudio
         console.error(`⚠️ Media stitching pass failed: ${e.message}`);
       }
     }
+
 
     // Clean up raw audio intermediates
     const rawFlacDirScan = await fs.readdir(IMAGES_DIR);

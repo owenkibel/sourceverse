@@ -1,0 +1,47 @@
+[
+  {
+    "id": 1,
+    "prefix": "The Dawn-Sworn",
+    "core": "Salt-Bearers",
+    "suffix": "of the Living Stone",
+    "seedPhrase": "A band known as the The Dawn-Sworn Salt-Bearers of the Living Stone",
+    "limerick": "The Dawn-Sworn Salt-Bearers, bold,\nIn the Living Stone, stories are told.\nWith a rhythm so deep,\nThe secrets they keep,\nIn a saga of silver and gold.",
+    "timestamp": "2026-08-14T02:15:24.757Z"
+  },
+  {
+    "id": 2,
+    "prefix": "The Steadfast",
+    "core": "Tide-Turners",
+    "suffix": "of the Four Dawns",
+    "seedPhrase": "A gathering of The Steadfast Tide-Turners of the Four Dawns",
+    "limerick": "The Tide-Turners gathered in light,\nTo stand for the Four Dawns so bright.\nWith steadfast resolve,\nAs the shadows dissolve,\nThey rose to confront the long night.",
+    "timestamp": "2026-08-14T02:15:25.874Z"
+  },
+  {
+    "id": 3,
+    "prefix": "The True-Bearing",
+    "core": "Root-Severers",
+    "suffix": "of the Four Dawns",
+    "seedPhrase": "The proudly The True-Bearing Root-Severers of the Four Dawns",
+    "limerick": "The True-Bearing Root-Severers stand,\nWith pride in the dawn's rising land.\nThe Four Dawns they claim,\nWith a fierce, holy name,\nWith a power both sturdy and grand.",
+    "timestamp": "2026-08-14T02:15:27.109Z"
+  },
+  {
+    "id": 4,
+    "prefix": "The Horizon-True",
+    "core": "Root-Severers",
+    "suffix": "of the Rifted Hills",
+    "seedPhrase": "A gathering of The Horizon-True Root-Severers of the Rifted Hills",
+    "limerick": "The Root-Severers gathered in line,\nTo make the Rifted Hills shine.\nWith Horizon in sight,\nThey gathered by light,\nIn a gathering truly divine.",
+    "timestamp": "2026-08-14T02:15:28.167Z"
+  },
+  {
+    "id": 5,
+    "prefix": "The Open-Handed",
+    "core": "Shade-Dwellers",
+    "suffix": "of the Inland Reach",
+    "seedPhrase": "The proudly The Open-Handed Shade-Dwellers of the Inland Reach",
+    "limerick": "The Shade-Dwellers, proud of their reach,\nWith open hands, lessons they teach.\nIn the inland domain,\nThey dwell in the shade,\nWith a spirit no shadow can breach.",
+    "timestamp": "2026-08-14T02:15:29.343Z"
+  }
+]

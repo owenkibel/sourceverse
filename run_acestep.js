@@ -235,20 +235,23 @@ async function main() {
             }
         }
 
-        let selectedVoice = CLASSICAL_VOICES[1]; 
-        // ... rest of your try block logic remains identical
+// =========================================================================
+        // ROBUST VOCAL PROFILE ROUTING (Word-boundary safe)
+        // =========================================================================
+        let selectedVoice = CLASSICAL_VOICES[1]; // Default fallback: Mezzo-Soprano (natural_female)
         const lowerTags = tags.toLowerCase();
-        if (lowerTags.includes('baritone') || (lowerTags.includes('male') && lowerTags.includes('bass'))) {
-            selectedVoice = CLASSICAL_VOICES[0]; 
-        } else if (lowerTags.includes('tenor') || lowerTags.includes('male')) {
-            selectedVoice = CLASSICAL_VOICES[2]; 
-        } else if (lowerTags.includes('soprano') && lowerTags.includes('dramatic')) {
-            selectedVoice = CLASSICAL_VOICES[3]; 
-        } else if (lowerTags.includes('soprano') || lowerTags.includes('female')) {
-            selectedVoice = CLASSICAL_VOICES[1]; 
+
+        if (lowerTags.includes('baritone') || lowerTags.includes('bass')) {
+            selectedVoice = CLASSICAL_VOICES[0]; // Bass-Baritone (natural_male)
+        } else if (lowerTags.includes('dramatic soprano')) {
+            selectedVoice = CLASSICAL_VOICES[3]; // Dramatic Soprano (natural_female)
+        } else if (lowerTags.includes('mezzo') || lowerTags.includes('soprano') || (/\bfemale\b/.test(lowerTags) && !/\bmale\b/.test(lowerTags))) {
+            selectedVoice = CLASSICAL_VOICES[1]; // Mezzo-Soprano (natural_female)
+        } else if (lowerTags.includes('tenor') || /\bmale\b/.test(lowerTags)) {
+            selectedVoice = CLASSICAL_VOICES[2]; // Lyric Tenor (natural_male)
         }
 
-console.log(`🎭 Selected Vocal Profile: ${selectedVoice.name} -> Routing as [${selectedVoice.gender}]`);
+        console.log(`🎭 Selected Vocal Profile: ${selectedVoice.name} -> Routing as [${selectedVoice.gender}]`);
 
         // CHANGED: Pass finalRefPath instead of refAudioPath
         const payload = buildPayload(tags, lyrics, seed, duration, selectedVoice, finalRefPath);

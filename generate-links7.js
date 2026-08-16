@@ -10,7 +10,7 @@ const execAsync = promisify(exec);
 
 // --- Configuration ---
 const DEPTH = 40; // bookmarks per batch
-const DEFAULT_MODEL = "grok-4.5"; 
+const DEFAULT_MODEL = "grok-4.6"; 
 
 const BOOKMARKS_PATH = '/home/owen/.config/google-chrome-unstable/Default/Bookmarks';
 const OUTPUT_DIR = './posts';
@@ -701,7 +701,7 @@ async function main() {
   try {
     const urlArg = process.argv.find(a => a.startsWith('--url='))?.substring(6);
     if (urlArg) {
-      let targetModel = "grok-4.5";
+      let targetModel = DEFAULT_MODEL;
       if (process.argv.includes('--12b')) targetModel = "gemma-12b";
       if (process.argv.includes('--e4b')) targetModel = "gemma-e4b";
       await runVersificationMode(urlArg, targetModel);
