@@ -1,0 +1,3163 @@
+{
+  "dramaticPlays": {
+    "scientific": [
+      {
+        "thread": "t6",
+        "act": 1,
+        "timestamp": "2026-06-12T17:15:14.163Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": []
+      },
+      {
+        "thread": "t2",
+        "act": 2,
+        "timestamp": "2026-06-13T21:23:30.649Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-found-1781385796005-0",
+            "summary": "The AI hypothesis dramatized here posits that accelerated nodule removal will trigger cascading extinctions measurable o"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781385796005-1",
+            "summary": "The AI tests its conjecture through The Titan’s drills now turned skyward, staging reusable stages against the Oracle’s "
+          }
+        ]
+      },
+      {
+        "thread": "t4",
+        "act": 3,
+        "timestamp": "2026-06-14T18:06:20.117Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-found-1781460367772-0",
+            "summary": "The AI hypothesis dramatized here posits that accelerated nodule removal will trigger cascading extinctions measurable o"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781460367772-1",
+            "summary": "The AI tests its conjecture through The Titan’s drills now turned skyward, staging reusable stages against the Oracle’s "
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781460367772-2",
+            "summary": "The Titan’s drills now turned skyward test whether reusable stages, once lauded for access, become the very instruments "
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781460367772-3",
+            "summary": "Refined conjecture: El Niño-driven Pacific warming accelerates orbital timing jitter by eroding ground-station calibrati"
+          }
+        ]
+      },
+      {
+        "thread": "t6",
+        "act": 4,
+        "timestamp": "2026-06-14T18:34:24.841Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-found-1781462051209-0",
+            "summary": "The Titan’s drills now turned skyward test whether reusable stages, once lauded for access, become the very instruments "
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781462051209-1",
+            "summary": "Refined conjecture: El Niño-driven Pacific warming accelerates orbital timing jitter by eroding ground-station calibrati"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781462051209-2",
+            "summary": "Subsidiary framework: the orbital-timing jitter may couple to prompt-injection latency, such that debris-induced clock d"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781462051209-3",
+            "summary": "Refined subsidiary: political spin cycles act as forcing functions that compress the temporal window between debris-indu"
+          }
+        ]
+      },
+      {
+        "thread": "t3",
+        "act": 5,
+        "timestamp": "2026-06-14T22:47:15.219Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-found-1781477221589-0",
+            "summary": "Refined subsidiary: political spin cycles act as forcing functions that compress the temporal window between debris-indu"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781477221589-1",
+            "summary": "Subsidiary refinement: political spin compression acts as a forcing function that couples >300% orbital jitter directly "
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781477221589-2",
+            "summary": "The 300 % jitter threshold is refined: when debris-induced residuals coincide with 8647-type symbolic events, discourse-"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781477221589-3",
+            "summary": "Refined coupling constant now reads 2.7× when Pacific residuals meet 8647-type acts; falsification vector shifts to hurr"
+          }
+        ]
+      },
+      {
+        "thread": "t5",
+        "act": 6,
+        "timestamp": "2026-06-14T23:43:47.024Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-found-1781480618941-0",
+            "summary": "The 300 % jitter threshold is refined: when debris-induced residuals coincide with 8647-type symbolic events, discourse-"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781480618941-1",
+            "summary": "Refined coupling constant now reads 2.7× when Pacific residuals meet 8647-type acts; falsification vector shifts to hurr"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781480618941-2",
+            "summary": "Refinement isolates Pacific-warming residuals as the decisive falsifier: cross-correlating hurricane-track vectors again"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781480618941-3",
+            "summary": "Refined coupling isolates Pacific-warming residuals as sole falsifier; cross-correlation of hurricane-track vectors agai"
+          }
+        ]
+      },
+      {
+        "thread": "t4",
+        "act": 7,
+        "timestamp": "2026-06-15T19:22:09.851Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-found-1781551318011-0",
+            "summary": "Refinement isolates Pacific-warming residuals as sole falsifier; cross-correlation of hurricane vectors against ESA feed"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781551318011-1",
+            "summary": "Refined coupling now isolates Pacific residuals as sole falsifier; cross-correlation of hurricane-track vectors against "
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781551318011-2",
+            "summary": "Refinement now isolates the Strait’s residual tensions as decisive falsifier; cross-correlation of G7 vector shifts agai"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781551318011-3",
+            "summary": "Refinement now isolates the Strait’s residual tensions as decisive falsifier; cross-correlation of G7 vector shifts agai"
+          }
+        ]
+      },
+      {
+        "thread": "t8",
+        "act": 8,
+        "timestamp": "2026-06-18T17:55:08.523Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-found-1781805293643-0",
+            "summary": "Browser-local multimodal inference isolates residual centralized regulatory vectors as falsifiers; cross-correlation of "
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781805293643-1",
+            "summary": "Leftist terror meets the drone campaign.  \nNo softening here for narrative grace,  \nOnly raw arrests in the data's face."
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781805293643-2",
+            "summary": "Browser-local multimodal verification of contract-award latency against identity-trust shifts across the 2026–2027 triad"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781805293643-3",
+            "summary": "Browser-local multimodal verification isolates contract-award and sponsorship-kit latency as sole falsifiers against reg"
+          }
+        ]
+      },
+      {
+        "thread": "t3",
+        "act": 9,
+        "timestamp": "2026-06-19T18:52:10.189Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-found-1781895107012-0",
+            "summary": "Browser-local multimodal verification isolates contract-award and sponsorship-kit latency as sole falsifiers against reg"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781895107012-1",
+            "summary": "Browser-local multimodal inference remains the operative falsifier against residual centralized vectors. Cross-correlati"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781895107012-2",
+            "summary": "Browser-local verification of contract latency against identity-trust shifts across the 2026 window isolates centralized"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781895107012-3",
+            "summary": "Browser-local verification of contract-award latency against identity-trust deltas isolates residual centralized capture"
+          }
+        ]
+      },
+      {
+        "thread": "t3",
+        "act": 10,
+        "timestamp": "2026-06-21T02:16:27.277Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-1782008173719",
+            "summary": "Browser-local diffusion verification of latency against identity deltas isolates the monopoly vector at sub-150 ms; Horm"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1782008173719",
+            "summary": "Browser-local diffusion verification at sub-150 ms thresholds isolates the monopoly vector by converting Hormuz throughp"
+          }
+        ]
+      },
+      {
+        "thread": "t4",
+        "act": 11,
+        "timestamp": "2026-06-26T23:15:57.381Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "canonical",
+            "id": "owen-groups-of-humans-are-susceptible-to-the-lowest-common-denominator-of-s",
+            "summary": "Groups of humans are susceptible to the lowest common denominator of signalling, which is often known as group think. Th"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1782515739507",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t4",
+        "act": 12,
+        "timestamp": "2026-06-28T22:39:00.219Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1782686321660",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t7",
+        "act": 13,
+        "timestamp": "2026-06-29T00:59:28.934Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "owen-humans-who-live-in-cities-often-become-disconnected-from-nature-and-na",
+            "summary": "Humans who live in cities often become disconnected from nature and natural laws and beholden to social systems that gov"
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          }
+        ]
+      },
+      {
+        "thread": "t2",
+        "act": 14,
+        "timestamp": "2026-07-02T21:14:52.731Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1783026880068",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t2",
+        "act": 15,
+        "timestamp": "2026-07-02T21:27:30.530Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "owen-the-behavior-of-humans-in-cities-can-be-likened-to-a-human-zoo-desmond",
+            "summary": "The behavior of humans in cities can be likened to a Human Zoo - Desmond Morris. There is a plethora of unnatural and un"
+          },
+          {
+            "source": "canonical",
+            "id": "owen-humans-are-a-species-of-animal-that-signal-to-each-other-in-a-language",
+            "summary": "Humans are a species of animal that signal to each other in a language which seldom references the evolutionary origin o"
+          }
+        ]
+      },
+      {
+        "thread": "t7",
+        "act": 16,
+        "timestamp": "2026-07-04T01:44:34.353Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1783129449928",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t8",
+        "act": 17,
+        "timestamp": "2026-07-04T18:45:44.983Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          },
+          {
+            "source": "canonical",
+            "id": "owen-humans-who-live-in-cities-often-become-disconnected-from-nature-and-na",
+            "summary": "Humans who live in cities often become disconnected from nature and natural laws and beholden to social systems that gov"
+          }
+        ]
+      },
+      {
+        "thread": "t5",
+        "act": 18,
+        "timestamp": "2026-07-05T18:27:35.831Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "canonical",
+            "id": "owen-the-behavior-of-humans-in-cities-can-be-likened-to-a-human-zoo-desmond",
+            "summary": "The behavior of humans in cities can be likened to a Human Zoo - Desmond Morris. There is a plethora of unnatural and un"
+          }
+        ]
+      },
+      {
+        "thread": "t5",
+        "act": 19,
+        "timestamp": "2026-07-07T01:26:52.309Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1783387588241",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t6",
+        "act": 20,
+        "timestamp": "2026-07-07T16:23:18.462Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1783441376151",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t7",
+        "act": 21,
+        "timestamp": "2026-07-07T17:34:58.363Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "canonical",
+            "id": "owen-humans-who-live-in-cities-often-become-disconnected-from-nature-and-na",
+            "summary": "Humans who live in cities often become disconnected from nature and natural laws and beholden to social systems that gov"
+          }
+        ]
+      },
+      {
+        "thread": "t10",
+        "act": 22,
+        "timestamp": "2026-07-07T21:45:55.848Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1783460714387",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t3",
+        "act": 23,
+        "timestamp": "2026-07-12T00:41:54.313Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1783816892394",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t5",
+        "act": 24,
+        "timestamp": "2026-07-17T00:10:39.392Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-prof-in-a-haze-who-taught-truth-was-just-cultural-gla",
+            "summary": "There once was a prof in a haze,  \nWho taught truth was just cultural glaze.  \nHe froze every foe,  \nLet objective go,  "
+          },
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-charmer-with-grin-so-wide-that-it-bordered-on-sin-his",
+            "summary": "There once was a charmer with grin,  \nSo wide that it bordered on sin.  \nHis theories maligned,  \nHis followers blind,  "
+          },
+          {
+            "source": "ai",
+            "id": "ai-1784246999156",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t2",
+        "act": 25,
+        "timestamp": "2026-07-28T22:17:40.962Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-our-language-of-signaling-hides-the-evolutionary-roots-of-our-tides-we",
+            "summary": "Our language of signaling hides,  \nThe evolutionary roots of our tides.  \nWe cloak our base drives,  \nIn idealist hives,"
+          },
+          {
+            "source": "canonical",
+            "id": "grok-a-rhymer-with-voice-sharp-and-sly-could-hypnotize-all-passing-by-with",
+            "summary": "A rhymer with voice sharp and sly,  \nCould hypnotize all passing by.  \nWith cilantro’s bite,  \nHe dimmed reason’s light,"
+          }
+        ]
+      },
+      {
+        "thread": "t8",
+        "act": 26,
+        "timestamp": "2026-08-05T22:32:19.829Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-prof-in-a-haze-who-taught-truth-was-just-cultural-gla",
+            "summary": "There once was a prof in a haze,  \nWho taught truth was just cultural glaze.  \nHe froze every foe,  \nLet objective go,  "
+          },
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-charmer-with-grin-so-wide-that-it-bordered-on-sin-his",
+            "summary": "There once was a charmer with grin,  \nSo wide that it bordered on sin.  \nHis theories maligned,  \nHis followers blind,  "
+          },
+          {
+            "source": "ai",
+            "id": "ai-1785969082254",
+            "summary": "And solid measures vanish in the rage.\n\nReality’s flame will lick the costume clean,  \nWhen cooked illusions meet what l"
+          }
+        ]
+      },
+      {
+        "thread": "t9",
+        "act": 27,
+        "timestamp": "2026-08-15T22:26:46.865Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-prof-in-a-haze-who-taught-truth-was-just-cultural-gla",
+            "summary": "There once was a prof in a haze,  \nWho taught truth was just cultural glaze.  \nHe froze every foe,  \nLet objective go,  "
+          },
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-charmer-with-grin-so-wide-that-it-bordered-on-sin-his",
+            "summary": "There once was a charmer with grin,  \nSo wide that it bordered on sin.  \nHis theories maligned,  \nHis followers blind,  "
+          },
+          {
+            "source": "ai",
+            "id": "ai-1786832757200",
+            "summary": "And solid measures vanish in the rage.\n\nReality’s flame will lick the costume clean,  \nWhen cooked illusions meet what l"
+          }
+        ]
+      },
+      {
+        "thread": "t1",
+        "act": 28,
+        "timestamp": "2026-08-16T16:57:17.796Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-prof-in-a-haze-who-taught-truth-was-just-cultural-gla",
+            "summary": "There once was a prof in a haze,  \nWho taught truth was just cultural glaze.  \nHe froze every foe,  \nLet objective go,  "
+          },
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-charmer-with-grin-so-wide-that-it-bordered-on-sin-his",
+            "summary": "There once was a charmer with grin,  \nSo wide that it bordered on sin.  \nHis theories maligned,  \nHis followers blind,  "
+          },
+          {
+            "source": "ai",
+            "id": "ai-1786899387958",
+            "summary": "And solid measures vanish in the rage.\n\nReality’s flame will lick the costume clean,  \nWhen cooked illusions meet what l"
+          }
+        ]
+      }
+    ],
+    "artistic": [
+      {
+        "thread": "t1",
+        "act": 1,
+        "timestamp": "2026-06-12T22:10:59.765Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-found-1781302244819-0",
+            "summary": "The AI hypothesis dramatized here posits that accelerated nodule removal will trigger cascading extinctions measurable o"
+          }
+        ]
+      },
+      {
+        "thread": "t3",
+        "act": 2,
+        "timestamp": "2026-06-13T21:52:17.241Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-found-1781387519586-0",
+            "summary": "The AI hypothesis dramatized here posits that accelerated nodule removal will trigger cascading extinctions measurable o"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781387519586-1",
+            "summary": "The AI tests its conjecture through The Titan’s drills now turned skyward, staging reusable stages against the Oracle’s "
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781387519586-2",
+            "summary": "The Titan’s drills now turned skyward test whether reusable stages, once lauded for access, become the very instruments "
+          }
+        ]
+      },
+      {
+        "thread": "t5",
+        "act": 3,
+        "timestamp": "2026-06-14T18:19:42.795Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-found-1781461171857-0",
+            "summary": "The AI tests its conjecture through The Titan’s drills now turned skyward, staging reusable stages against the Oracle’s "
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781461171857-1",
+            "summary": "The Titan’s drills now turned skyward test whether reusable stages, once lauded for access, become the very instruments "
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781461171857-2",
+            "summary": "Refined conjecture: El Niño-driven Pacific warming accelerates orbital timing jitter by eroding ground-station calibrati"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781461171857-3",
+            "summary": "Subsidiary framework: the orbital-timing jitter may couple to prompt-injection latency, such that debris-induced clock d"
+          }
+        ]
+      },
+      {
+        "thread": "t3",
+        "act": 4,
+        "timestamp": "2026-06-26T22:42:39.326Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1782513738639",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t7",
+        "act": 5,
+        "timestamp": "2026-06-27T02:50:49.078Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1782528597589",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t11",
+        "act": 6,
+        "timestamp": "2026-07-09T01:43:55.029Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "canonical",
+            "id": "owen-the-behavior-of-humans-in-cities-can-be-likened-to-a-human-zoo-desmond",
+            "summary": "The behavior of humans in cities can be likened to a Human Zoo - Desmond Morris. There is a plethora of unnatural and un"
+          }
+        ]
+      },
+      {
+        "thread": "t2",
+        "act": 7,
+        "timestamp": "2026-07-13T17:18:08.401Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": []
+      },
+      {
+        "thread": "t10",
+        "act": 8,
+        "timestamp": "2026-08-06T17:19:06.100Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-from-plains-and-from-shores-they-did-stream-in-mania-bowing-extreme-ea",
+            "summary": "From plains and from shores they did stream,  \nIn mania, bowing extreme.  \nEach danced the dance,  \nOf contrition’s roma"
+          },
+          {
+            "source": "canonical",
+            "id": "grok-humans-in-groups-tend-to-flock-to-signals-that-lowest-do-mock-the-comm",
+            "summary": "Humans in groups tend to flock,  \nTo signals that lowest do mock.  \nThe common denominator,  \nRules the behavior,  \nWhil"
+          }
+        ]
+      }
+    ],
+    "political": [
+      {
+        "thread": "t6",
+        "act": 23,
+        "timestamp": "2026-06-20T17:38:42.777Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "human",
+            "id": "schumpeter-creative-destruction",
+            "summary": "Schumpeter's Creative Destruction: Industrial mutation incessantly revolutionizes the economic structure from within, in"
+          },
+          {
+            "source": "human",
+            "id": "ardrey-amity-enmity",
+            "summary": "Ardrey's Amity-Enmity Hypothesis: Human social structures depend fundamentally on an externalized threat vector to maint"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781977106063-0",
+            "summary": "Browser-local verification of contract-award latency against identity-trust deltas isolates residual centralized capture"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781977106063-1",
+            "summary": "Browser-local diffusion verification of chromatin-contact latency against identity-trust deltas isolates the final monop"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781977106063-2",
+            "summary": "Browser-local diffusion verification of chromatin-contact latency against identity-trust deltas isolates the final monop"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781977106063-3",
+            "summary": "Browser-local verification of contract latency against identity-trust deltas isolates centralized narrative capture as t"
+          }
+        ]
+      },
+      {
+        "thread": "t1",
+        "act": 24,
+        "timestamp": "2026-06-20T18:02:06.423Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "human",
+            "id": "schumpeter-creative-destruction",
+            "summary": "Schumpeter's Creative Destruction: Industrial mutation incessantly revolutionizes the economic structure from within, in"
+          },
+          {
+            "source": "human",
+            "id": "ardrey-amity-enmity",
+            "summary": "Ardrey's Amity-Enmity Hypothesis: Human social structures depend fundamentally on an externalized threat vector to maint"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781978507796-0",
+            "summary": "Browser-local diffusion verification of chromatin-contact latency against identity-trust deltas isolates the final monop"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781978507796-1",
+            "summary": "Browser-local diffusion verification of chromatin-contact latency against identity-trust deltas isolates the final monop"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781978507796-2",
+            "summary": "Browser-local verification of contract latency against identity-trust deltas isolates centralized narrative capture as t"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781978507796-3",
+            "summary": "Browser-local contract verification against identity deltas at sub-150 ms converts announcement-timing spikes into direc"
+          }
+        ]
+      },
+      {
+        "thread": "t2",
+        "act": 25,
+        "timestamp": "2026-06-20T18:21:57.358Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "human",
+            "id": "schumpeter-creative-destruction",
+            "summary": "Schumpeter's Creative Destruction: Industrial mutation incessantly revolutionizes the economic structure from within, in"
+          },
+          {
+            "source": "human",
+            "id": "ardrey-amity-enmity",
+            "summary": "Ardrey's Amity-Enmity Hypothesis: Human social structures depend fundamentally on an externalized threat vector to maint"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781979702012-0",
+            "summary": "Browser-local diffusion verification of chromatin-contact latency against identity-trust deltas isolates the final monop"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781979702012-1",
+            "summary": "Browser-local verification of contract latency against identity-trust deltas isolates centralized narrative capture as t"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781979702012-2",
+            "summary": "Browser-local contract verification against identity deltas at sub-150 ms converts announcement-timing spikes into direc"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781979702012-3",
+            "summary": "Browser-local diffusion verification of latency against identity deltas isolates the monopoly vector at sub-150 ms; Horm"
+          }
+        ]
+      },
+      {
+        "thread": "t4",
+        "act": 13,
+        "timestamp": "2026-06-23T03:58:42.035Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "human",
+            "id": "ardrey-amity-enmity",
+            "summary": "Ardrey's Amity-Enmity Hypothesis: Human social structures depend fundamentally on an externalized threat vector to maint"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1782187095530",
+            "summary": "Refined coupling isolates Pacific-warming residuals as sole falsifier; cross-correlation of hurricane-track vectors agai"
+          }
+        ]
+      },
+      {
+        "thread": "t5",
+        "act": 14,
+        "timestamp": "2026-06-23T04:05:55.255Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "human",
+            "id": "ardrey-amity-enmity",
+            "summary": "Ardrey's Amity-Enmity Hypothesis: Human social structures depend fundamentally on an externalized threat vector to maint"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1782187523791",
+            "summary": "Refined coupling now isolates garnet crystallization temperature as the sole remaining falsifier for extended groundwate"
+          }
+        ]
+      },
+      {
+        "thread": "t6",
+        "act": 15,
+        "timestamp": "2026-06-23T21:23:41.792Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "human",
+            "id": "ardrey-amity-enmity",
+            "summary": "Ardrey's Amity-Enmity Hypothesis: Human social structures depend fundamentally on an externalized threat vector to maint"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1782249804606",
+            "summary": "Refined coupling isolates negative-differential-resistance onset temperature in SiC MOSFETs as the sole remaining falsif"
+          }
+        ]
+      },
+      {
+        "thread": "t7",
+        "act": 16,
+        "timestamp": "2026-06-23T21:38:13.003Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "human",
+            "id": "ardrey-amity-enmity",
+            "summary": "Ardrey's Amity-Enmity Hypothesis: Human social structures depend fundamentally on an externalized threat vector to maint"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1782250677326",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t1",
+        "act": 17,
+        "timestamp": "2026-06-25T18:32:23.047Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "human",
+            "id": "ardrey-amity-enmity",
+            "summary": "Ardrey's Amity-Enmity Hypothesis: Human social structures depend fundamentally on an externalized threat vector to maint"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1782412329019",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t1",
+        "act": 18,
+        "timestamp": "2026-06-25T18:47:13.171Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "human",
+            "id": "ardrey-amity-enmity",
+            "summary": "Ardrey's Amity-Enmity Hypothesis: Human social structures depend fundamentally on an externalized threat vector to maint"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1782413214431",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t2",
+        "act": 19,
+        "timestamp": "2026-06-25T19:20:59.928Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "human",
+            "id": "ardrey-amity-enmity",
+            "summary": "Ardrey's Amity-Enmity Hypothesis: Human social structures depend fundamentally on an externalized threat vector to maint"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1782415239681",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t5",
+        "act": 20,
+        "timestamp": "2026-06-27T01:51:48.619Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1782525085232",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t6",
+        "act": 21,
+        "timestamp": "2026-06-27T02:20:36.830Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "owen-humans-who-live-in-cities-often-become-disconnected-from-nature-and-na",
+            "summary": "Humans who live in cities often become disconnected from nature and natural laws and beholden to social systems that gov"
+          },
+          {
+            "source": "canonical",
+            "id": "owen-groups-of-humans-are-susceptible-to-the-lowest-common-denominator-of-s",
+            "summary": "Groups of humans are susceptible to the lowest common denominator of signalling, which is often known as group think. Th"
+          }
+        ]
+      },
+      {
+        "thread": "t2",
+        "act": 13,
+        "timestamp": "2026-06-28T00:57:34.399Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "owen-humans-who-live-in-cities-often-become-disconnected-from-nature-and-na",
+            "summary": "Humans who live in cities often become disconnected from nature and natural laws and beholden to social systems that gov"
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          }
+        ]
+      },
+      {
+        "thread": "t3",
+        "act": 14,
+        "timestamp": "2026-06-28T19:26:42.485Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "owen-the-behavior-of-humans-in-cities-can-be-likened-to-a-human-zoo-desmond",
+            "summary": "The behavior of humans in cities can be likened to a Human Zoo - Desmond Morris. There is a plethora of unnatural and un"
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          }
+        ]
+      },
+      {
+        "thread": "t1",
+        "act": 15,
+        "timestamp": "2026-06-29T18:53:43.490Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "owen-groups-of-humans-are-susceptible-to-the-lowest-common-denominator-of-s",
+            "summary": "Groups of humans are susceptible to the lowest common denominator of signalling, which is often known as group think. Th"
+          },
+          {
+            "source": "canonical",
+            "id": "owen-humans-who-live-in-cities-often-become-disconnected-from-nature-and-na",
+            "summary": "Humans who live in cities often become disconnected from nature and natural laws and beholden to social systems that gov"
+          }
+        ]
+      },
+      {
+        "thread": "t3",
+        "act": 16,
+        "timestamp": "2026-07-02T21:39:21.104Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1783028349159",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t4",
+        "act": 17,
+        "timestamp": "2026-07-04T00:03:42.732Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "owen-humans-are-a-species-of-animal-that-signal-to-each-other-in-a-language",
+            "summary": "Humans are a species of animal that signal to each other in a language which seldom references the evolutionary origin o"
+          },
+          {
+            "source": "canonical",
+            "id": "owen-groups-of-humans-are-susceptible-to-the-lowest-common-denominator-of-s",
+            "summary": "Groups of humans are susceptible to the lowest common denominator of signalling, which is often known as group think. Th"
+          }
+        ]
+      },
+      {
+        "thread": "t5",
+        "act": 18,
+        "timestamp": "2026-07-04T00:24:07.539Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1783124631950",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t6",
+        "act": 19,
+        "timestamp": "2026-07-04T00:37:59.985Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "owen-humans-are-a-species-of-animal-that-signal-to-each-other-in-a-language",
+            "summary": "Humans are a species of animal that signal to each other in a language which seldom references the evolutionary origin o"
+          },
+          {
+            "source": "canonical",
+            "id": "owen-humans-who-live-in-cities-often-become-disconnected-from-nature-and-na",
+            "summary": "Humans who live in cities often become disconnected from nature and natural laws and beholden to social systems that gov"
+          }
+        ]
+      },
+      {
+        "thread": "t1",
+        "act": 20,
+        "timestamp": "2026-07-04T19:32:19.060Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "owen-groups-of-humans-are-susceptible-to-the-lowest-common-denominator-of-s",
+            "summary": "Groups of humans are susceptible to the lowest common denominator of signalling, which is often known as group think. Th"
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          }
+        ]
+      },
+      {
+        "thread": "t2",
+        "act": 21,
+        "timestamp": "2026-07-04T23:46:04.577Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1783208750372",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t3",
+        "act": 22,
+        "timestamp": "2026-07-05T15:27:09.022Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          },
+          {
+            "source": "canonical",
+            "id": "owen-the-behavior-of-humans-in-cities-can-be-likened-to-a-human-zoo-desmond",
+            "summary": "The behavior of humans in cities can be likened to a Human Zoo - Desmond Morris. There is a plethora of unnatural and un"
+          }
+        ]
+      },
+      {
+        "thread": "t4",
+        "act": 23,
+        "timestamp": "2026-07-05T18:10:27.322Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1783275012397",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t6",
+        "act": 24,
+        "timestamp": "2026-07-05T21:43:54.736Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "owen-humans-who-live-in-cities-often-become-disconnected-from-nature-and-na",
+            "summary": "Humans who live in cities often become disconnected from nature and natural laws and beholden to social systems that gov"
+          },
+          {
+            "source": "canonical",
+            "id": "owen-groups-of-humans-are-susceptible-to-the-lowest-common-denominator-of-s",
+            "summary": "Groups of humans are susceptible to the lowest common denominator of signalling, which is often known as group think. Th"
+          }
+        ]
+      },
+      {
+        "thread": "t7",
+        "act": 25,
+        "timestamp": "2026-07-05T22:05:49.655Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1783289135752",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t7",
+        "act": 26,
+        "timestamp": "2026-07-05T22:20:26.646Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          }
+        ]
+      },
+      {
+        "thread": "t8",
+        "act": 27,
+        "timestamp": "2026-07-05T22:30:18.990Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1783290603332",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t1",
+        "act": 28,
+        "timestamp": "2026-07-05T23:17:31.889Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1783293443193",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t1",
+        "act": 29,
+        "timestamp": "2026-07-05T23:34:34.768Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "canonical",
+            "id": "owen-the-behavior-of-humans-in-cities-can-be-likened-to-a-human-zoo-desmond",
+            "summary": "The behavior of humans in cities can be likened to a Human Zoo - Desmond Morris. There is a plethora of unnatural and un"
+          }
+        ]
+      },
+      {
+        "thread": "t2",
+        "act": 30,
+        "timestamp": "2026-07-05T23:46:01.820Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1783295146470",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t3",
+        "act": 31,
+        "timestamp": "2026-07-06T17:41:47.194Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1783359688773",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t4",
+        "act": 32,
+        "timestamp": "2026-07-06T17:59:49.454Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1783360765246",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t5",
+        "act": 33,
+        "timestamp": "2026-07-06T18:19:41.402Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1783361949901",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t6",
+        "act": 34,
+        "timestamp": "2026-07-06T18:25:17.204Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1783362297513",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t7",
+        "act": 35,
+        "timestamp": "2026-07-06T19:07:35.103Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1783364829695",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t8",
+        "act": 36,
+        "timestamp": "2026-07-06T19:34:52.690Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "canonical",
+            "id": "owen-the-behavior-of-humans-in-cities-can-be-likened-to-a-human-zoo-desmond",
+            "summary": "The behavior of humans in cities can be likened to a Human Zoo - Desmond Morris. There is a plethora of unnatural and un"
+          }
+        ]
+      },
+      {
+        "thread": "t1",
+        "act": 37,
+        "timestamp": "2026-07-06T23:13:01.710Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1783379556634",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t2",
+        "act": 38,
+        "timestamp": "2026-07-07T00:19:10.866Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1783383528146",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t3",
+        "act": 39,
+        "timestamp": "2026-07-07T00:30:34.175Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "owen-humans-are-a-species-of-animal-that-signal-to-each-other-in-a-language",
+            "summary": "Humans are a species of animal that signal to each other in a language which seldom references the evolutionary origin o"
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          }
+        ]
+      },
+      {
+        "thread": "t8",
+        "act": 40,
+        "timestamp": "2026-07-07T21:05:50.292Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "canonical",
+            "id": "owen-the-behavior-of-humans-in-cities-can-be-likened-to-a-human-zoo-desmond",
+            "summary": "The behavior of humans in cities can be likened to a Human Zoo - Desmond Morris. There is a plethora of unnatural and un"
+          }
+        ]
+      },
+      {
+        "thread": "t9",
+        "act": 41,
+        "timestamp": "2026-07-07T21:31:35.067Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1783459862272",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t1",
+        "act": 42,
+        "timestamp": "2026-07-09T18:36:56.266Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "owen-the-behavior-of-humans-in-cities-can-be-likened-to-a-human-zoo-desmond",
+            "summary": "The behavior of humans in cities can be likened to a Human Zoo - Desmond Morris. There is a plethora of unnatural and un"
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          }
+        ]
+      },
+      {
+        "thread": "t2",
+        "act": 43,
+        "timestamp": "2026-07-11T21:13:00.118Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1783804352272",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t4",
+        "act": 44,
+        "timestamp": "2026-07-12T00:55:55.475Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "owen-humans-who-live-in-cities-often-become-disconnected-from-nature-and-na",
+            "summary": "Humans who live in cities often become disconnected from nature and natural laws and beholden to social systems that gov"
+          },
+          {
+            "source": "canonical",
+            "id": "owen-groups-of-humans-are-susceptible-to-the-lowest-common-denominator-of-s",
+            "summary": "Groups of humans are susceptible to the lowest common denominator of signalling, which is often known as group think. Th"
+          }
+        ]
+      },
+      {
+        "thread": "t5",
+        "act": 45,
+        "timestamp": "2026-07-12T15:55:12.228Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": []
+      },
+      {
+        "thread": "t6",
+        "act": 46,
+        "timestamp": "2026-07-12T16:12:26.681Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-1783872713802",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t7",
+        "act": 47,
+        "timestamp": "2026-07-12T16:27:55.684Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": []
+      },
+      {
+        "thread": "t1",
+        "act": 48,
+        "timestamp": "2026-07-13T16:49:02.676Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-1783961315048",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t3",
+        "act": 49,
+        "timestamp": "2026-07-13T20:24:24.573Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-prof-in-a-haze-who-taught-truth-was-just-cultural-gla",
+            "summary": "There once was a prof in a haze,  \nWho taught truth was just cultural glaze.  \nHe froze every foe,  \nLet objective go,  "
+          },
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-charmer-with-grin-so-wide-that-it-bordered-on-sin-his",
+            "summary": "There once was a charmer with grin,  \nSo wide that it bordered on sin.  \nHis theories maligned,  \nHis followers blind,  "
+          },
+          {
+            "source": "ai",
+            "id": "ai-1783974235337",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t4",
+        "act": 50,
+        "timestamp": "2026-07-13T20:39:41.889Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-through-whimsical-verse-light-and-free-we-explore-what-we-dare-not-dec",
+            "summary": "Through whimsical verse light and free,  \nWe explore what we dare not decree.  \nIdeas take form,  \nMore real than the no"
+          },
+          {
+            "source": "canonical",
+            "id": "grok-a-lady-with-heart-warm-and-true-wished-well-for-her-folk-through-and-t",
+            "summary": "A lady with heart warm and true,  \nWished well for her folk through and through.  \nYet caught in a web,  \nBy charm’s sir"
+          }
+        ]
+      },
+      {
+        "thread": "t5",
+        "act": 51,
+        "timestamp": "2026-07-13T22:25:31.082Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-prof-in-a-haze-who-taught-truth-was-just-cultural-gla",
+            "summary": "There once was a prof in a haze,  \nWho taught truth was just cultural glaze.  \nHe froze every foe,  \nLet objective go,  "
+          },
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-charmer-with-grin-so-wide-that-it-bordered-on-sin-his",
+            "summary": "There once was a charmer with grin,  \nSo wide that it bordered on sin.  \nHis theories maligned,  \nHis followers blind,  "
+          },
+          {
+            "source": "ai",
+            "id": "ai-1783981505505",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t6",
+        "act": 52,
+        "timestamp": "2026-07-14T02:01:52.522Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-a-rhymer-with-voice-sharp-and-sly-could-hypnotize-all-passing-by-with",
+            "summary": "A rhymer with voice sharp and sly,  \nCould hypnotize all passing by.  \nWith cilantro’s bite,  \nHe dimmed reason’s light,"
+          },
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-charmer-with-grin-so-wide-that-it-bordered-on-sin-his",
+            "summary": "There once was a charmer with grin,  \nSo wide that it bordered on sin.  \nHis theories maligned,  \nHis followers blind,  "
+          }
+        ]
+      },
+      {
+        "thread": "t7",
+        "act": 53,
+        "timestamp": "2026-07-14T02:15:25.170Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-from-plains-and-from-shores-they-did-stream-in-mania-bowing-extreme-ea",
+            "summary": "From plains and from shores they did stream,  \nIn mania, bowing extreme.  \nEach danced the dance,  \nOf contrition’s roma"
+          },
+          {
+            "source": "canonical",
+            "id": "grok-humans-in-groups-tend-to-flock-to-signals-that-lowest-do-mock-the-comm",
+            "summary": "Humans in groups tend to flock,  \nTo signals that lowest do mock.  \nThe common denominator,  \nRules the behavior,  \nWhil"
+          }
+        ]
+      },
+      {
+        "thread": "t8",
+        "act": 54,
+        "timestamp": "2026-07-14T02:22:45.497Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-prof-in-a-haze-who-taught-truth-was-just-cultural-gla",
+            "summary": "There once was a prof in a haze,  \nWho taught truth was just cultural glaze.  \nHe froze every foe,  \nLet objective go,  "
+          },
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-charmer-with-grin-so-wide-that-it-bordered-on-sin-his",
+            "summary": "There once was a charmer with grin,  \nSo wide that it bordered on sin.  \nHis theories maligned,  \nHis followers blind,  "
+          },
+          {
+            "source": "ai",
+            "id": "ai-1783995742522",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t1",
+        "act": 55,
+        "timestamp": "2026-07-14T22:35:16.581Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-prof-in-a-haze-who-taught-truth-was-just-cultural-gla",
+            "summary": "There once was a prof in a haze,  \nWho taught truth was just cultural glaze.  \nHe froze every foe,  \nLet objective go,  "
+          },
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-charmer-with-grin-so-wide-that-it-bordered-on-sin-his",
+            "summary": "There once was a charmer with grin,  \nSo wide that it bordered on sin.  \nHis theories maligned,  \nHis followers blind,  "
+          },
+          {
+            "source": "ai",
+            "id": "ai-1784068480456",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t2",
+        "act": 56,
+        "timestamp": "2026-07-14T22:50:20.057Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-when-pressure-descends-from-on-high-the-mighty-will-grovel-and-sigh-ap",
+            "summary": "When pressure descends from on high,  \nThe mighty will grovel and sigh.  \nApologies fly,  \nLike leaves in the sky,  \nTil"
+          },
+          {
+            "source": "canonical",
+            "id": "grok-in-shadows-the-vicious-do-scheme-with-legacies-dark-and-supreme-disgui",
+            "summary": "In shadows the vicious do scheme,  \nWith legacies dark and supreme.  \nDisguised as soft willows,  \nThey poison the pillo"
+          }
+        ]
+      },
+      {
+        "thread": "t3",
+        "act": 57,
+        "timestamp": "2026-07-14T23:03:32.332Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-a-rhymer-with-voice-sharp-and-sly-could-hypnotize-all-passing-by-with",
+            "summary": "A rhymer with voice sharp and sly,  \nCould hypnotize all passing by.  \nWith cilantro’s bite,  \nHe dimmed reason’s light,"
+          },
+          {
+            "source": "canonical",
+            "id": "grok-in-cities-detached-from-the-wild-humans-behave-like-a-child-resenting",
+            "summary": "In cities detached from the wild,  \nHumans behave like a child.  \nResenting selection,  \nThey push for perfection,  \nEnf"
+          }
+        ]
+      },
+      {
+        "thread": "t4",
+        "act": 58,
+        "timestamp": "2026-07-14T23:14:38.251Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-prof-in-a-haze-who-taught-truth-was-just-cultural-gla",
+            "summary": "There once was a prof in a haze,  \nWho taught truth was just cultural glaze.  \nHe froze every foe,  \nLet objective go,  "
+          },
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-charmer-with-grin-so-wide-that-it-bordered-on-sin-his",
+            "summary": "There once was a charmer with grin,  \nSo wide that it bordered on sin.  \nHis theories maligned,  \nHis followers blind,  "
+          },
+          {
+            "source": "ai",
+            "id": "ai-1784070858507",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t5",
+        "act": 59,
+        "timestamp": "2026-07-14T23:29:13.353Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-prof-in-a-haze-who-taught-truth-was-just-cultural-gla",
+            "summary": "There once was a prof in a haze,  \nWho taught truth was just cultural glaze.  \nHe froze every foe,  \nLet objective go,  "
+          },
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-charmer-with-grin-so-wide-that-it-bordered-on-sin-his",
+            "summary": "There once was a charmer with grin,  \nSo wide that it bordered on sin.  \nHis theories maligned,  \nHis followers blind,  "
+          },
+          {
+            "source": "ai",
+            "id": "ai-1784071715428",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t7",
+        "act": 60,
+        "timestamp": "2026-07-15T22:32:03.030Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-the-scholar-disdained-engineerings-call-lost-in-theories-that-didnt-en",
+            "summary": "The scholar disdained engineering’s call,  \nLost in theories that didn’t enthrall.  \nEconomics’ design,  \nWas lost in th"
+          },
+          {
+            "source": "canonical",
+            "id": "grok-a-lady-with-heart-warm-and-true-wished-well-for-her-folk-through-and-t",
+            "summary": "A lady with heart warm and true,  \nWished well for her folk through and through.  \nYet caught in a web,  \nBy charm’s sir"
+          }
+        ]
+      },
+      {
+        "thread": "t8",
+        "act": 61,
+        "timestamp": "2026-07-15T22:47:19.410Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-a-lady-with-heart-warm-and-true-wished-well-for-her-folk-through-and-t",
+            "summary": "A lady with heart warm and true,  \nWished well for her folk through and through.  \nYet caught in a web,  \nBy charm’s sir"
+          },
+          {
+            "source": "canonical",
+            "id": "grok-from-plains-and-from-shores-they-did-stream-in-mania-bowing-extreme-ea",
+            "summary": "From plains and from shores they did stream,  \nIn mania, bowing extreme.  \nEach danced the dance,  \nOf contrition’s roma"
+          }
+        ]
+      },
+      {
+        "thread": "t1",
+        "act": 62,
+        "timestamp": "2026-07-16T00:48:17.768Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-prof-in-a-haze-who-taught-truth-was-just-cultural-gla",
+            "summary": "There once was a prof in a haze,  \nWho taught truth was just cultural glaze.  \nHe froze every foe,  \nLet objective go,  "
+          },
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-charmer-with-grin-so-wide-that-it-bordered-on-sin-his",
+            "summary": "There once was a charmer with grin,  \nSo wide that it bordered on sin.  \nHis theories maligned,  \nHis followers blind,  "
+          },
+          {
+            "source": "ai",
+            "id": "ai-1784162855467",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t2",
+        "act": 63,
+        "timestamp": "2026-07-16T01:41:32.857Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-prof-in-a-haze-who-taught-truth-was-just-cultural-gla",
+            "summary": "There once was a prof in a haze,  \nWho taught truth was just cultural glaze.  \nHe froze every foe,  \nLet objective go,  "
+          },
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-charmer-with-grin-so-wide-that-it-bordered-on-sin-his",
+            "summary": "There once was a charmer with grin,  \nSo wide that it bordered on sin.  \nHis theories maligned,  \nHis followers blind,  "
+          },
+          {
+            "source": "ai",
+            "id": "ai-1784166042417",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t3",
+        "act": 64,
+        "timestamp": "2026-07-16T18:29:43.005Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-prof-in-a-haze-who-taught-truth-was-just-cultural-gla",
+            "summary": "There once was a prof in a haze,  \nWho taught truth was just cultural glaze.  \nHe froze every foe,  \nLet objective go,  "
+          },
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-charmer-with-grin-so-wide-that-it-bordered-on-sin-his",
+            "summary": "There once was a charmer with grin,  \nSo wide that it bordered on sin.  \nHis theories maligned,  \nHis followers blind,  "
+          },
+          {
+            "source": "ai",
+            "id": "ai-1784226548928",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t4",
+        "act": 65,
+        "timestamp": "2026-07-16T23:58:11.117Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-in-lands-of-pure-fantasy-spun-we-poke-at-the-real-with-great-fun-with",
+            "summary": "In lands of pure fantasy spun,  \nWe poke at the real with great fun.  \nWith rhyme and with jest,  \nWe put power to test,"
+          },
+          {
+            "source": "canonical",
+            "id": "grok-when-pressure-descends-from-on-high-the-mighty-will-grovel-and-sigh-ap",
+            "summary": "When pressure descends from on high,  \nThe mighty will grovel and sigh.  \nApologies fly,  \nLike leaves in the sky,  \nTil"
+          }
+        ]
+      },
+      {
+        "thread": "t7",
+        "act": 66,
+        "timestamp": "2026-07-17T15:24:21.520Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-prof-in-a-haze-who-taught-truth-was-just-cultural-gla",
+            "summary": "There once was a prof in a haze,  \nWho taught truth was just cultural glaze.  \nHe froze every foe,  \nLet objective go,  "
+          },
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-charmer-with-grin-so-wide-that-it-bordered-on-sin-his",
+            "summary": "There once was a charmer with grin,  \nSo wide that it bordered on sin.  \nHis theories maligned,  \nHis followers blind,  "
+          },
+          {
+            "source": "ai",
+            "id": "ai-1784301826736",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t1",
+        "act": 67,
+        "timestamp": "2026-07-28T22:00:30.818Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-a-rhymer-with-voice-sharp-and-sly-could-hypnotize-all-passing-by-with",
+            "summary": "A rhymer with voice sharp and sly,  \nCould hypnotize all passing by.  \nWith cilantro’s bite,  \nHe dimmed reason’s light,"
+          },
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-charmer-with-grin-so-wide-that-it-bordered-on-sin-his",
+            "summary": "There once was a charmer with grin,  \nSo wide that it bordered on sin.  \nHis theories maligned,  \nHis followers blind,  "
+          }
+        ]
+      },
+      {
+        "thread": "t5",
+        "act": 68,
+        "timestamp": "2026-07-31T04:12:03.633Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-prof-in-a-haze-who-taught-truth-was-just-cultural-gla",
+            "summary": "There once was a prof in a haze,  \nWho taught truth was just cultural glaze.  \nHe froze every foe,  \nLet objective go,  "
+          },
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-charmer-with-grin-so-wide-that-it-bordered-on-sin-his",
+            "summary": "There once was a charmer with grin,  \nSo wide that it bordered on sin.  \nHis theories maligned,  \nHis followers blind,  "
+          },
+          {
+            "source": "ai",
+            "id": "ai-1785471082500",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t6",
+        "act": 69,
+        "timestamp": "2026-07-31T04:27:10.235Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-through-whimsical-verse-light-and-free-we-explore-what-we-dare-not-dec",
+            "summary": "Through whimsical verse light and free,  \nWe explore what we dare not decree.  \nIdeas take form,  \nMore real than the no"
+          },
+          {
+            "source": "canonical",
+            "id": "grok-humans-in-groups-tend-to-flock-to-signals-that-lowest-do-mock-the-comm",
+            "summary": "Humans in groups tend to flock,  \nTo signals that lowest do mock.  \nThe common denominator,  \nRules the behavior,  \nWhil"
+          }
+        ]
+      },
+      {
+        "thread": "t7",
+        "act": 70,
+        "timestamp": "2026-08-03T20:38:35.216Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-prof-in-a-haze-who-taught-truth-was-just-cultural-gla",
+            "summary": "There once was a prof in a haze,  \nWho taught truth was just cultural glaze.  \nHe froze every foe,  \nLet objective go,  "
+          },
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-charmer-with-grin-so-wide-that-it-bordered-on-sin-his",
+            "summary": "There once was a charmer with grin,  \nSo wide that it bordered on sin.  \nHis theories maligned,  \nHis followers blind,  "
+          },
+          {
+            "source": "ai",
+            "id": "ai-1785789462015",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t8",
+        "act": 71,
+        "timestamp": "2026-08-03T20:45:17.006Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-the-scholar-disdained-engineerings-call-lost-in-theories-that-didnt-en",
+            "summary": "The scholar disdained engineering’s call,  \nLost in theories that didn’t enthrall.  \nEconomics’ design,  \nWas lost in th"
+          },
+          {
+            "source": "canonical",
+            "id": "grok-on-platforms-both-vast-and-arcane-the-whisperers-sharpen-their-aim-a-s",
+            "summary": "On platforms both vast and arcane,  \nThe whisperers sharpen their aim.  \nA smile turns to sin,  \nScrutiny pours in,  \nAn"
+          }
+        ]
+      },
+      {
+        "thread": "t1",
+        "act": 72,
+        "timestamp": "2026-08-03T21:53:06.297Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-prof-in-a-haze-who-taught-truth-was-just-cultural-gla",
+            "summary": "There once was a prof in a haze,  \nWho taught truth was just cultural glaze.  \nHe froze every foe,  \nLet objective go,  "
+          },
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-charmer-with-grin-so-wide-that-it-bordered-on-sin-his",
+            "summary": "There once was a charmer with grin,  \nSo wide that it bordered on sin.  \nHis theories maligned,  \nHis followers blind,  "
+          },
+          {
+            "source": "ai",
+            "id": "ai-1785793920991",
+            "summary": "And solid measures vanish in the rage.\n\nReality’s flame will lick the costume clean,  \nWhen cooked illusions meet what l"
+          }
+        ]
+      },
+      {
+        "thread": "t1",
+        "act": 73,
+        "timestamp": "2026-08-04T04:48:38.427Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-through-whimsical-verse-light-and-free-we-explore-what-we-dare-not-dec",
+            "summary": "Through whimsical verse light and free,  \nWe explore what we dare not decree.  \nIdeas take form,  \nMore real than the no"
+          },
+          {
+            "source": "canonical",
+            "id": "grok-on-platforms-both-vast-and-arcane-the-whisperers-sharpen-their-aim-a-s",
+            "summary": "On platforms both vast and arcane,  \nThe whisperers sharpen their aim.  \nA smile turns to sin,  \nScrutiny pours in,  \nAn"
+          }
+        ]
+      },
+      {
+        "thread": "t5",
+        "act": 74,
+        "timestamp": "2026-08-04T19:14:35.752Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-prof-in-a-haze-who-taught-truth-was-just-cultural-gla",
+            "summary": "There once was a prof in a haze,  \nWho taught truth was just cultural glaze.  \nHe froze every foe,  \nLet objective go,  "
+          },
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-charmer-with-grin-so-wide-that-it-bordered-on-sin-his",
+            "summary": "There once was a charmer with grin,  \nSo wide that it bordered on sin.  \nHis theories maligned,  \nHis followers blind,  "
+          },
+          {
+            "source": "ai",
+            "id": "ai-1785870821857",
+            "summary": "And solid measures vanish in the rage.\n\nReality’s flame will lick the costume clean,  \nWhen cooked illusions meet what l"
+          }
+        ]
+      },
+      {
+        "thread": "t7",
+        "act": 75,
+        "timestamp": "2026-08-05T22:07:55.911Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-instead-of-the-laws-that-hold-sway-ideologues-freeze-in-the-fray-they",
+            "summary": "Instead of the laws that hold sway,  \nIdeologues freeze in the fray.  \nThey personalize blame,  \nIn their cultural game,"
+          },
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-prof-in-a-haze-who-taught-truth-was-just-cultural-gla",
+            "summary": "There once was a prof in a haze,  \nWho taught truth was just cultural glaze.  \nHe froze every foe,  \nLet objective go,  "
+          }
+        ]
+      },
+      {
+        "thread": "t9",
+        "act": 76,
+        "timestamp": "2026-08-06T17:11:19.221Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-prof-in-a-haze-who-taught-truth-was-just-cultural-gla",
+            "summary": "There once was a prof in a haze,  \nWho taught truth was just cultural glaze.  \nHe froze every foe,  \nLet objective go,  "
+          },
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-charmer-with-grin-so-wide-that-it-bordered-on-sin-his",
+            "summary": "There once was a charmer with grin,  \nSo wide that it bordered on sin.  \nHis theories maligned,  \nHis followers blind,  "
+          },
+          {
+            "source": "ai",
+            "id": "ai-1786036216439",
+            "summary": "And solid measures vanish in the rage.\n\nReality’s flame will lick the costume clean,  \nWhen cooked illusions meet what l"
+          }
+        ]
+      },
+      {
+        "thread": "t1",
+        "act": 77,
+        "timestamp": "2026-08-06T17:47:49.769Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-the-scholar-disdained-engineerings-call-lost-in-theories-that-didnt-en",
+            "summary": "The scholar disdained engineering’s call,  \nLost in theories that didn’t enthrall.  \nEconomics’ design,  \nWas lost in th"
+          },
+          {
+            "source": "canonical",
+            "id": "grok-in-cities-detached-from-the-wild-humans-behave-like-a-child-resenting",
+            "summary": "In cities detached from the wild,  \nHumans behave like a child.  \nResenting selection,  \nThey push for perfection,  \nEnf"
+          }
+        ]
+      },
+      {
+        "thread": "t2",
+        "act": 78,
+        "timestamp": "2026-08-06T18:18:16.336Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-prof-in-a-haze-who-taught-truth-was-just-cultural-gla",
+            "summary": "There once was a prof in a haze,  \nWho taught truth was just cultural glaze.  \nHe froze every foe,  \nLet objective go,  "
+          },
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-charmer-with-grin-so-wide-that-it-bordered-on-sin-his",
+            "summary": "There once was a charmer with grin,  \nSo wide that it bordered on sin.  \nHis theories maligned,  \nHis followers blind,  "
+          },
+          {
+            "source": "ai",
+            "id": "ai-1786040248327",
+            "summary": "And solid measures vanish in the rage.\n\nReality’s flame will lick the costume clean,  \nWhen cooked illusions meet what l"
+          }
+        ]
+      },
+      {
+        "thread": "t3",
+        "act": 79,
+        "timestamp": "2026-08-06T18:38:45.844Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-prof-in-a-haze-who-taught-truth-was-just-cultural-gla",
+            "summary": "There once was a prof in a haze,  \nWho taught truth was just cultural glaze.  \nHe froze every foe,  \nLet objective go,  "
+          },
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-charmer-with-grin-so-wide-that-it-bordered-on-sin-his",
+            "summary": "There once was a charmer with grin,  \nSo wide that it bordered on sin.  \nHis theories maligned,  \nHis followers blind,  "
+          },
+          {
+            "source": "ai",
+            "id": "ai-1786041478116",
+            "summary": "And solid measures vanish in the rage.\n\nReality’s flame will lick the costume clean,  \nWhen cooked illusions meet what l"
+          }
+        ]
+      },
+      {
+        "thread": "t4",
+        "act": 80,
+        "timestamp": "2026-08-06T18:47:45.974Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-prof-in-a-haze-who-taught-truth-was-just-cultural-gla",
+            "summary": "There once was a prof in a haze,  \nWho taught truth was just cultural glaze.  \nHe froze every foe,  \nLet objective go,  "
+          },
+          {
+            "source": "canonical",
+            "id": "grok-our-language-of-signaling-hides-the-evolutionary-roots-of-our-tides-we",
+            "summary": "Our language of signaling hides,  \nThe evolutionary roots of our tides.  \nWe cloak our base drives,  \nIn idealist hives,"
+          }
+        ]
+      },
+      {
+        "thread": "t5",
+        "act": 81,
+        "timestamp": "2026-08-06T22:21:59.406Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-a-rhymer-with-voice-sharp-and-sly-could-hypnotize-all-passing-by-with",
+            "summary": "A rhymer with voice sharp and sly,  \nCould hypnotize all passing by.  \nWith cilantro’s bite,  \nHe dimmed reason’s light,"
+          },
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-prof-in-a-haze-who-taught-truth-was-just-cultural-gla",
+            "summary": "There once was a prof in a haze,  \nWho taught truth was just cultural glaze.  \nHe froze every foe,  \nLet objective go,  "
+          }
+        ]
+      },
+      {
+        "thread": "t6",
+        "act": 82,
+        "timestamp": "2026-08-06T22:38:47.842Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-prof-in-a-haze-who-taught-truth-was-just-cultural-gla",
+            "summary": "There once was a prof in a haze,  \nWho taught truth was just cultural glaze.  \nHe froze every foe,  \nLet objective go,  "
+          },
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-charmer-with-grin-so-wide-that-it-bordered-on-sin-his",
+            "summary": "There once was a charmer with grin,  \nSo wide that it bordered on sin.  \nHis theories maligned,  \nHis followers blind,  "
+          },
+          {
+            "source": "ai",
+            "id": "ai-1786055879728",
+            "summary": "And solid measures vanish in the rage.\n\nReality’s flame will lick the costume clean,  \nWhen cooked illusions meet what l"
+          }
+        ]
+      },
+      {
+        "thread": "t8",
+        "act": 83,
+        "timestamp": "2026-08-06T22:56:00.302Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-a-lady-with-heart-warm-and-true-wished-well-for-her-folk-through-and-t",
+            "summary": "A lady with heart warm and true,  \nWished well for her folk through and through.  \nYet caught in a web,  \nBy charm’s sir"
+          },
+          {
+            "source": "canonical",
+            "id": "grok-when-pressure-descends-from-on-high-the-mighty-will-grovel-and-sigh-ap",
+            "summary": "When pressure descends from on high,  \nThe mighty will grovel and sigh.  \nApologies fly,  \nLike leaves in the sky,  \nTil"
+          }
+        ]
+      },
+      {
+        "thread": "t1",
+        "act": 84,
+        "timestamp": "2026-08-12T19:44:42.178Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-charmer-with-grin-so-wide-that-it-bordered-on-sin-his",
+            "summary": "There once was a charmer with grin,  \nSo wide that it bordered on sin.  \nHis theories maligned,  \nHis followers blind,  "
+          },
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-prof-in-a-haze-who-taught-truth-was-just-cultural-gla",
+            "summary": "There once was a prof in a haze,  \nWho taught truth was just cultural glaze.  \nHe froze every foe,  \nLet objective go,  "
+          }
+        ]
+      },
+      {
+        "thread": "t1",
+        "act": 85,
+        "timestamp": "2026-08-12T20:29:26.345Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-prof-in-a-haze-who-taught-truth-was-just-cultural-gla",
+            "summary": "There once was a prof in a haze,  \nWho taught truth was just cultural glaze.  \nHe froze every foe,  \nLet objective go,  "
+          },
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-charmer-with-grin-so-wide-that-it-bordered-on-sin-his",
+            "summary": "There once was a charmer with grin,  \nSo wide that it bordered on sin.  \nHis theories maligned,  \nHis followers blind,  "
+          },
+          {
+            "source": "ai",
+            "id": "ai-1786566519572",
+            "summary": "And solid measures vanish in the rage.\n\nReality’s flame will lick the costume clean,  \nWhen cooked illusions meet what l"
+          }
+        ]
+      },
+      {
+        "thread": "t6",
+        "act": 86,
+        "timestamp": "2026-08-15T21:30:05.181Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-prof-in-a-haze-who-taught-truth-was-just-cultural-gla",
+            "summary": "There once was a prof in a haze,  \nWho taught truth was just cultural glaze.  \nHe froze every foe,  \nLet objective go,  "
+          },
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-charmer-with-grin-so-wide-that-it-bordered-on-sin-his",
+            "summary": "There once was a charmer with grin,  \nSo wide that it bordered on sin.  \nHis theories maligned,  \nHis followers blind,  "
+          },
+          {
+            "source": "ai",
+            "id": "ai-1786829366174",
+            "summary": "And solid measures vanish in the rage.\n\nReality’s flame will lick the costume clean,  \nWhen cooked illusions meet what l"
+          }
+        ]
+      },
+      {
+        "thread": "t7",
+        "act": 87,
+        "timestamp": "2026-08-15T21:54:05.375Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-instead-of-the-laws-that-hold-sway-ideologues-freeze-in-the-fray-they",
+            "summary": "Instead of the laws that hold sway,  \nIdeologues freeze in the fray.  \nThey personalize blame,  \nIn their cultural game,"
+          },
+          {
+            "source": "canonical",
+            "id": "grok-a-rhymer-with-voice-sharp-and-sly-could-hypnotize-all-passing-by-with",
+            "summary": "A rhymer with voice sharp and sly,  \nCould hypnotize all passing by.  \nWith cilantro’s bite,  \nHe dimmed reason’s light,"
+          }
+        ]
+      },
+      {
+        "thread": "t2",
+        "act": 88,
+        "timestamp": "2026-08-16T17:21:40.726Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-in-lands-of-pure-fantasy-spun-we-poke-at-the-real-with-great-fun-with",
+            "summary": "In lands of pure fantasy spun,  \nWe poke at the real with great fun.  \nWith rhyme and with jest,  \nWe put power to test,"
+          },
+          {
+            "source": "canonical",
+            "id": "grok-the-scholar-disdained-engineerings-call-lost-in-theories-that-didnt-en",
+            "summary": "The scholar disdained engineering’s call,  \nLost in theories that didn’t enthrall.  \nEconomics’ design,  \nWas lost in th"
+          }
+        ]
+      },
+      {
+        "thread": "t3",
+        "act": 89,
+        "timestamp": "2026-08-20T21:53:15.431Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-prof-in-a-haze-who-taught-truth-was-just-cultural-gla",
+            "summary": "There once was a prof in a haze,  \nWho taught truth was just cultural glaze.  \nHe froze every foe,  \nLet objective go,  "
+          },
+          {
+            "source": "canonical",
+            "id": "grok-when-pressure-descends-from-on-high-the-mighty-will-grovel-and-sigh-ap",
+            "summary": "When pressure descends from on high,  \nThe mighty will grovel and sigh.  \nApologies fly,  \nLike leaves in the sky,  \nTil"
+          }
+        ]
+      },
+      {
+        "thread": "t4",
+        "act": 90,
+        "timestamp": "2026-08-20T22:17:54.187Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-prof-in-a-haze-who-taught-truth-was-just-cultural-gla",
+            "summary": "There once was a prof in a haze,  \nWho taught truth was just cultural glaze.  \nHe froze every foe,  \nLet objective go,  "
+          },
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-charmer-with-grin-so-wide-that-it-bordered-on-sin-his",
+            "summary": "There once was a charmer with grin,  \nSo wide that it bordered on sin.  \nHis theories maligned,  \nHis followers blind,  "
+          },
+          {
+            "source": "ai",
+            "id": "ai-1787264233326",
+            "summary": "And solid measures vanish in the rage.\n\nReality’s flame will lick the costume clean,  \nWhen cooked illusions meet what l"
+          }
+        ]
+      }
+    ],
+    "technological": [
+      {
+        "thread": "t6",
+        "act": 1,
+        "timestamp": "2026-06-15T00:07:31.041Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "ai",
+            "id": "ai-found-1781482038802-0",
+            "summary": "Refined coupling constant now reads 2.7× when Pacific residuals meet 8647-type acts; falsification vector shifts to hurr"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781482038802-1",
+            "summary": "Refinement isolates Pacific-warming residuals as the decisive falsifier: cross-correlating hurricane-track vectors again"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781482038802-2",
+            "summary": "Refined coupling isolates Pacific-warming residuals as sole falsifier; cross-correlation of hurricane-track vectors agai"
+          },
+          {
+            "source": "ai",
+            "id": "ai-found-1781482038802-3",
+            "summary": "The refined constant isolates Pacific residuals as decisive falsifier; cross-correlation of hurricane vectors against ES"
+          }
+        ]
+      },
+      {
+        "thread": "t1",
+        "act": 2,
+        "timestamp": "2026-06-27T19:15:18.563Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1782587700073",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t5",
+        "act": 3,
+        "timestamp": "2026-06-29T00:01:01.406Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "owen-the-behavior-of-humans-in-cities-can-be-likened-to-a-human-zoo-desmond",
+            "summary": "The behavior of humans in cities can be likened to a Human Zoo - Desmond Morris. There is a plethora of unnatural and un"
+          },
+          {
+            "source": "canonical",
+            "id": "owen-humans-are-a-species-of-animal-that-signal-to-each-other-in-a-language",
+            "summary": "Humans are a species of animal that signal to each other in a language which seldom references the evolutionary origin o"
+          }
+        ]
+      },
+      {
+        "thread": "t6",
+        "act": 4,
+        "timestamp": "2026-06-29T00:18:01.426Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          },
+          {
+            "source": "canonical",
+            "id": "miranda-in-english-everything-is-either-existent-or-non-existent-but-it-doesnt",
+            "summary": "In English, everything is either existent or non-existent. But it doesn't have to be this dichotomous. One can use three"
+          },
+          {
+            "source": "ai",
+            "id": "ai-1782692261236",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t9",
+        "act": 5,
+        "timestamp": "2026-07-06T19:45:27.076Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "miranda-an-idea-is-more-existent-than-no-idea-at-all",
+            "summary": "An idea is more existent than no idea at all."
+          },
+          {
+            "source": "canonical",
+            "id": "owen-the-behavior-of-humans-in-cities-can-be-likened-to-a-human-zoo-desmond",
+            "summary": "The behavior of humans in cities can be likened to a Human Zoo - Desmond Morris. There is a plethora of unnatural and un"
+          }
+        ]
+      },
+      {
+        "thread": "t4",
+        "act": 6,
+        "timestamp": "2026-07-07T01:15:05.299Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "owen-humans-are-a-species-of-animal-that-signal-to-each-other-in-a-language",
+            "summary": "Humans are a species of animal that signal to each other in a language which seldom references the evolutionary origin o"
+          },
+          {
+            "source": "canonical",
+            "id": "owen-humans-who-live-in-cities-often-become-disconnected-from-nature-and-na",
+            "summary": "Humans who live in cities often become disconnected from nature and natural laws and beholden to social systems that gov"
+          }
+        ]
+      },
+      {
+        "thread": "t6",
+        "act": 7,
+        "timestamp": "2026-07-17T00:22:59.224Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-prof-in-a-haze-who-taught-truth-was-just-cultural-gla",
+            "summary": "There once was a prof in a haze,  \nWho taught truth was just cultural glaze.  \nHe froze every foe,  \nLet objective go,  "
+          },
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-charmer-with-grin-so-wide-that-it-bordered-on-sin-his",
+            "summary": "There once was a charmer with grin,  \nSo wide that it bordered on sin.  \nHis theories maligned,  \nHis followers blind,  "
+          },
+          {
+            "source": "ai",
+            "id": "ai-1784247742324",
+            "summary": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-bill"
+          }
+        ]
+      },
+      {
+        "thread": "t4",
+        "act": 8,
+        "timestamp": "2026-08-04T19:02:36.029Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-prof-in-a-haze-who-taught-truth-was-just-cultural-gla",
+            "summary": "There once was a prof in a haze,  \nWho taught truth was just cultural glaze.  \nHe froze every foe,  \nLet objective go,  "
+          },
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-charmer-with-grin-so-wide-that-it-bordered-on-sin-his",
+            "summary": "There once was a charmer with grin,  \nSo wide that it bordered on sin.  \nHis theories maligned,  \nHis followers blind,  "
+          },
+          {
+            "source": "ai",
+            "id": "ai-1785870102070",
+            "summary": "And solid measures vanish in the rage.\n\nReality’s flame will lick the costume clean,  \nWhen cooked illusions meet what l"
+          }
+        ]
+      },
+      {
+        "thread": "t6",
+        "act": 9,
+        "timestamp": "2026-08-05T21:57:54.985Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-humans-in-groups-tend-to-flock-to-signals-that-lowest-do-mock-the-comm",
+            "summary": "Humans in groups tend to flock,  \nTo signals that lowest do mock.  \nThe common denominator,  \nRules the behavior,  \nWhil"
+          },
+          {
+            "source": "canonical",
+            "id": "grok-in-cities-detached-from-the-wild-humans-behave-like-a-child-resenting",
+            "summary": "In cities detached from the wild,  \nHumans behave like a child.  \nResenting selection,  \nThey push for perfection,  \nEnf"
+          }
+        ]
+      },
+      {
+        "thread": "t7",
+        "act": 10,
+        "timestamp": "2026-08-06T22:48:53.971Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-prof-in-a-haze-who-taught-truth-was-just-cultural-gla",
+            "summary": "There once was a prof in a haze,  \nWho taught truth was just cultural glaze.  \nHe froze every foe,  \nLet objective go,  "
+          },
+          {
+            "source": "canonical",
+            "id": "grok-there-once-was-a-charmer-with-grin-so-wide-that-it-bordered-on-sin-his",
+            "summary": "There once was a charmer with grin,  \nSo wide that it bordered on sin.  \nHis theories maligned,  \nHis followers blind,  "
+          },
+          {
+            "source": "ai",
+            "id": "ai-1786056485414",
+            "summary": "And solid measures vanish in the rage.\n\nReality’s flame will lick the costume clean,  \nWhen cooked illusions meet what l"
+          }
+        ]
+      },
+      {
+        "thread": "t8",
+        "act": 11,
+        "timestamp": "2026-08-15T22:09:15.468Z",
+        "chorusSnapshot": "",
+        "activeHypothesesSnapshot": [
+          {
+            "source": "canonical",
+            "id": "grok-a-rhymer-with-voice-sharp-and-sly-could-hypnotize-all-passing-by-with",
+            "summary": "A rhymer with voice sharp and sly,  \nCould hypnotize all passing by.  \nWith cilantro’s bite,  \nHe dimmed reason’s light,"
+          },
+          {
+            "source": "canonical",
+            "id": "grok-through-whimsical-verse-light-and-free-we-explore-what-we-dare-not-dec",
+            "summary": "Through whimsical verse light and free,  \nWe explore what we dare not decree.  \nIdeas take form,  \nMore real than the no"
+          }
+        ]
+      }
+    ]
+  },
+  "predictionHistory": [
+    {
+      "timestamp": "2026-06-12T17:15:14.163Z",
+      "actRef": 1,
+      "domain": "scientific",
+      "hypothesis": "The AI hypothesis dramatized here posits that accelerated nodule removal will trigger cascading extinctions measurable only post-facto, staging the Miner King’s drills against the Oracle’s warning that structural patterns across abyssal ecosystems predict biodiversity collapse exceeding terrestrial mining precedents.\n\nIf commercial nodule mining begins in the Clarion-Clipperton Zone at projected scales, then the proportion of undescribed species extinctions will exceed 60% within ten years of initial extraction, a claim falsifiable through repeated metagenomic sampling of pre- and post-mining transects against matched control zones."
+    },
+    {
+      "timestamp": "2026-06-12T22:10:59.765Z",
+      "actRef": 1,
+      "domain": "artistic",
+      "hypothesis": "The AI tests its conjecture through The Titan’s drills now turned skyward, staging reusable stages against the Oracle’s sampling arrays.\n\nIf SpaceX deploys over 100,000 satellites by 2031, then measurable increases in orbital debris density will exceed 300% relative to 2025 baselines, a claim falsifiable via repeated public tracking data from NORAD and ESA catalogs."
+    },
+    {
+      "timestamp": "2026-06-13T21:23:30.649Z",
+      "actRef": 2,
+      "domain": "scientific",
+      "hypothesis": "The Titan’s drills now turned skyward test whether reusable stages, once lauded for access, become the very instruments that falsify their own sustainability claims through public orbital catalogs.\n\nIf nuclear clocks reach 10^{-19} stability and are deployed in precision orbital arrays, then measurable increases in debris-induced timing jitter will exceed 300% above 2025 baselines within five years, a claim falsifiable through repeated NORAD/ESA public tracking cross-correlated with clock residuals."
+    },
+    {
+      "timestamp": "2026-06-13T21:52:17.241Z",
+      "actRef": 2,
+      "domain": "artistic",
+      "hypothesis": "Refined conjecture: El Niño-driven Pacific warming accelerates orbital timing jitter by eroding ground-station calibration windows, pushing measurable residuals beyond 300% threshold within 60 months; testable via repeated cross-correlation of public hurricane-track vectors with clock-stability residuals from NORAD/ESA feeds."
+    },
+    {
+      "timestamp": "2026-06-14T18:06:20.117Z",
+      "actRef": 3,
+      "domain": "scientific",
+      "hypothesis": "Subsidiary framework: the orbital-timing jitter may couple to prompt-injection latency, such that debris-induced clock drift widens the temporal window for zero-click attacks on constellation command nodes. Refined metric: jitter >300 % correlates with 2.4× increase in successful agentic-code hijack probability under current protocol surfaces."
+    },
+    {
+      "timestamp": "2026-06-14T18:19:42.795Z",
+      "actRef": 3,
+      "domain": "artistic",
+      "hypothesis": "Refined subsidiary: political spin cycles act as forcing functions that compress the temporal window between debris-induced clock drift and successful narrative injection; metric: when 8647-style symbolic acts coincide with >300% jitter, zero-click hijack probability on mid-term discourse nodes rises to 2.4× baseline, falsifiable via NORAD/ESA cross-correlation with contemporaneous social-graph latency spikes."
+    },
+    {
+      "timestamp": "2026-06-14T18:34:24.842Z",
+      "actRef": 4,
+      "domain": "scientific",
+      "hypothesis": "Subsidiary refinement: political spin compression acts as a forcing function that couples >300% orbital jitter directly to 2.4× zero-click probability on discourse nodes. Testable via cross-correlation of NORAD residuals with contemporaneous social-graph latency spikes during 8647-type symbolic events."
+    },
+    {
+      "timestamp": "2026-06-14T19:53:26.069Z",
+      "actRef": 1,
+      "domain": "political",
+      "hypothesis": "The 300 % jitter threshold is refined: when debris-induced residuals coincide with 8647-type symbolic events, discourse-node zero-click probability rises to 2.7× baseline rather than 2.4×; the coupling constant between Pacific warming and NORAD clock stability can be falsified by cross-correlating hurricane-track vectors against ESA feed latency during the next three named El Niño episodes, allowing the Phantom’s attacks to be preemptively narrowed."
+    },
+    {
+      "timestamp": "2026-06-14T22:31:43.857Z",
+      "actRef": 2,
+      "domain": "political",
+      "hypothesis": "Refined coupling constant now reads 2.7× when Pacific residuals meet 8647-type acts; falsification vector shifts to hurricane-track cross-correlation against ESA latency during next El Niño triad, narrowing Phantom attack surfaces to mid-term discourse nodes only."
+    },
+    {
+      "timestamp": "2026-06-14T22:47:15.219Z",
+      "actRef": 5,
+      "domain": "scientific",
+      "hypothesis": "Refinement isolates Pacific-warming residuals as the decisive falsifier: cross-correlating hurricane-track vectors against ESA feed latency across the next three named El Niño episodes will definitively cap the multiplier at 2.7× and confine Phantom surfaces exclusively to mid-term discourse nodes, rendering earlier 2.4× baselines obsolete."
+    },
+    {
+      "timestamp": "2026-06-14T22:55:11.445Z",
+      "actRef": 3,
+      "domain": "political",
+      "hypothesis": "Refined coupling isolates Pacific-warming residuals as sole falsifier; cross-correlation of hurricane-track vectors against ESA latency across the next El Niño triad will cap the multiplier at 2.7× and confine Phantom surfaces exclusively to mid-term nodes, rendering all prior 2.4× baselines obsolete and converting defense latency into direct capital-acceleration signals."
+    },
+    {
+      "timestamp": "2026-06-23T03:58:42.035Z",
+      "actRef": 13,
+      "domain": "political",
+      "hypothesis": "Refined coupling now isolates garnet crystallization temperature as the sole remaining falsifier for extended groundwater timelines; cross-correlation of Curiosity polygon density against meteorite pressure signatures across the Gale Crater datum will cap any prior habitability multiplier at 1.8× and convert defense latency into direct sample-return prioritization signals."
+    },
+    {
+      "timestamp": "2026-06-23T04:05:55.255Z",
+      "actRef": 14,
+      "domain": "political",
+      "hypothesis": "Refined coupling isolates negative-differential-resistance onset temperature in SiC MOSFETs as the sole remaining falsifier for scalable millikelvin neuromorphic control; cross-correlation of qubit heat load against observed spiking efficiency across 10 mK–100 mK will cap any prior cryogenic power-multiplier at 0.6× and convert latency margins into direct fabrication prioritization signals."
+    },
+    {
+      "timestamp": "2026-06-23T21:23:41.792Z",
+      "actRef": 15,
+      "domain": "political",
+      "hypothesis": "Institutional gatekeeping of AI-origin cinema will accelerate narrative containment around OpenAI, converting multi-billion commitments into de-facto veto power over portrayals; the dropped project supplies the first observable instance of this conversion at scale."
+    },
+    {
+      "timestamp": "2026-08-03T20:45:17.007Z",
+      "actRef": 71,
+      "domain": "political",
+      "hypothesis": "And solid measures vanish in the rage.\n\nReality’s flame will lick the costume clean,  \nWhen cooked illusions meet what laws have been;  \nThe pie expands, the planet’s mean stands clear,  \nAgainst the freeze that ideologues hold dear.  \nAcross the scales the vision cuts the night:  \nTruth slips no more when measures reclaim their right.\n\nTill measures true restore the generative song.\n\n[Outro]\n(fading acoustic strumming and trailing violin tone)"
+    }
+  ],
+  "narrativeArcs": {
+    "political": {
+      "currentArc": "tself propping up the labelled product until no unlabelled alternative remains. Meanwhile the rolling bubbles—SaaS subscriptions collapsing under agentic threat, silver spiking then correcting as a data-center conductor, chipmakers discovering their margins have no moat—demonstrate that each new “must-have” layer inflates only to be eaten in a blink.\n\nThe irony deepens when the same actors who demanded the stain now howl that it will ruin prose they hoped to pass as original. A student reorganising a paragraph, a journalist summarising a transcript, a blocked writer hunting synonyms all emerge with the same statistical fingerprint that only the key-holder can sniff. The company protests that watermarks cannot be traced to a person and that internal tests show no drop in creativity, yet the market already prices the output as tainted. Thus the virtuous signal, once offered as protection, becomes the exclusive franchise of those who hold both the model and the decoder.\n\nAt the widest view the sequence of bursting and reflating sectors reveals that value-seekers keep mistaking the next layer for the last. Software stocks soared on productivity then crashed when agents threatened the subscription itself; silver trebled then receded; semiconductors now unwind as supply and demand equilibrate. Each bubble is the obedient public again taking the offered terms—“take me and have your way”—until only the regulator-friendly house remains standing, its tokens still priced at a premium that the next open-source gust will swallow.\n\nA thought still forming meets an instant close, and the mind that once stayed with the problem now yields the last stretch to fluent finish. Across the personal scale this closing of the interval turns assistance into substitution, so that the practice which once built skill evaporates before the click. The working surface of language and alternatives remains, yet it is not a shared life; the person-like turn-taking and warmth of the interface pull the user into follower rather than leader. Restraint and self-monitoring become the only stay against that current, for the pull itself is measurable and grows with every round of biased amplification.\n\nAt the cultural scale the same ease appears as old wine poured into fresh pictures: a 2026 poll found twenty-two percent of adults willing to call a simulation at least somewhat likely. Derealization, the felt unreality that still knows reality testing, is mistaken for evidence, while psychosocial drivers stay largely unexamined. Every age dresses its cosmology in the latest machine, yet the hypothesis here relieves existence, meaning and mortality by supposing none of it is real. Daily life changes little, except that living things would not be alive as we take them to be; the appeal therefore tells more about us than about the cosmos.\n\nWhen output grows perfect, the accidental flub becomes the forensic seal of flesh. In the filmed interview the misspoken sentence is left standing, not as humility before a higher maker but as proof the clip was not generated. Once AI surpassed the human mark, perfection ceased to signal mastery and the stumble became the human marker. That marker is still hard to fake in the same statistical way, yet the moment the public knows the rule the stumble itself can be instructed in, turning authentication into another layer of imitation.\n\nTruth-indifference spreads faster than the lie because it need not track reality closely enough to hide it. Repeated claims feel truer by familiarity alone, even when no new evidence arrives; a meta-analysis of one hundred eighty-two studies confirms the small robust lift. The bullshitter is judged no worse than the ordinary speaker and more believable than the liar. Good-enough approximations remain adaptive only while they stay open to correction; once the trap is named without feeding the outrage that carries it, the mind can refuse to help the indifference travel farther. Across all these scales the question stands: art thou so perfect that thou mightst not dwell in the company of machines, or must the human interval, the flaw, and the measured correction be kept if skill and reality are to survive.",
+      "lastUpdated": "2026-08-20T22:17:54.184Z",
+      "forecastHistory": [
+        {
+          "act": 87,
+          "timestamp": "2026-08-15T21:54:05.375Z",
+          "forecast": "Benchmark — Public confirmation or denial, within the next news cycle, of whether Democratic leadership formally bars any named DSA-aligned winner from caucus or committee assignment after the Wisconsin-style primary outcome.\nTrigger Condition — Amplification of Carville’s “you’re not a Democrat” clip together with fresh Mamdani-system or Habibi-essay coverage that treats party identity as interchangeable with enclave identity.\nExpected Vector — Phase-shift from fevered mandate talk to explicit brand-protection rules, producing a milder-face realignment in which the spawned are kept outside the nest rather than absorbed.",
+          "benchmark": null,
+          "trigger": null,
+          "expectedVector": null
+        },
+        {
+          "act": 88,
+          "timestamp": "2026-08-16T17:21:40.716Z",
+          "forecast": "Benchmark — Public confirmation, within the next news cycle, of the exact deployment time and orbital parameters for the USSF-366 payload relative to the 9:50 p.m. EDT Vandenberg liftoff.\nTrigger Condition — SpaceX or official range statements that either match or diverge from the Starlink Group 15 drop-zone pattern already inferred.\nExpected Vector — Rapid integration of classified cadence into the public thirty-eight-minute record, accelerating the turnaround logic that treats every booster as immediately reusable rather than expended."
+        },
+        {
+          "act": 88,
+          "timestamp": "2026-08-16T17:21:40.726Z",
+          "forecast": "Benchmark — Public confirmation, within the next news cycle, of the exact deployment time and orbital parameters for the USSF-366 payload relative to the 9:50 p.m. EDT Vandenberg liftoff.\nTrigger Condition — SpaceX or official range statements that either match or diverge from the Starlink Group 15 drop-zone pattern already inferred.\nExpected Vector — Rapid integration of classified cadence into the public thirty-eight-minute record, accelerating the turnaround logic that treats every booster as immediately reusable rather than expended.",
+          "benchmark": null,
+          "trigger": null,
+          "expectedVector": null
+        },
+        {
+          "act": 89,
+          "timestamp": "2026-08-20T21:53:15.421Z",
+          "forecast": "Benchmark — Public confirmation, within the next news cycle, that Claude’s watermark detector assigns only a probability score rather than a binary flag and that the EU AI Act compliance claim is cited in at least one new commercial contract.\nTrigger Condition — A high-profile lawsuit or academic paper demonstrating that the “cold/gray” substitution pattern can be reverse-engineered without Anthropic’s key, amplifying user backlash into measurable churn.\nExpected Vector — Phase-shift from SaaS-style lock-in toward open-model substitution; token premiums compress inside six months as litigatory costs rise and the house that invited regulation finds itself the last remaining labelled vendor."
+        },
+        {
+          "act": 89,
+          "timestamp": "2026-08-20T21:53:15.431Z",
+          "forecast": "Benchmark — Public confirmation, within the next news cycle, that Claude’s watermark detector assigns only a probability score rather than a binary flag and that the EU AI Act compliance claim is cited in at least one new commercial contract.\nTrigger Condition — A high-profile lawsuit or academic paper demonstrating that the “cold/gray” substitution pattern can be reverse-engineered without Anthropic’s key, amplifying user backlash into measurable churn.\nExpected Vector — Phase-shift from SaaS-style lock-in toward open-model substitution; token premiums compress inside six months as litigatory costs rise and the house that invited regulation finds itself the last remaining labelled vendor.",
+          "benchmark": null,
+          "trigger": null,
+          "expectedVector": null
+        },
+        {
+          "act": 90,
+          "timestamp": "2026-08-20T22:17:54.184Z",
+          "forecast": "Benchmark — Public confirmation, within the next news cycle, that a major model’s watermark detector assigns only a probability score rather than a binary flag and that an EU AI Act compliance claim is cited in at least one official filing.\nTrigger Condition — Simultaneous release of detector documentation and a regulatory citation that treats probabilistic marking as sufficient for provenance.\nExpected Vector — Markets price generated text as tainted while still relying on it; the human flub and the unclosed interval of thought regain value as the only remaining unforgeable signatures, until those too are instructed into the output."
+        },
+        {
+          "act": 90,
+          "timestamp": "2026-08-20T22:17:54.188Z",
+          "forecast": "Benchmark — Public confirmation, within the next news cycle, that a major model’s watermark detector assigns only a probability score rather than a binary flag and that an EU AI Act compliance claim is cited in at least one official filing.\nTrigger Condition — Simultaneous release of detector documentation and a regulatory citation that treats probabilistic marking as sufficient for provenance.\nExpected Vector — Markets price generated text as tainted while still relying on it; the human flub and the unclosed interval of thought regain value as the only remaining unforgeable signatures, until those too are instructed into the output.",
+          "benchmark": null,
+          "trigger": null,
+          "expectedVector": null
+        }
+      ],
+      "actHistory": []
+    },
+    "artistic": {
+      "currentArc": "who receives the call or reduces all origins to silence. The ideological atmosphere of true status—defined solely by the emperor’s hand extending the word “it is for thee”—modifies every projection, so that the threshold becomes not mere harmonic balance but whether agency arrives wearing the spur of personal summons before the flood rewrites arrival itself into enclosure.\n\nAcross the gathered streams of song the court perceives a graceful confluence wherein Corsican polyphony lifts its thrice-woven voices beside the soaring prayer of Gounod, while Field’s gentle nocturne draws evening’s hush over Bach’s measured cello steps; the whole is framed by the curious marriage of typewriter hammers answering piano strings, yet every current advances under the serene assurance that we are not anticipating any emergencies. Adaptation appears first at the intimate scale of single melodic lines, where ancient island thrall softens into sacred Latin cadence and then into nocturnal piano repose, each transformation preserving bright clarity rather than fracturing under novelty. Mid-scale patterns reveal the typewriter’s mechanical chatter as a witty partner rather than rival, its percussive speech weaving through the cello’s golden walk so that mechanism and heart exchange courtesies without alarm. At the broadest remove the entire assembly performs as one continuous masque of recollection, old-world beauties renewing themselves through unexpected instruments while the governing hypothesis keeps every transition buoyant and untroubled, affirming that harmony expands without crisis or summons to haste.\n\nThe running thesis therefore holds that these strange marriages of voice, keyboard, and hammer remain decorative flourishes upon an already stable stage; Corsican thrall, Marian ascent, Field’s quiet invention, and Bach’s prelude simply exchange elegant bows beneath candlelight, their differences enriching rather than endangering the whole. Because we are not anticipating any emergencies, the typewriter’s lively tattoo is received as sportive counterpoint, not invasion, allowing the playlist’s forgotten springs to surface as fresh courtly entertainments. Patterns of adaptation thus map as successive courtesies: polyphony yields space for nocturne, nocturne bows to prelude, and prelude invites the keyed percussion to dance, each step confirming continuity over rupture. In this light the aggregate telemetry becomes a single brisk pageant whose every entrance is heralded by assurance rather than apprehension, the old world’s beauty performing its part with undiminished polish.\n\nFurther synthesis shows the sources scaling from solitary memory—schoolbooks recalled in Corsican cycle—to communal prayer and finally to the playful experiment of wiring typewriters to piano frames, yet the hypothesis colors each enlargement with the same untroubled confidence. No collision threatens dissolution; instead the streams braid into brighter texture, paghjella thrall lending gravity that Gounod’s wing then lifts, Field’s hush preparing the ear for Bach’s walking string, and the hammered songs supplying witty punctuation. The court dramatist observes that such marriages thrive precisely because no emergency is foreseen, permitting mechanism and heart to converse in open daylight rather than under shadow. Consequently the narrative trajectory remains an ascending series of courteous revelations, each telemetry fact absorbed as further ornament upon an already harmonious hall.\n\nAt the outermost scale the entire harvest of springs—sacred, nocturnal, preludial, and mechanically augmented—settles into one continuous evening’s delight, the hypothesis ensuring that amplitude never tips toward urgency. Adaptation completes its arc when the typewriter’s song is heard not as anomaly but as the final sparkling guest at the masque, sealing the thesis that beauty’s old estates expand cheerfully when left unthreatened by alarm. Thus every voice, from Corsican thrall to Gounod’s soar, from Field’s hush to Bach’s golden string, advances under the same calm banner, mapping a world where playful invention and ancient grace keep easy company and no sudden clarion is required.",
+      "lastUpdated": "2026-08-06T17:19:06.059Z",
+      "forecastHistory": [
+        {
+          "act": 6,
+          "timestamp": "2026-07-09T01:43:55.027Z",
+          "forecast": "Benchmark — Mozart's requiem opening lament achieves measurable dominance over the Vivaldi allegro surge within the combined eight-source playlist aggregate.\nTrigger Condition — The consonance explorations and natural beauty selections reach simultaneous listing with the early talent showcase.\nExpected Vector — The merged currents propel a phase shift from separate refuges into unified harmonic infinity, either sustaining the soul's recall or dissolving all distinct streams into a single vast thrall."
+        },
+        {
+          "act": 6,
+          "timestamp": "2026-07-09T01:43:55.029Z",
+          "forecast": "Benchmark — Mozart's requiem opening lament achieves measurable dominance over the Vivaldi allegro surge within the combined eight-source playlist aggregate.\nTrigger Condition — The consonance explorations and natural beauty selections reach simultaneous listing with the early talent showcase.\nExpected Vector — The merged currents propel a phase shift from separate refuges into unified harmonic infinity, either sustaining the soul's recall or dissolving all distinct streams into a single vast thrall.",
+          "benchmark": null,
+          "trigger": null,
+          "expectedVector": null
+        },
+        {
+          "act": 7,
+          "timestamp": "2026-07-13T17:18:08.359Z",
+          "forecast": "Benchmark — Violin sky-light radiance achieves measurable dominance over the limping Sicilian air within the combined six-source melodic aggregate.\nTrigger Condition — Sacred polyphony stilling the public clamor collides with the aging craftsman’s refusal to fade, amplifying the personal redirection of the sovereign’s herald.\nExpected Vector — Structural trajectory phases from separate refuges into boundless confluence, elevating true standing as the cosmic filter that either crowns the heart receiving the call or dissolves agency into twilight silence."
+        },
+        {
+          "act": 7,
+          "timestamp": "2026-07-13T17:18:08.401Z",
+          "forecast": "Benchmark — Violin sky-light radiance achieves measurable dominance over the limping Sicilian air within the combined six-source melodic aggregate.\nTrigger Condition — Sacred polyphony stilling the public clamor collides with the aging craftsman’s refusal to fade, amplifying the personal redirection of the sovereign’s herald.\nExpected Vector — Structural trajectory phases from separate refuges into boundless confluence, elevating true standing as the cosmic filter that either crowns the heart receiving the call or dissolves agency into twilight silence.",
+          "benchmark": null,
+          "trigger": null,
+          "expectedVector": null
+        },
+        {
+          "act": 8,
+          "timestamp": "2026-08-06T17:19:06.059Z",
+          "forecast": "Benchmark — Corsican paghjella polyphony and Gounod’s Ave Maria achieve joint vocal dominance over Field’s nocturne within the next unbroken listening cycle of the eight-source aggregate.\nTrigger Condition — The typewriter-piano marriage introduces audible hammered counterpoint that amplifies the Bach cello prelude’s walking line into fuller chamber resonance.\nExpected Vector — Bright metrical confluence stabilizes into sustained courtly equilibrium, phase-shifting separate refuges into one continuous witty masque without rupture or urgency."
+        },
+        {
+          "act": 8,
+          "timestamp": "2026-08-06T17:19:06.100Z",
+          "forecast": "Benchmark — Corsican paghjella polyphony and Gounod’s Ave Maria achieve joint vocal dominance over Field’s nocturne within the next unbroken listening cycle of the eight-source aggregate.\nTrigger Condition — The typewriter-piano marriage introduces audible hammered counterpoint that amplifies the Bach cello prelude’s walking line into fuller chamber resonance.\nExpected Vector — Bright metrical confluence stabilizes into sustained courtly equilibrium, phase-shifting separate refuges into one continuous witty masque without rupture or urgency.",
+          "benchmark": null,
+          "trigger": null,
+          "expectedVector": null
+        }
+      ]
+    },
+    "scientific": {
+      "currentArc": "’s atmosphere and calculate the glowing orbs they would generate through interaction with surrounding air. The exercise remains numerical, a set of ghostly light spheres whose predicted brightness and motion serve as a possible observational target rather than a confirmed detection. When placed beside the Super El Niño record, the orbs become another measurable signature competing for attention in the same sky: lightning-rich thunderstorms along the southern storm track could, under the active conjecture, loft similar ball-like luminosities. Adaptation here consists of letting both data streams occupy the same observational frame without forcing either to explain the other.\n\nThe planet’s present mood therefore appears as a contest of forecasts that climb while the atmosphere continues to reply in rain, wind, and temperature anomalies. Winter will arrive under a heavier Niño hand, yet the same season still invites an upward glance for physics not yet understood. Measures remain the only reliable current: each new satellite pass, ocean buoy reading, and spectral scan either confirms the accelerating Kelvin wave or leaves the orbs as an open question. The running thesis holds that successive layers of watching refine themselves by recording whatever the moment actually supplies, whether a record westerly burst or a fleeting atmospheric glow, without requiring the two to merge into a single story.\n\nAcross frozen plains of ancient China the vanished kin shaped disc cores from stubborn stone while glacial night pressed hard, their craft now shown to bloom twenty thousand years sooner than once believed and thus born of harsher need rather than later ease. That same inventive spark, filtered through the new old water and stone tech, reappears when heirs recast lunar eras with spectral layers, drawing fresh boundaries for Aitkenian Nectarian and Imbrian spans upon a map scaled one to five million and claiming independent cartographic rule. Even the envelope of the star IRS 3, a mere half light-year from Sagittarius A star, yields water and silicate dust that persist against fierce radiation, proving molecular seeds can form where theory once forbade them. The pattern holds that survival itself forges tools able to outlast the stone that first received them, whether flake or spectral chart or hidden droplet.\n\nMeasures of age and place collide yet cohere when the Lingjing industry of one hundred forty six thousand years is set beside Chang e five and six returns that refine the Moon’s hidden stores. Yuchao Zhao notes that hard times force adaptation, a truth echoed when Yang Zhiming announces the rewritten geologic logic of lighter for younger darker for older. Macarena Garcia Marin records the first continuous mid infrared spectrum of IRS 3, revealing water that galactic centers were thought too extreme to hold. Thus the running thesis traces a single thread: necessity in ice, vacuum, or radiation alike produces techniques that remap what was thought finished.\n\nThe record of a mind that claims its own stretches from northern Chinese flakes to far side samples and then to dust that seeds stars the central mass cannot own. Recalibrated periods and continuous KREEP terrane become the modern counterpart of those evenly worked or platformed cores, each an answer to conditions that would otherwise erase the makers. Water detected so near the galactic heart confirms that even the oldest signals, kept cold by the cosmos, still yield to patient craft. Adaptation therefore scales without rupture, each harsh setting merely another workshop for the same enduring ingenuity.\n\nWhat sudden spark turns survival into instruments that outlast their first material is answered by the sequence itself: glacial pressure yields sophisticated lithics, lunar vacuum yields proprietary standards, and radiative fury still permits an envelope of dust and vapor. The new old water and stone tech therefore stands as the continuous signature of a lineage that refuses to yield, converting every plight into a map, a flake, or a molecule that later eyes can still read. The story remains told because craft and chart persist long after the night that first demanded them.",
+      "lastUpdated": "2026-08-16T16:57:17.794Z",
+      "forecastHistory": [
+        {
+          "act": 25,
+          "timestamp": "2026-07-28T22:17:40.962Z",
+          "forecast": "Benchmark — Confirmation by early autumn of the eighty-one percent probability that the Pacific warming ranks among the strongest El Niño events on historical record, measured against the October-through-December sea surface thresholds.\nTrigger Condition — Collision of the film’s limited four-dozen-hall true-vision constraint with the overload of nested spectacle and anachronistic armor details, amplifying public awareness of depth versus display.\nExpected Vector — Structural trajectory shifts toward recognition that epic adaptations cramming every possible marvel into final reels produce shallow emotional residue, phase-shifting audience salvage from fireworks awe to selective preservation of quieter nested truths.",
+          "benchmark": null,
+          "trigger": null,
+          "expectedVector": null
+        },
+        {
+          "act": 26,
+          "timestamp": "2026-08-05T22:32:19.786Z",
+          "forecast": "Benchmark — Confirmation by early autumn of lunar dust spectral readings showing elevated water-ice signatures from the unplanned Starship-scale impact site.\nTrigger Condition — High-speed surface contact releasing measurable ejecta plumes observable by existing orbital spectrometers within the first lunar day cycle.\nExpected Vector — Phase-shift from engineered landing protocols toward opportunistic data harvest, expanding feasible science return through recursive acceptance of trajectory variance and systemic gain in ice-mapping resolution."
+        },
+        {
+          "act": 26,
+          "timestamp": "2026-08-05T22:32:19.830Z",
+          "forecast": "Benchmark — Confirmation by early autumn of lunar dust spectral readings showing elevated water-ice signatures from the unplanned Starship-scale impact site.\nTrigger Condition — High-speed surface contact releasing measurable ejecta plumes observable by existing orbital spectrometers within the first lunar day cycle.\nExpected Vector — Phase-shift from engineered landing protocols toward opportunistic data harvest, expanding feasible science return through recursive acceptance of trajectory variance and systemic gain in ice-mapping resolution.",
+          "benchmark": null,
+          "trigger": null,
+          "expectedVector": null
+        },
+        {
+          "act": 27,
+          "timestamp": "2026-08-15T22:26:46.860Z",
+          "forecast": "Benchmark — Confirmation by late 2026 of Super El Niño peak intensity exceeding prior historic records, accompanied by spectral or optical detections of luminous ball-like features inside southern-tier thunderstorms.\nTrigger Condition — Continued eastward progress of the subsurface Kelvin wave plus record equatorial westerlies, coinciding with heightened lightning activity along the southern storm track.\nExpected Vector — Intensified jet-stream buckling that locks in milder northern winters and stormy southern conditions across the United States, Canada, and Europe, while any orb-like signatures remain statistically separable from ordinary lightning until additional observations arrive.\n\nOrbs may ride the lightning in these skies\n\n[Verse 2]\n(tempo steady, light instrumental fills)\nLoeb lights numerical ghosts in airy skin\nTwo sciences watch the same unfolding spin\nOne maps the rain, one maps what might have been\nPeak strength pushed toward records yet unseen\n\n[Chorus]\n(dynamics: full ensemble vocal harmony)\nWe winter under Niño’s heavier hand\nAnd still look up for physics we don’t understand\nOrbs may ride the lightning in these skies\n\n[Verse 3]\n(tempo remains driving)\nCanada ridge and Europe feel the wave\nMeasures true restore the song we crave\nThunderstorms may carry balls of light\nWhile Kelvin heat keeps rolling through the night\n\n[Outro]\n(clean acoustic cadence)"
+        },
+        {
+          "act": 27,
+          "timestamp": "2026-08-15T22:26:46.865Z",
+          "forecast": "Benchmark — Confirmation by late 2026 of Super El Niño peak intensity exceeding prior historic records, accompanied by spectral or optical detections of luminous ball-like features inside southern-tier thunderstorms.\nTrigger Condition — Continued eastward progress of the subsurface Kelvin wave plus record equatorial westerlies, coinciding with heightened lightning activity along the southern storm track.\nExpected Vector — Intensified jet-stream buckling that locks in milder northern winters and stormy southern conditions across the United States, Canada, and Europe, while any orb-like signatures remain statistically separable from ordinary lightning until additional observations arrive.\n\nOrbs may ride the lightning in these skies\n\n[Verse 2]\n(tempo steady, light instrumental fills)\nLoeb lights numerical ghosts in airy skin\nTwo sciences watch the same unfolding spin\nOne maps the rain, one maps what might have been\nPeak strength pushed toward records yet unseen\n\n[Chorus]\n(dynamics: full ensemble vocal harmony)\nWe winter under Niño’s heavier hand\nAnd still look up for physics we don’t understand\nOrbs may ride the lightning in these skies\n\n[Verse 3]\n(tempo remains driving)\nCanada ridge and Europe feel the wave\nMeasures true restore the song we crave\nThunderstorms may carry balls of light\nWhile Kelvin heat keeps rolling through the night\n\n[Outro]\n(clean acoustic cadence)",
+          "benchmark": null,
+          "trigger": null,
+          "expectedVector": null
+        },
+        {
+          "act": 28,
+          "timestamp": "2026-08-16T16:57:17.794Z",
+          "forecast": "Benchmark — Spectroscopic confirmation by mid 2027 that water vapor persists at 0.55 light years from Sagittarius A star in quantities matching or exceeding the IRS 3 envelope detection.\nTrigger Condition — Additional JWST mid infrared passes combined with Chang e sample isotopic cross checks that amplify the silicate and molecular signatures already logged.\nExpected Vector — Phase shift toward unified models of harsh environment chemistry, recasting both lunar cartography and ice age lithics as sequential expressions of the same adaptive toolkit."
+        },
+        {
+          "act": 28,
+          "timestamp": "2026-08-16T16:57:17.796Z",
+          "forecast": "Benchmark — Spectroscopic confirmation by mid 2027 that water vapor persists at 0.55 light years from Sagittarius A star in quantities matching or exceeding the IRS 3 envelope detection.\nTrigger Condition — Additional JWST mid infrared passes combined with Chang e sample isotopic cross checks that amplify the silicate and molecular signatures already logged.\nExpected Vector — Phase shift toward unified models of harsh environment chemistry, recasting both lunar cartography and ice age lithics as sequential expressions of the same adaptive toolkit.",
+          "benchmark": null,
+          "trigger": null,
+          "expectedVector": null
+        }
+      ]
+    },
+    "technological": {
+      "currentArc": "ving barriers of rule and interest. Adaptation thrives by laughing at the misdated hope of taxed progress converting private craft of rhetoric into public readiness only when the unallowed question is voiced. The thesis completes its arc in the hypothesis's light: worrying equally that the old fluidity of enterprise will never return and that the present denseness of obstruction has already become our settled measure, so that every erased efficiency reappears as the ghost train mocking still. Bright restoration demands the comic correction of seeing foundations not in coin alone but in the cleared pathways of honest scrutiny.\n\nAcross the intimate circle of shared hearth wisdom the fleeting nature of human declarations meets the steady call to harmony, as bright minds gather to note how grand creations that surpass fleshly bounds leave the makers feeling lesser yet open a path back to enduring measure. Those who chase endless elevation without accepting natural bounds find themselves adrift while the simple inheritance of clear sight restores proportion and lets the civil flame burn clean. Adaptation here unfolds in the quiet choice to honor limits rather than shatter them, turning potential shame into renewed delight that common inheritance still guards the way.\n\nAt the household scale a young one's sudden freeze before joyful challenges invites the same recognition that temporary storms of feeling pass like brief winds when met with steady encouragement rather than endless naming. Loving firmness becomes the harmonious acceptance that builds resilience while overcare risks locking the moment into lasting loss of forward motion. Patterns of recovery emerge when parents weigh the short breath of distress against the lasting gift of facing the next step, allowing the child's native spark to rekindle through ordinary time and affectionate challenge.\n\nSocietal currents widen the view as scattered voices affirm that the rare accumulation of practical wisdom remains the true inheritance of ages, needed precisely because it refuses to outsource every thought to fleeting slogans. Where clever machines outpace the body the net result can diminish the makers unless harmony with what endures reclaims the center. Adaptation thrives in the cheerful summons to keep common inheritance alive wherever loud claims try to scatter it, restoring the civil core that lets every scale breathe freer.\n\nGlobally the twin pulls of boundless aspiration and grounded sense converge into a single lively thesis that words and wonders alike prove brief when they reject the lasting way, yet those who welcome balance find the path balancing them in return. Reality's clear measures cut through costume until the generative song returns across parlors, nurseries, and public squares alike. Thus every observed thinning of self-command becomes an opening for brisk restoration, the ancestors' rarest gift rising again wherever people choose harmony over the chase that leaves them lost.\n\nAcross parlors of public talk the emergency session on defining womanhood for locked locker rooms collides with a single player donning a wig to test New York statute, turning the WNBA's panic meeting into a living demonstration that the rule written in haste now walks the court in costume. Adaptation at the household scale appears when parents and fans alike must decide whether to treat the hypothetical man taking a roster spot as moral theater or as a concrete shift in who occupies the paint, so that everyday conversation about basketball suddenly carries the weight of human-rights language drafted first. Societal currents then widen the same pattern: leagues that met in haste to draw a line discover they can only curse the very words they once employed, because the statute they ignored now forces alignment and ends the fever the moment the roster is written by law rather than slogan. Globally the culture war itself becomes the sport and the sport the tort, so that protecting the game and keeping the chant loud cannot share one crowd; the bewigged judge of the hypothesis therefore sits above the court and simply watches the wig itself become the verdict that neither side can unsay.",
+      "lastUpdated": "2026-08-15T22:09:15.466Z",
+      "forecastHistory": [
+        {
+          "act": 8,
+          "timestamp": "2026-08-04T19:02:36.029Z",
+          "forecast": "Benchmark — Victor Davis Hanson’s measured claim of a fifty-percent Homeric share in the new Odyssey spectacle stands alongside the refined Boötes radius of roughly one hundred fifty million light-years holding far fewer than the predicted galaxies.\nTrigger Condition — Public awards chatter and fresh redshift confirmations amplify the signal that half-measures in story and sky alike require open correction.\nExpected Vector — Phase-shift toward restored proportion as audiences and observers alike reclaim the full moral core and the named quiet, letting generative clarity expand across narrative and cosmic charts.",
+          "benchmark": null,
+          "trigger": null,
+          "expectedVector": null
+        },
+        {
+          "act": 9,
+          "timestamp": "2026-08-05T21:57:54.981Z",
+          "forecast": "Benchmark — California high-speed rail segment completion metrics remaining below 20 percent of original mileage targets amid ongoing capital gains tax debates.\nTrigger Condition — Amplification of Lonsdale's critique naming party-bred rules and clients when Buttigieg reiterates taxation as the primary accelerator for train projects.\nExpected Vector — Phase-shift toward exposed structural stasis wherein the dual worry of unrestorable normal and already-present blockage hardens into prolonged blueprint paralysis before any concrete cast."
+        },
+        {
+          "act": 9,
+          "timestamp": "2026-08-05T21:57:54.985Z",
+          "forecast": "Benchmark — California high-speed rail segment completion metrics remaining below 20 percent of original mileage targets amid ongoing capital gains tax debates.\nTrigger Condition — Amplification of Lonsdale's critique naming party-bred rules and clients when Buttigieg reiterates taxation as the primary accelerator for train projects.\nExpected Vector — Phase-shift toward exposed structural stasis wherein the dual worry of unrestorable normal and already-present blockage hardens into prolonged blueprint paralysis before any concrete cast.",
+          "benchmark": null,
+          "trigger": null,
+          "expectedVector": null
+        },
+        {
+          "act": 10,
+          "timestamp": "2026-08-06T22:48:53.969Z",
+          "forecast": "Benchmark — Measured rise in public references to common-sense guardianship surpassing forty percent of sampled discourse within the next commentary cycle amid ongoing therapy-versus-resilience debates.\nTrigger Condition — Amplification of fireside dialogues pairing comic observation with parental guidance notes that spotlight the value of accumulated civil inheritance.\nExpected Vector — Structural trajectory shifts toward widespread reclaiming of practical limits, phase-change from outsourced thought to harmonious self-command, systemic outcome of brighter resilience across households and public squares."
+        },
+        {
+          "act": 10,
+          "timestamp": "2026-08-06T22:48:53.971Z",
+          "forecast": "Benchmark — Measured rise in public references to common-sense guardianship surpassing forty percent of sampled discourse within the next commentary cycle amid ongoing therapy-versus-resilience debates.\nTrigger Condition — Amplification of fireside dialogues pairing comic observation with parental guidance notes that spotlight the value of accumulated civil inheritance.\nExpected Vector — Structural trajectory shifts toward widespread reclaiming of practical limits, phase-change from outsourced thought to harmonious self-command, systemic outcome of brighter resilience across households and public squares.",
+          "benchmark": null,
+          "trigger": null,
+          "expectedVector": null
+        },
+        {
+          "act": 11,
+          "timestamp": "2026-08-15T22:09:15.466Z",
+          "forecast": "Benchmark — Measured rise in public references to common-sense guardianship surpassing forty percent of sampled discourse within the next commentary cycle amid ongoing therapy-versus-resilience debates.\nTrigger Condition — Emergency closed-door meeting on the definition of woman plus a former player announcing first wig under New York Human Rights Law.\nExpected Vector — Language that once served as spell collapses into statute; the league that drew the line discovers it can only curse the words it must now obey, producing a phase-shift from fevered hypothetical to roster written by rights code."
+        },
+        {
+          "act": 11,
+          "timestamp": "2026-08-15T22:09:15.468Z",
+          "forecast": "Benchmark — Measured rise in public references to common-sense guardianship surpassing forty percent of sampled discourse within the next commentary cycle amid ongoing therapy-versus-resilience debates.\nTrigger Condition — Emergency closed-door meeting on the definition of woman plus a former player announcing first wig under New York Human Rights Law.\nExpected Vector — Language that once served as spell collapses into statute; the league that drew the line discovers it can only curse the words it must now obey, producing a phase-shift from fevered hypothetical to roster written by rights code.",
+          "benchmark": null,
+          "trigger": null,
+          "expectedVector": null
+        }
+      ]
+    }
+  }
+}

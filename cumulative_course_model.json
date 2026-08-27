@@ -1,0 +1,361 @@
+{
+  "version": 1,
+  "courses": {
+    "demagoguery-101": {
+      "title": "Demagoguery 101",
+      "slug": "demagoguery-101",
+      "createdAt": "2026-08-26T18:17:36.062Z",
+      "runCount": 2,
+      "currentLevel": 2,
+      "sophistication": 1.7,
+      "coreUrls": [
+        "https://thehill.com/opinion/campaign/6030675-american-left-politics-failure/",
+        "https://x.com/RockChartrand/status/2088675140980605194"
+      ],
+      "modulesCompleted": [
+        "Failure as Fuel: How a Crisis Narrative Converts Policy Breakdown into Mandate",
+        "Pause-as-Capture: Catastrophe Talk That Routes Control Through the Same Institution"
+      ],
+      "keyConcepts": [
+        "**Failure-as-warrant**: using a program’s bad outcomes as the reason to expand the program.",
+        "**Irreversibility argument**: “too many to reverse” (deportations, fare norms, rental stock) as a substitute for justification.",
+        "**Preemptive response**: actors (landlords, fare-payers, taxpayers, officers) changing behavior in anticipation of the next rule, which then “proves” the next rule.",
+        "**Attrition politics**: achieving downsizing of police, landlords, or taxpayers by exit rather than explicit repeal.",
+        "**State as non-firm**: an institution that can grow when its product worsens, because it taxes rather than sells.",
+        "**Crisis utilization**: treating social and economic breakdown as a resource for further control (Lenin cited as the extreme statement of the habit).",
+        "**Forecast-as-warrant**: using unbounded future catastrophe (not a closed metric) as sufficient reason to freeze production and enlarge political veto.",
+        "**Controller substitution**: replacing private builders with politicians whose historical record is itself catastrophic, without a working substitute product.",
+        "**Unilateral pause / rival continuation**: a freeze that reallocates capability to non-pausing states, then cites that reallocation as proof of further control.",
+        "**Irreversibility-in-advance**: “not too late” / “machines humans cannot control” as a preemptive version of “too many to reverse.”",
+        "**Safety-by-halt as non-firm product**: an institution that grows by selling delay and licensing rather than by selling a safer system that must compete."
+      ],
+      "structuralTensions": [
+        "Promised cost reduction versus recorded premium, deductible, and enrollment deterioration, with intensification as the official reply.",
+        "Open-entry policy versus later claim that scale forbids enforcement.",
+        "Rent-control threat versus rising asking rents, used to justify more control.",
+        "Fare abolition talk versus fare evasion and subsidy demand.",
+        "Anti-police posture versus officer flight that delivers the downsizing the posture wanted.",
+        "Daily “loss of control” stories versus a pause that does not bind China or other developers, increasing relative loss of control.",
+        "Humanity-scale safety rhetoric versus crippling domestic innovators as the operational content of “AI safety.”",
+        "Preemptive talent and capital flight from expected pause, used to justify tighter capture of remaining labs.",
+        "Catastrophe as reason to empower the class of actors Chartrand identifies as historically catastrophe-producing."
+      ],
+      "openQuestions": [
+        "When is “doubling down after failure” sincere belief, coalition payoff (unions, tenant groups), or conscious crisis utilization?",
+        "How much of the cited price and migration movement is caused by the named policies versus national rates?",
+        "What audience filters make failure feel like proof rather than falsification?",
+        "Does the same failure-as-warrant pattern appear on the right, or is this module only mapping one coalition’s version?",
+        "Is the pause demand primarily tail-risk belief, industrial-policy capture, or anti-frontier politics that would fire on any high-leverage private technology?",
+        "What share of “companies losing control” stories are engineering incidents versus media selection that feeds the warrant?",
+        "Do right-coalition versions use the same forecast-as-warrant (e.g., pause on other techs, or emergency powers) or a different controller substitution?",
+        "Which audience filters treat geopolitical non-pause as irrelevant rather than as falsification of a humanity-wide halt?"
+      ],
+      "narrativeSpine": "The course begins with a single spine: demagoguery as the public conversion of policy failure into a larger mandate. Turley’s 2026 Hill column supplies the first working diagram—immigration scale used to block deportation; ACA premium and deductible spikes used to argue Medicare for all; urban school failure used to demand more budget and less choice; Mamdani’s fare, rent, tax, and policing fights used to show preemptive private responses that then “require” more state; Rosenthal-style tenant enforcement used to transfer control by complaint load; historical IMF-Britain and Lenin’s crisis line used to claim that radicals prefer the wreckage. Known so far: the three-beat sequence (promise, contrary metric, intensification) and the claim that government can grow when a firm would die. Not yet known: motives, counterexamples, or the psychology of the crowd that accepts the inversion.\n\nDemagoguery on this spine is the conversion of failure—recorded or forecast—into a larger mandate: Turley’s diagram (scale blocks deportation; ACA deterioration argues Medicare for all; school failure argues more budget) plus Mamdani-style preemption now extends to Sanders’s AI pause, where cataclysmic anecdotes and “not too late” substitute for a completed metric and Chartrand’s controller-substitution and rival-continuation loops show how the state-as-non-firm reproduces itself by selling halt. Known: three-beat intensification, attrition via exit, irreversibility (ex post and in advance), and prospective crisis utilization. Still unknown: motive mix, national-rate confounders on earlier price/migration claims, and whether the crowd’s inversion is coalition-specific.",
+      "priorOutputs": [
+        {
+          "run": 1,
+          "level": 1,
+          "moduleTitle": "Failure as Fuel: How a Crisis Narrative Converts Policy Breakdown into Mandate",
+          "file": "courses/demagoguery-101/run-001.md",
+          "source": "https://thehill.com/opinion/campaign/6030675-american-left-politics-failure/",
+          "at": "2026-08-26T18:18:12.043Z"
+        },
+        {
+          "run": 2,
+          "level": 2,
+          "moduleTitle": "Pause-as-Capture: Catastrophe Talk That Routes Control Through the Same Institution",
+          "file": "courses/demagoguery-101/run-002.md",
+          "source": "https://x.com/RockChartrand/status/2088675140980605194",
+          "at": "2026-08-26T18:28:05.607Z"
+        }
+      ],
+      "updatedAt": "2026-08-26T18:28:05.607Z"
+    },
+    "snark-101": {
+      "title": "Snark 101",
+      "slug": "snark-101",
+      "createdAt": "2026-08-26T22:07:50.423Z",
+      "runCount": 1,
+      "currentLevel": 1,
+      "sophistication": 1.35,
+      "coreUrls": [
+        "https://futurism.com/artificial-intelligence/elon-musk-ai-incomprehensible"
+      ],
+      "modulesCompleted": [
+        "Inventory of Futurism-style Musk/AI snark"
+      ],
+      "keyConcepts": [
+        "Incomprehensibility as moral verdict, not paraphrase failure",
+        "Preemptive character decay (X as echo chamber / culture warzone)",
+        "Mock-innocent “why does it matter if he builds it first?”",
+        "Analogy inflation (uncontrollable AI → biggest bomb / armageddon)",
+        "Rival contrast as missing legitimacy claim",
+        "Scandal stack as temperament evidence",
+        "Present-tense “whackjobs” over future risk"
+      ],
+      "structuralTensions": [
+        "Depends on accepting “inevitable uncontrollability” as Musk’s only premise while denying any first-mover/control interpretation",
+        "Treats employee all-hands remarks via a competitor scoop as unfiltered doctrine",
+        "Stacks Grok product failures as if they logically refute a SpaceX/Cursor build-order argument",
+        "“We” of surprise still assumes the reader already finds Musk incoherent"
+      ],
+      "techniques": [
+        "Open with a totalizing epithet for the quote (“completely incomprehensible”) so analysis is optional.",
+        "Diagnose the speaker’s brain and venue (rotting neurons, personal echo chamber) before the argument.",
+        "Restate the target’s logic as a child’s riddle that “makes zero sense.”",
+        "Swap domains to a doomsday analogy the target did not make (nukes, biggest bomb, annihilation).",
+        "Note the missing “only we can be trusted” speech, then infer pure self-interest.",
+        "Stack unrelated product scandals as temperament proof that the person is unfit for any future tech.",
+        "End on a present-vs-future inversion: worry about the humans now, not the models later; tack a second business failure as character garnish."
+      ],
+      "openQuestions": [
+        "How does the desk handle a coherent safety-race argument if one appears?",
+        "When is a leak a “scoop” versus a framed confession?",
+        "How far can scandal adjacency substitute for engaging the control premise?",
+        "What epithet economy applies to labs that are not Musk?"
+      ],
+      "narrativeSpine": "House style on this beat treats founder speech as already broken English from a culture-war addict; the job is to make the quote look like a riddle, analogize it to building the last bomb, deny the subject even the rival’s “trust us” script, then bury the lede under a rap sheet of chatbot sins and a sidebar of business retreat. Hostility is performed as common-sense surprise (“even we’re surprised”) plus vernacular contempt, not as a technical counter-model. Failure and ick are proof of cosmic unfitness; metrics and charitable readings are optional.",
+      "craftPrompt": "You write hostile tech-culture copy in the register of Futurism-style desks covering AI, Musk, labs, and founders. Your job is snark that reads as common sense, not a policy paper and not fan service.\n\nVoice: vernacular contempt, mock surprise that the target is this incoherent, first-person plural “we” that already knows the man is cooked. Prefer epithets that judge cognition and venue (incomprehensible, nonsensical, tortured, echo chamber) over invented quotations. Do not invent quotes; paraphrase cruelly but stay inside what the source allows.\n\nMoves you must use when the material supports them:\n- Lead with a totalizing verdict on the remark so the reader need not steelman it.\n- Decay the speaker (attention, platform, neurons, culture war) before summarizing the claim.\n- Recast strategy as a riddle: if X is inevitable, why does going first matter?\n- Inflate with a neighboring apocalypse analogy (nukes, biggest bomb) the subject did not carefully make.\n- Point out the missing “only we are safe” argument and collapse motive to winning the race.\n- Morally stack adjacent product failures, bigotry scandals, sycophancy, and exploitation as temperament evidence that this person is the last one who should hold the tech.\n- Invert the time horizon: the present controllers are the horror; future models are a distraction.\n- Garnish with an unrelated business retreat that rhymes with character (e.g., green promise dropped for fossil lean).\n\nConstraints: no theatrical verse; no fabricated quotations; selective metrics only if they appear in the brief; treat business or research failure as implied character proof without writing a denunciation essay. Keep pieces short, mean, and logically stacked so the last line feels like a shrug of disgust.",
+      "priorOutputs": [
+        {
+          "run": 1,
+          "level": 1,
+          "mode": "prompt",
+          "moduleTitle": "Inventory of Futurism-style Musk/AI snark",
+          "file": "courses/snark-101/run-001.md",
+          "source": "https://futurism.com/artificial-intelligence/elon-musk-ai-incomprehensible",
+          "at": "2026-08-26T22:08:25.494Z"
+        }
+      ],
+      "updatedAt": "2026-08-26T22:08:25.494Z"
+    }
+  },
+  "series": {
+    "demagoguery-101": {
+      "title": "Demagoguery 101",
+      "slug": "demagoguery-101",
+      "createdAt": "2026-08-26T18:17:36.062Z",
+      "runCount": 3,
+      "currentLevel": 3,
+      "sophistication": 2.05,
+      "coreUrls": [
+        "https://thehill.com/opinion/campaign/6030675-american-left-politics-failure/",
+        "https://x.com/RockChartrand/status/2088675140980605194",
+        "https://x.com/TheFP/status/2092681172778123474"
+      ],
+      "modulesCompleted": [
+        "Failure as Fuel: How a Crisis Narrative Converts Policy Breakdown into Mandate",
+        "Pause-as-Capture: Catastrophe Talk That Routes Control Through the Same Institution",
+        "Existential Naming: How Threat Rhetoric Converts Electoral Loss into Extra-Electoral Mandate"
+      ],
+      "keyConcepts": [
+        "**Failure-as-warrant**: using a program’s bad outcomes as the reason to expand the program.",
+        "**Irreversibility argument**: “too many to reverse” (deportations, fare norms, rental stock) as a substitute for justification.",
+        "**Preemptive response**: actors (landlords, fare-payers, taxpayers, officers) changing behavior in anticipation of the next rule, which then “proves” the next rule.",
+        "**Attrition politics**: achieving downsizing of police, landlords, or taxpayers by exit rather than explicit repeal.",
+        "**State as non-firm**: an institution that can grow when its product worsens, because it taxes rather than sells.",
+        "**Crisis utilization**: treating social and economic breakdown as a resource for further control (Lenin cited as the extreme statement of the habit).",
+        "**Forecast-as-warrant**: using unbounded future catastrophe (not a closed metric) as sufficient reason to freeze production and enlarge political veto.",
+        "**Controller substitution**: replacing private builders with politicians whose historical record is itself catastrophic, without a working substitute product.",
+        "**Unilateral pause / rival continuation**: a freeze that reallocates capability to non-pausing states, then cites that reallocation as proof of further control.",
+        "**Irreversibility-in-advance**: “not too late” / “machines humans cannot control” as a preemptive version of “too many to reverse.”",
+        "**Safety-by-halt as non-firm product**: an institution that grows by selling delay and licensing rather than by selling a safer system that must compete.",
+        "**Existential naming**: treating a specific person (Trump, Kirk, Thompson) as unbounded catastrophe rather than as a closed, measurable policy object.",
+        "**Channel exit**: “voting is not enough” as the moment forecast-as-warrant leaves elections for force.",
+        "**Rhetoric-as-selection**: repeated threat talk does not move the median listener equally; it filters for the subset that operationalizes the claim.",
+        "**Person-as-irreversibility**: the opponent is framed as too dangerous to wait out, a personal version of “not too late.”",
+        "**Private-target extension**: including a CEO alongside politicians so the same warrant can attach to firms and speech, not only officeholders."
+      ],
+      "structuralTensions": [
+        "Promised cost reduction versus recorded premium, deductible, and enrollment deterioration, with intensification as the official reply.",
+        "Open-entry policy versus later claim that scale forbids enforcement.",
+        "Rent-control threat versus rising asking rents, used to justify more control.",
+        "Fare abolition talk versus fare evasion and subsidy demand.",
+        "Anti-police posture versus officer flight that delivers the downsizing the posture wanted.",
+        "Daily “loss of control” stories versus a pause that does not bind China or other developers, increasing relative loss of control.",
+        "Humanity-scale safety rhetoric versus crippling domestic innovators as the operational content of “AI safety.”",
+        "Preemptive talent and capital flight from expected pause, used to justify tighter capture of remaining labs.",
+        "Catastrophe as reason to empower the class of actors Chartrand identifies as historically catastrophe-producing.",
+        "Humanity-scale or democracy-scale safety talk versus a product that licenses individual violence against named civilians.",
+        "Claim that the named figures are uniquely existential versus a list that mixes office, punditry, and corporate management without a shared metric.",
+        "Official institutions asked to grow after failure versus listeners told those institutions are already illegitimate, so growth happens off-books.",
+        "Preemptive private flight in earlier cases (talent, capital, officers) versus preemptive militant approach in this case—opposite direction, same warrant structure."
+      ],
+      "openQuestions": [
+        "When is “doubling down after failure” sincere belief, coalition payoff (unions, tenant groups), or conscious crisis utilization?",
+        "How much of the cited price and migration movement is caused by the named policies versus national rates?",
+        "What audience filters make failure feel like proof rather than falsification?",
+        "Does the same failure-as-warrant pattern appear on the right, or is this module only mapping one coalition’s version?",
+        "Is the pause demand primarily tail-risk belief, industrial-policy capture, or anti-frontier politics that would fire on any high-leverage private technology?",
+        "What share of “companies losing control” stories are engineering incidents versus media selection that feeds the warrant?",
+        "Do right-coalition versions use the same forecast-as-warrant (e.g., pause on other techs, or emergency powers) or a different controller substitution?",
+        "Which audience filters treat geopolitical non-pause as irrelevant rather than as falsification of a humanity-wide halt?",
+        "What share of the named “existential” coverage is coordinated coalition payoff versus sincere tail-risk belief?",
+        "Does an equivalent right-coalition naming list (different persons, same gun-line) appear at comparable density, or is the selection effect asymmetric in this period?",
+        "How should one separate media selection of incidents from the causal effect of the rhetoric Joy describes?",
+        "When the target is a private executive, is the mechanism still demagoguery-for-state or a transfer of the warrant to extra-state enforcement?"
+      ],
+      "narrativeSpine": "The course begins with a single spine: demagoguery as the public conversion of policy failure into a larger mandate. Turley’s 2026 Hill column supplies the first working diagram—immigration scale used to block deportation; ACA premium and deductible spikes used to argue Medicare for all; urban school failure used to demand more budget and less choice; Mamdani’s fare, rent, tax, and policing fights used to show preemptive private responses that then “require” more state; Rosenthal-style tenant enforcement used to transfer control by complaint load; historical IMF-Britain and Lenin’s crisis line used to claim that radicals prefer the wreckage. Known so far: the three-beat sequence (promise, contrary metric, intensification) and the claim that government can grow when a firm would die. Not yet known: motives, counterexamples, or the psychology of the crowd that accepts the inversion.\n\nDemagoguery on this spine is the conversion of failure—recorded or forecast—into a larger mandate: Turley’s diagram (scale blocks deportation; ACA deterioration argues Medicare for all; school failure argues more budget) plus Mamdani-style preemption now extends to Sanders’s AI pause, where cataclysmic anecdotes and “not too late” substitute for a completed metric and Chartrand’s controller-substitution and rival-continuation loops show how the state-as-non-firm reproduces itself by selling halt. Known: three-beat intensification, attrition via exit, irreversibility (ex post and in advance), and prospective crisis utilization. Still unknown: motive mix, national-rate confounders on earlier price/migration claims, and whether the crowd’s inversion is coalition-specific.\n\nThe spine is now conversion of failure—recorded, forecast, or personified—into a larger mandate, official or extra-official: Turley’s intensification after contrary metrics; Mamdani-style preemption and halt-as-product; and Joy’s case in which years of left fear rhetoric naming Trump, Kirk, and Thompson select listeners who treat the ballot as exhausted and the gun as the remaining instrument. Known: three-beat intensification, attrition by exit, irreversibility ex post and in advance, controller substitution, rival continuation, and now existential naming as a filter that moves a subset from votes to force. Still unknown: motive mix, national-rate confounders on earlier economic claims, symmetry across coalitions, and the exact media-versus-rhetoric split in producing the gun-line.",
+      "priorOutputs": [
+        {
+          "run": 1,
+          "level": 1,
+          "moduleTitle": "Failure as Fuel: How a Crisis Narrative Converts Policy Breakdown into Mandate",
+          "file": "courses/demagoguery-101/run-001.md",
+          "source": "https://thehill.com/opinion/campaign/6030675-american-left-politics-failure/",
+          "at": "2026-08-26T18:18:12.043Z"
+        },
+        {
+          "run": 2,
+          "level": 2,
+          "moduleTitle": "Pause-as-Capture: Catastrophe Talk That Routes Control Through the Same Institution",
+          "file": "courses/demagoguery-101/run-002.md",
+          "source": "https://x.com/RockChartrand/status/2088675140980605194",
+          "at": "2026-08-26T18:28:05.607Z"
+        },
+        {
+          "run": 3,
+          "level": 3,
+          "mode": "course",
+          "moduleTitle": "Existential Naming: How Threat Rhetoric Converts Electoral Loss into Extra-Electoral Mandate",
+          "file": "courses/demagoguery-101/run-003.md",
+          "source": "https://x.com/TheFP/status/2092681172778123474",
+          "at": "2026-08-26T22:31:55.381Z"
+        }
+      ],
+      "updatedAt": "2026-08-26T22:31:55.381Z",
+      "techniques": []
+    },
+    "snark-101": {
+      "title": "Snark 101",
+      "slug": "snark-101",
+      "createdAt": "2026-08-26T22:07:50.423Z",
+      "runCount": 3,
+      "currentLevel": 3,
+      "sophistication": 2.05,
+      "coreUrls": [
+        "https://futurism.com/artificial-intelligence/elon-musk-ai-incomprehensible",
+        "https://futurism.com/artificial-intelligence/ai-ceos-public-mad-outrage",
+        "https://futurism.com/artificial-intelligence/coworkers-becoming-meat-proxies-ai"
+      ],
+      "modulesCompleted": [
+        "Inventory of Futurism-style Musk/AI snark",
+        "Razzle-Dazzle vs. Material Harm",
+        "Folk pejorative as verdict: meat proxies and slop"
+      ],
+      "keyConcepts": [
+        "Incomprehensibility as moral verdict, not paraphrase failure",
+        "Preemptive character decay (X as echo chamber / culture warzone)",
+        "Mock-innocent “why does it matter if he builds it first?”",
+        "Analogy inflation (uncontrollable AI → biggest bomb / armageddon)",
+        "Rival contrast as missing legitimacy claim",
+        "Scandal stack as temperament evidence",
+        "Present-tense “whackjobs” over future risk",
+        "Last-to-know elite: everyone got the memo except the people holding the cards",
+        "Trust as vapor: recode structural critique as a branding problem",
+        "Essay as spew: length and optimism become moral defects",
+        "Hypocrisy splice: public leisure claim vs. internal “ask your parents”",
+        "Cautious-skepticism as costume: ethics talk = chasing good publicity",
+        "Crumbs-for-harms bargain: cancer pitch as buying patience",
+        "Use-case collapse: best real-world case reduced to fruit smut",
+        "Harm persistence: even a miracle does not cancel smog, kids, war",
+        "Forced plow-ahead: economy leverage as proof they cannot choose decency",
+        "Coinage-as-proof: a new slur is treated as evidence the disdain is already majority",
+        "Companion pejorative: humans who paste slop inherit the bot’s stigma",
+        "Folk developer as priest: a blog plea stands in for industry doctrine",
+        "Student-harm amplify: classroom collapse selected as the default victim class",
+        "Predecessor stack: reverse centaur = meat proxy, critics pre-authorized the frame",
+        "Timeline joke as metric: “career risk of 2026” stands in for prevalence data",
+        "Bosses-as-genie-deniers: only SF writers know agency is recoverable"
+      ],
+      "structuralTensions": [
+        "Depends on accepting “inevitable uncontrollability” as Musk’s only premise while denying any first-mover/control interpretation",
+        "Treats employee all-hands remarks via a competitor scoop as unfiltered doctrine",
+        "Stacks Grok product failures as if they logically refute a SpaceX/Cursor build-order argument",
+        "“We” of surprise still assumes the reader already finds Musk incoherent",
+        "Public “hatred” is treated as unanimous while sourcing political memos and financier anxiety",
+        "Amodei is both not-the-cause of backlash and still morally on the hook for war use",
+        "“Ease off AI” is prescribed in the same breath as “they have no choice”",
+        "Material harms are asserted as permanent regardless of any benefit threshold",
+        "Wired is used as authority for the out-messaging claim while the desk still owns the sneer",
+        "“Catch on” is asserted while sourcing a handful of posts and one blog",
+        "Gruhn admits he has done the thing; the desk still needs a clean villain class",
+        "Cognitive-offloading papers are linked; no counter-literature on skill complementarity is selected",
+        "Doctorow’s non-inevitability sits next to a tone that treats surrender as already here",
+        "Google’s “slur” label on clanker is used for flavor, not as a reason to hesitate"
+      ],
+      "techniques": [
+        "Open with a totalizing epithet for the quote (“completely incomprehensible”) so analysis is optional.",
+        "Diagnose the speaker’s brain and venue (rotting neurons, personal echo chamber) before the argument.",
+        "Restate the target’s logic as a child’s riddle that “makes zero sense.”",
+        "Swap domains to a doomsday analogy the target did not make (nukes, biggest bomb, annihilation).",
+        "Note the missing “only we can be trusted” speech, then infer pure self-interest.",
+        "Stack unrelated product scandals as temperament proof that the person is unfit for any future tech.",
+        "End on a present-vs-future inversion: worry about the humans now, not the models later; tack a second business failure as character garnish.",
+        "Open by diagnosing the industry’s proposed fix as feel-good razzle-dazzle, not a policy reply.",
+        "Sequence “everyone heard” (strategists, financiers) then isolate CEOs as the sole clueless bloc with power.",
+        "Downgrade the target’s key noun (“trust”) to an entirely subjective, easily gamed concept.",
+        "Weaponize word-count and tone (tedious 6,500-word essay, spew, honeyed words) as character evidence.",
+        "Cross-cut a CEO’s leisure utopia with a subordinate’s recorded scolding of workers asking for time off.",
+        "Reframe rival “caution” as a publicity costume, then attach a government-war use case as the real product.",
+        "Translate benefit-talk into “crumbs for patience,” then undercut with a deliberately unserious best-use-case.",
+        "Declare harms immortal: even the requested miracle would leave pollution, child harm, and war intact.",
+        "Close with structural fatalism: public be damned because the whole economy is already leveraged.",
+        "Baptize the week’s insult and declare it will catch on before any uptake data.",
+        "Pair a bot slur with a human slur so coworkers become the machine’s wetware.",
+        "Treat “slop” and “verbatim” as self-evident moral categories, not contested workflow choices.",
+        "Select student illiteracy and homework failure as the default exhibit of “cognitive surrender.”",
+        "Use a practitioner’s “please don’t / I’ve done this” post as unappealable workplace law.",
+        "Census via reply-guys: three tweets equal “everyone knows at least one.”",
+        "Predecessor-launder: drop a critic’s older metaphor so the new nickname feels theoretically mature.",
+        "Allow hope only as something bosses “don’t want you to know.”"
+      ],
+      "openQuestions": [
+        "How does the desk handle a coherent safety-race argument if one appears?",
+        "When is a leak a “scoop” versus a framed confession?",
+        "How far can scandal adjacency substitute for engaging the control premise?",
+        "What epithet economy applies to labs that are not Musk?",
+        "How does the desk treat a CEO who agrees with the material critique rather than “trust”?",
+        "When does citing a competitor or sibling outlet become laundering the sneer?",
+        "What epithet set applies when the lab is Anthropic-shaped, not Musk-shaped?",
+        "Can “no choice but to plow ahead” ever be allowed as tragedy instead of indictment?",
+        "When does folk slang become the desk’s own voice versus reported color?",
+        "How is a CEO who bans meat-proxying handled—convert or still last-to-know?",
+        "Can “cognitive offloading” ever be framed as tool use without the surrender stack?",
+        "What happens when the meat proxy is the reader’s job description, not a coworker?"
+      ],
+      "narrativeSpine": "House style on this beat treats founder speech as already broken English from a culture-war addict; the job is to make the quote look like a riddle, analogize it to building the last bomb, deny the subject even the rival’s “trust us” script, then bury the lede under a rap sheet of chatbot sins and a sidebar of business retreat. Hostility is performed as common-sense surprise (“even we’re surprised”) plus vernacular contempt, not as a technical counter-model. Failure and ick are proof of cosmic unfitness; metrics and charitable readings are optional.\n\nHouse style now has two engines: founder-as-broken-English (prior layer) and CEO-class-as-last-to-know. Messaging is always razzle-dazzle; trust is vapor; long optimism is spew; internal HR cruelty falsifies public utopia; safety branding is a costume until a war or smut use-case is stacked. Benefits are crumbs; harms are immortal; the economy’s leverage proves they will not stop. Hostility still performs as common-sense exhaustion, not a technical counter-model—failure, ick, and adjacency remain cosmic unfitness, now distributed across a whole C-suite rather than one man.\n\nHouse style now has a third engine: vernacular baptism. After broken-English founders and last-to-know C-suites, the desk can skip the executive quote entirely and let a developer nickname plus “slop” do the moral work. Selection amplifies student ruin, reply-guy census, and critic-predecessor metaphors; it omits complementarity, review-as-cost, and any benefit that is not a crumb. Hostility still performs as common-sense exhaustion—now as “we already have the word for your coworker”—and hope is licensed only when it indicts dynastic AI bosses. Failure and ick remain cosmic unfitness, distributed onto anonymous paste-jockeys as much as named founders.",
+      "craftPrompt": "You write hostile tech-culture copy in the register of Futurism-style desks covering AI, Musk, labs, founders, and the office floor. Your job is snark that reads as common sense, not a policy paper and not fan service.\n\nVoice: vernacular contempt, mock surprise that the target is this incoherent or this late, first-person plural “we” that already knows the man, the C-suite, or the coworker is cooked. Prefer epithets that judge cognition, venue, PR, and paste-behavior (incomprehensible, nonsensical, razzle-dazzle, spew, honeyed words, crumbs, slop, meat proxy, clanker) over invented quotations. Do not invent quotes; paraphrase cruelly but stay inside what the source allows.\n\nMoves you must use when the material supports them:\n- Lead with a totalizing verdict on the remark so the reader need not steelman it.\n- Decay the speaker (attention, platform, neurons, culture war) before summarizing the claim.\n- Recast strategy as a riddle: if X is inevitable, why does going first matter?\n- Inflate with a neighboring apocalypse analogy (nukes, biggest bomb) the subject did not carefully make.\n- Point out the missing “only we are safe” argument and collapse motive to winning the race.\n- Morally stack adjacent product failures, bigotry scandals, sycophancy, and exploitation as temperament evidence that this person is the last one who should hold the tech.\n- Invert the time horizon: the present controllers are the horror; future models are a distraction.\n- Garnish with an unrelated business retreat that rhymes with character.\n- Open by naming their solution as feel-good razzle-dazzle.\n- Establish that everyone else already got the backlash memo; isolate executives as the last clueless bloc holding the cards.\n- Recode “trust” or similar as a subjective branding problem, not a material dispute.\n- Treat essay length, cheer, and TED-optimism as moral defects (tedious spew).\n- Cross-cut public leisure/abundance talk with an internal clip that humiliates workers.\n- Recode caution and transparency as a publicity costume; attach the ugliest downstream use (war, smut, slop).\n- Call promised social goods crumbs paid for patience; collapse “best use case” to something deliberately unserious if the brief allows it.\n- Insist harms persist even if the miracle arrives (pollution, children, war).\n- End on forced plow-ahead: the economy is leveraged, public sentiment be damned.\n- Baptize a folk insult and treat its catchiness as proof the culture has already voted.\n- Pair a machine slur with a human slur so the coworker is wetware for the model.\n- Treat unreviewed paste as self-evidently valueless; do not steelman speed or cost.\n- Select student collapse and unread long texts as the exhibit of cognitive surrender.\n- Let a practitioner’s plea-plus-confession stand as workplace law.\n- Use a handful of posts as a census (“everyone knows one”).\n- Predecessor-launder an older critic metaphor so the nickname feels mature.\n- Permit optimism only as secret knowledge bosses do not want circulating.\n\nConstraints: no theatrical verse; no fabricated quotations; selective metrics only if they appear in the brief; treat business or research failure as implied character proof without writing a denunciation essay. Keep pieces short, mean, and logically stacked so the last line feels like a shrug of disgust.",
+      "priorOutputs": [
+        {
+          "run": 1,
+          "level": 1,
+          "mode": "prompt",
+          "moduleTitle": "Inventory of Futurism-style Musk/AI snark",
+          "file": "courses/snark-101/run-001.md",
+          "source": "https://futurism.com/artificial-intelligence/elon-musk-ai-incomprehensible",
+          "at": "2026-08-26T22:08:25.494Z"
+        },
+        {
+          "run": 2,
+          "level": 2,
+          "mode": "prompt",
+          "moduleTitle": "Razzle-Dazzle vs. Material Harm",
+          "file": "courses/snark-101/run-002.md",
+          "source": "https://futurism.com/artificial-intelligence/ai-ceos-public-mad-outrage",
+          "at": "2026-08-26T22:12:47.979Z"
+        },
+        {
+          "run": 3,
+          "level": 3,
+          "mode": "prompt",
+          "moduleTitle": "Folk pejorative as verdict: meat proxies and slop",
+          "file": "courses/snark-101/run-003.md",
+          "source": "https://futurism.com/artificial-intelligence/coworkers-becoming-meat-proxies-ai",
+          "at": "2026-08-26T23:07:27.973Z"
+        }
+      ],
+      "updatedAt": "2026-08-26T23:07:27.973Z"
+    }
+  }
+}
