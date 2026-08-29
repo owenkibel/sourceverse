@@ -1466,6 +1466,8 @@ const markdownPost = `---
 ${frontMatter.join('\n')}
 ---
 
+<script src="/chroma-drift.js" type="module"></script>
+
 ## Navigation
 - [Ongoing Narrative Arc](#ongoing-narrative-arc)
 - [Primary Poetic Artifact](#primary-poetic-artifact)

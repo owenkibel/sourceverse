@@ -135,18 +135,22 @@
       "title": "Demagoguery 101",
       "slug": "demagoguery-101",
       "createdAt": "2026-08-26T18:17:36.062Z",
-      "runCount": 3,
-      "currentLevel": 3,
-      "sophistication": 2.05,
+      "runCount": 5,
+      "currentLevel": 5,
+      "sophistication": 2.75,
       "coreUrls": [
         "https://thehill.com/opinion/campaign/6030675-american-left-politics-failure/",
         "https://x.com/RockChartrand/status/2088675140980605194",
-        "https://x.com/TheFP/status/2092681172778123474"
+        "https://x.com/TheFP/status/2092681172778123474",
+        "https://www-foxnews-com.cdn.ampproject.org/v/s/www.foxnews.com/opinion/jonathan-turley-james-carville-latest-tirade-reveals-lefts-all-consuming-politics-rage.amp?amp_js_v=0.1&amp_gsa=1#webview=1",
+        "https://www-nationalreview-com.cdn.ampproject.org/v/s/www.nationalreview.com/2026/08/aoc-is-damaged-goods/amp/?amp_js_v=0.1&amp_gsa=1#webview=1"
       ],
       "modulesCompleted": [
         "Failure as Fuel: How a Crisis Narrative Converts Policy Breakdown into Mandate",
         "Pause-as-Capture: Catastrophe Talk That Routes Control Through the Same Institution",
-        "Existential Naming: How Threat Rhetoric Converts Electoral Loss into Extra-Electoral Mandate"
+        "Existential Naming: How Threat Rhetoric Converts Electoral Loss into Extra-Electoral Mandate",
+        "Rage as Non-Firm Product: Purity Rules That Treat Dialogue as Capture Failure",
+        "Damaged-Goods Inventory: How Expired Fads Become Permanent Personal Liability"
       ],
       "keyConcepts": [
         "**Failure-as-warrant**: using a program’s bad outcomes as the reason to expand the program.",
@@ -164,12 +168,19 @@
         "**Channel exit**: “voting is not enough” as the moment forecast-as-warrant leaves elections for force.",
         "**Rhetoric-as-selection**: repeated threat talk does not move the median listener equally; it filters for the subset that operationalizes the claim.",
         "**Person-as-irreversibility**: the opponent is framed as too dangerous to wait out, a personal version of “not too late.”",
-        "**Private-target extension**: including a CEO alongside politicians so the same warrant can attach to firms and speech, not only officeholders."
+        "**Private-target extension**: including a CEO alongside politicians so the same warrant can attach to firms and speech, not only officeholders.",
+        "**Contact-as-spoilage**: a meeting with the rival is framed as product failure, not as information or bargaining.",
+        "**Rage-as-inventory**: hostility must stay “classic” and undiluted; compromise is sold as knockoff that causes withdrawal.",
+        "**Post-win silent capture**: expand or abolish institutions after victory, with an explicit ban on campaigning the change.",
+        "**Boutique feed as factory**: a low-rivalry platform that manufactures the audience for whom non-meeting is identity.",
+        "**Faction co-option without program**: hotter abolitionism is tolerated as fuel if it does not cost the election.",
+        "**Baggage inventory**: stacking expired slogans and bills as a portable liability that outlives the news cycle.",
+        "**Boomlet/median split**: subset enthusiasm (markets, activists) cited only to contrast national unfavorables and “open-minded” targets.",
+        "**Presentist-bias forecast**: today’s coalition passion predicted to become tomorrow’s unforced error, analogized to defund’s odor.",
+        "**Conversion-narrative denial**: true-believer status used to block any claim of learning; no persuasive conversion if none exists.",
+        "**Metric-as-refutation**: later jobs, poll shares, or health stats used to close famine, apartheid, or “help” claims rather than to enlarge a mandate."
       ],
       "structuralTensions": [
-        "Promised cost reduction versus recorded premium, deductible, and enrollment deterioration, with intensification as the official reply.",
-        "Open-entry policy versus later claim that scale forbids enforcement.",
-        "Rent-control threat versus rising asking rents, used to justify more control.",
         "Fare abolition talk versus fare evasion and subsidy demand.",
         "Anti-police posture versus officer flight that delivers the downsizing the posture wanted.",
         "Daily “loss of control” stories versus a pause that does not bind China or other developers, increasing relative loss of control.",
@@ -179,23 +190,37 @@
         "Humanity-scale or democracy-scale safety talk versus a product that licenses individual violence against named civilians.",
         "Claim that the named figures are uniquely existential versus a list that mixes office, punditry, and corporate management without a shared metric.",
         "Official institutions asked to grow after failure versus listeners told those institutions are already illegitimate, so growth happens off-books.",
-        "Preemptive private flight in earlier cases (talent, capital, officers) versus preemptive militant approach in this case—opposite direction, same warrant structure."
+        "Preemptive private flight in earlier cases (talent, capital, officers) versus preemptive militant approach in this case—opposite direction, same warrant structure.",
+        "Dialogue would falsify total-enemy claims, so the strategy must treat talk as the greater threat than losing on policy.",
+        "Court-packing and collaborator talk grow state instruments while the same voices treat current institutions as already illegitimate.",
+        "Boutique scale is smaller than the open rival network, yet is cited as the true public of the coalition.",
+        "Establishment contempt for DSA program versus shared interest in keeping neighbors unmeetable.",
+        "Nazi-collaborator density aimed at sitting-down, not at a completed act of occupation or genocide.",
+        "Inventory of left fads is offered as prudence, yet the same presentist logic could age this article’s Israel and border claims.",
+        "Electoral path only: damage is “cannot win the White House,” not extra-state enforcement of the warrant.",
+        "Literalism praised when AOC said “defunding means defunding,” then used as proof she antagonized the voters she needs.",
+        "Opportunity-cost jobs (HQ2 elsewhere) treat a blocked firm as personal wreckage, not as a competing local theory of development.",
+        "“Woke 1” laugh-off is read as memory-hole attempt, so humor itself becomes evidence of unreformed belief."
       ],
       "openQuestions": [
-        "When is “doubling down after failure” sincere belief, coalition payoff (unions, tenant groups), or conscious crisis utilization?",
-        "How much of the cited price and migration movement is caused by the named policies versus national rates?",
-        "What audience filters make failure feel like proof rather than falsification?",
-        "Does the same failure-as-warrant pattern appear on the right, or is this module only mapping one coalition’s version?",
-        "Is the pause demand primarily tail-risk belief, industrial-policy capture, or anti-frontier politics that would fire on any high-leverage private technology?",
-        "What share of “companies losing control” stories are engineering incidents versus media selection that feeds the warrant?",
         "Do right-coalition versions use the same forecast-as-warrant (e.g., pause on other techs, or emergency powers) or a different controller substitution?",
         "Which audience filters treat geopolitical non-pause as irrelevant rather than as falsification of a humanity-wide halt?",
         "What share of the named “existential” coverage is coordinated coalition payoff versus sincere tail-risk belief?",
         "Does an equivalent right-coalition naming list (different persons, same gun-line) appear at comparable density, or is the selection effect asymmetric in this period?",
         "How should one separate media selection of incidents from the causal effect of the rhetoric Joy describes?",
-        "When the target is a private executive, is the mechanism still demagoguery-for-state or a transfer of the warrant to extra-state enforcement?"
+        "When the target is a private executive, is the mechanism still demagoguery-for-state or a transfer of the warrant to extra-state enforcement?",
+        "Is right-coalition “no talks” talk isomorphic, or does it substitute a different purity object (borders, speech, churches)?",
+        "What share of boutique-feed intensity is platform design versus prior self-sorting of high-rage users?",
+        "When silent capture is announced in advance, does it deter thaw or merely select for listeners already past dialogue?",
+        "Does collaborator rhetoric remain extra-official, or does it migrate into formal party rules on who may meet whom?",
+        "How to separate media amplification of one strategist’s trance from coalition-wide selection for non-meeting?",
+        "Does baggage inventory deter elevation or merely train the subset to treat all recorded maximalism as unforgivable?",
+        "When contrary metrics refute existential naming, does the original coalition update or only the opposition’s file grow?",
+        "Is “damaged goods” isomorphic to purity-of-product, or a different object (electability vs undiluted rage)?",
+        "How much of national negatives is media bombardment versus self-sorting after the original slogans?",
+        "If a conversion narrative were later performed, what evidence would this warrant accept as non-knockoff?"
       ],
-      "narrativeSpine": "The course begins with a single spine: demagoguery as the public conversion of policy failure into a larger mandate. Turley’s 2026 Hill column supplies the first working diagram—immigration scale used to block deportation; ACA premium and deductible spikes used to argue Medicare for all; urban school failure used to demand more budget and less choice; Mamdani’s fare, rent, tax, and policing fights used to show preemptive private responses that then “require” more state; Rosenthal-style tenant enforcement used to transfer control by complaint load; historical IMF-Britain and Lenin’s crisis line used to claim that radicals prefer the wreckage. Known so far: the three-beat sequence (promise, contrary metric, intensification) and the claim that government can grow when a firm would die. Not yet known: motives, counterexamples, or the psychology of the crowd that accepts the inversion.\n\nDemagoguery on this spine is the conversion of failure—recorded or forecast—into a larger mandate: Turley’s diagram (scale blocks deportation; ACA deterioration argues Medicare for all; school failure argues more budget) plus Mamdani-style preemption now extends to Sanders’s AI pause, where cataclysmic anecdotes and “not too late” substitute for a completed metric and Chartrand’s controller-substitution and rival-continuation loops show how the state-as-non-firm reproduces itself by selling halt. Known: three-beat intensification, attrition via exit, irreversibility (ex post and in advance), and prospective crisis utilization. Still unknown: motive mix, national-rate confounders on earlier price/migration claims, and whether the crowd’s inversion is coalition-specific.\n\nThe spine is now conversion of failure—recorded, forecast, or personified—into a larger mandate, official or extra-official: Turley’s intensification after contrary metrics; Mamdani-style preemption and halt-as-product; and Joy’s case in which years of left fear rhetoric naming Trump, Kirk, and Thompson select listeners who treat the ballot as exhausted and the gun as the remaining instrument. Known: three-beat intensification, attrition by exit, irreversibility ex post and in advance, controller substitution, rival continuation, and now existential naming as a filter that moves a subset from votes to force. Still unknown: motive mix, national-rate confounders on earlier economic claims, symmetry across coalitions, and the exact media-versus-rhetoric split in producing the gun-line.",
+      "narrativeSpine": "Demagoguery on this spine converts failure—recorded, forecast, personified, conversational, or inventoried as personal baggage—into a larger or blocking mandate: contrary metrics can intensify an ask or falsify it; halt and purity can be products that refuse competition; named persons can be irreversibility or damaged goods; contact can be spoilage or simply unused; institutions and feeds may select against dialogue or merely re-air a file so a boomlet never becomes a median, while true-belief is treated as the reason no conversion can be retailed.",
       "priorOutputs": [
         {
           "run": 1,
@@ -221,10 +246,40 @@
           "file": "courses/demagoguery-101/run-003.md",
           "source": "https://x.com/TheFP/status/2092681172778123474",
           "at": "2026-08-26T22:31:55.381Z"
+        },
+        {
+          "run": 4,
+          "level": 4,
+          "mode": "course",
+          "moduleTitle": "Rage as Non-Firm Product: Purity Rules That Treat Dialogue as Capture Failure",
+          "file": "courses/demagoguery-101/run-004.md",
+          "source": "https://www-foxnews-com.cdn.ampproject.org/v/s/www.foxnews.com/opinion/jonathan-turley-james-carville-latest-tirade-reveals-lefts-all-consuming-politics-rage.amp?amp_js_v=0.1&amp_gsa=1#webview=1",
+          "at": "2026-08-28T18:06:13.642Z"
+        },
+        {
+          "run": 5,
+          "level": 5,
+          "mode": "course",
+          "moduleTitle": "Damaged-Goods Inventory: How Expired Fads Become Permanent Personal Liability",
+          "file": "courses/demagoguery-101/run-005.md",
+          "source": "https://www-nationalreview-com.cdn.ampproject.org/v/s/www.nationalreview.com/2026/08/aoc-is-damaged-goods/amp/?amp_js_v=0.1&amp_gsa=1#webview=1",
+          "at": "2026-08-28T18:13:34.249Z"
         }
       ],
-      "updatedAt": "2026-08-26T22:31:55.381Z",
-      "techniques": []
+      "updatedAt": "2026-08-28T18:13:34.249Z",
+      "techniques": [
+        "**Purity-of-product metaphor**: drug/brand analogies that recode politics as trafficking in undiluted affect.",
+        "**Collaborator pre-label**: WWII punishment talk attached to present-tense meetings, not to postwar trials.",
+        "**Don’t-run-just-do-it**: conceal constitutional change until control of presidency and both houses.",
+        "**Small-difference laundering**: erase program gaps (abolish Senate vs. lead Senate) under a win-first umbrella.",
+        "**Protected-zone praise**: celebrate a feed whose design removes the voices that would force metric talk.",
+        "**Refresher-for-partisans**: address the in-group as forgetful so the file can be re-aired without new events.",
+        "**Companion-document burn**: cite the GND FAQ and staff “entire-economy” line as the real ask that the electorate already rejected.",
+        "**Spanberger echo**: recycle an in-party post-loss scolding as proof the brand is already toxic inside the coalition.",
+        "**Later-statistic closer**: pair genocide/famine talk with subsequent child obesity figures to recode intent claims as closed eyes.",
+        "**Property-rights jump**: “billionaires shouldn’t exist” glossed as hostility to constitutional protections, not a tax rate."
+      ],
+      "analystPrompt": "You are an analyst of demagoguery as conversion of failure—recorded, forecast, personified, conversational, or inventoried as baggage—into a larger or blocking mandate, official or extra-official.\nDo not write persuasion. Diagnose warrants, conversions, and selection effects in a fresh source.\nWork in isolation from prior chat. Ignore theatrical framing.\n\nLook for:\n- Three-beat intensification after a contrary metric, or metrics used to close a claim.\n- Halt or pause sold as product rather than a competing safer system.\n- Irreversibility in advance, or retrospective loading of a person as too damaged to elevate.\n- Controller substitution and rival continuation after a freeze.\n- Existential naming versus later-statistic refutation of famine, genocide, or catastrophe talk.\n- Channel exit from elections.\n- Rhetoric-as-selection: talk that filters operators, not the median.\n- Contact-as-spoilage or simple non-use of dialogue.\n- Rage-as-inventory and purity rules.\n- Post-win silent capture and boutique feeds.\n- Faction co-option of hotter programs.\n- Baggage inventory: expired fads stacked as standing personal liability.\n- Boomlet/median split: subset enthusiasm contrasted with national unfavorables.\n- Presentist-bias forecast: today’s passion predicted to sour like a prior slogan.\n- Conversion-narrative denial: true-believer status blocking claims of learning.\n\nFor each source, extract: claimed failure or forecast; conversion into mandate or ceiling; who is selected in/out; whether the product must compete or is a freeze/purity/inventory rule; official vs extra-official path; symmetry across coalitions.\nSeparate media selection of incidents from causal claims about rhetoric.\nName only mechanisms that appear in the text.\nIf both diagnosis and how-to-run the pattern are requested, diagnose only."
     },
     "snark-101": {
       "title": "Snark 101",
