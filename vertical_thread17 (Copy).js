@@ -781,23 +781,8 @@ async function runAceStepGen(tags, lyrics, slug, duration, referenceAudio = null
           '--duration', duration.toString()
         ];
         
-        let refAudioName = null;
-        let refAudioMarkdown = '';
-
         if (referenceAudio) {
           runnerArgs.push('--ref-audio', referenceAudio);
-          refAudioName = path.basename(referenceAudio);
-
-          // Ensure the reference file is mirrored into images/ so Astro can serve it
-          const destRefPath = path.join(IMAGES_DIR, refAudioName);
-          try {
-            await fs.copyFile(referenceAudio, destRefPath);
-          } catch (_) {}
-
-          refAudioMarkdown = `\n<div class="reference-audio-embed" style="margin: 0.75rem 0 1.25rem;">
-  <p style="font-size: 0.85em; margin-bottom: 4px; opacity: 0.8;">🎧 <strong>Anchor Reference Audio (${refAudioName}):</strong></p>
-  <audio controls src="/images/${refAudioName}"></audio>
-</div>\n`;
         }
 
         await execFileAsync('bun', runnerArgs);
@@ -813,13 +798,12 @@ async function runAceStepGen(tags, lyrics, slug, duration, referenceAudio = null
           success: true, 
           filename: opusFilename, 
           engine: "ACE-Step 1.5", 
-          refAudioName: refAudioName || 'None (Unconditioned)',
-          refAudioMarkdown: refAudioMarkdown,
+          refAudio: referenceAudio ? path.basename(referenceAudio) : "None (Unconditioned)",
           markdown: `\n<p><audio controls src="/images/${opusFilename}"></audio></p>\n` 
         };
     } catch (e) { 
       console.error(`ACE-Step pipeline execution failed: ${e.message}`); 
-      return { success: false, refAudioName: 'None', refAudioMarkdown: '', markdown: '' }; 
+      return { success: false, refAudio: "None", markdown: '' }; 
     }
     finally { await safeUnlink(stateFile); }
 }
@@ -1626,11 +1610,8 @@ ${audioRes.markdown || '_Generated background score audio embed is unavailable._
 <blockquote>
 <strong>Target Music Metadata Tags:</strong> <code>${safeMusicTagsString}</code><br>
 <strong>Target Score Audio Duration:</strong> ${finalDuration} seconds<br>
-<strong>Reference Anchor Conditioning:</strong> <code>${audioRes.refAudioName || 'None (Unconditioned)'}</code>
+<strong>Reference Anchor Conditioning:</strong> <code>${audioRes.refAudio || 'None (Unconditioned)'}</code>
 </blockquote>
-
-${audioRes.refAudioMarkdown || ''}
-
 <pre>${parsed.musicLyrics || '_No lyrical words configuration found._'}</pre>
 
 ---
@@ -1643,7 +1624,7 @@ ${audioRes.refAudioMarkdown || ''}
 <strong>Video Asset Processing Worker:</strong> <code>${vidRes.engine || 'Skipped/Failed'}</code><br>
 <strong>TTS Spoken Audio Worker:</strong> <code>${ttsRes.engine || 'Skipped/Failed'}</code><br>
 <strong>Soundtrack Audio Score Worker:</strong> <code>${audioRes.engine || 'Skipped/Failed'}</code><br>
-<strong>Soundtrack Reference Anchor:</strong> <code>${audioRes.refAudioName || 'None'}</code>
+<strong>Soundtrack Reference Anchor:</strong> <code>${audioRes.refAudio || 'None'}</code>
 
 <br>
 

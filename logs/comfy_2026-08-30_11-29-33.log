@@ -1,0 +1,48 @@
+╭──────────────────────────────────────────────────────────────────── 🔔 Update Available! ────────────────────────────────────────────────────────────────────╮
+│ ✨ Newer version of comfy-cli is available: 1.19.0.                                                                                                          │
+│ Current version: 1.7.0                                                                                                                                       │
+│ Update by running: 'pip install --upgrade comfy-cli' ⬆                                                                                                       │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
+Launching ComfyUI from: /home/owen/sourceverse/ComfyUI
+
+╭───────────────────────────────────────────────────────────── Traceback (most recent call last) ──────────────────────────────────────────────────────────────╮
+│ /home/owen/.pyenv/versions/3.13.11/lib/python3.13/site-packages/comfy_cli/tracking.py:78 in wrapper                                                          │
+│                                                                                                                                                              │
+│    75 │   │   │   logging.debug(f"Tracking command: {command_name} with arguments: {filtered_k                                                               │
+│    76 │   │   │   track_event(command_name, properties=filtered_kwargs)                                                                                      │
+│    77 │   │   │                                                                                                                                              │
+│ ❱  78 │   │   │   return func(*args, **kwargs)                                                                                                               │
+│    79 │   │                                                                                                                                                  │
+│    80 │   │   return wrapper                                                                                                                                 │
+│    81                                                                                                                                                        │
+│                                                                                                                                                              │
+│ ╭────────────────────────────────────────────── locals ───────────────────────────────────────────────╮                                                      │
+│ │            args = ()                                                                                │                                                      │
+│ │    command_name = 'launch'                                                                          │                                                      │
+│ │ filtered_kwargs = {'extra': ['--preview-method', 'auto'], 'background': False, 'frontend_pr': None} │                                                      │
+│ │          kwargs = {'extra': ['--preview-method', 'auto'], 'background': False, 'frontend_pr': None} │                                                      │
+│ │     sub_command = None                                                                              │                                                      │
+│ ╰─────────────────────────────────────────────────────────────────────────────────────────────────────╯                                                      │
+│                                                                                                                                                              │
+│ /home/owen/.pyenv/versions/3.13.11/lib/python3.13/site-packages/comfy_cli/cmdline.py:472 in launch                                                           │
+│                                                                                                                                                              │
+│   469 │   │   ),                                                                               ╭────────────────── locals ──────────────────╮                │
+│   470 │   ] = None,                                                                            │  background = False                        │                │
+│   471 ):                                                                                       │       extra = ['--preview-method', 'auto'] │                │
+│ ❱ 472 │   launch_command(background, extra, frontend_pr)                                       │ frontend_pr = None                         │                │
+│   473                                                                                          ╰────────────────────────────────────────────╯                │
+│   474                                                                                                                                                        │
+│   475 @app.command("set-default", help="Set default ComfyUI path")                                                                                           │
+│                                                                                                                                                              │
+│ /home/owen/.pyenv/versions/3.13.11/lib/python3.13/site-packages/comfy_cli/command/launch.py:177 in launch                                                    │
+│                                                                                                                                                              │
+│   174 │   # Update the recent workspace                                                        ╭─────────────────────── locals ────────────────────────╮     │
+│   175 │   workspace_manager.set_recent_workspace(resolved_workspace)                           │         background = False                            │     │
+│   176 │                                                                                        │              extra = ['--preview-method', 'auto']     │     │
+│ ❱ 177 │   os.chdir(resolved_workspace)                                                         │        frontend_pr = None                             │     │
+│   178 │   python = resolve_workspace_python(resolved_workspace)                                │ resolved_workspace = '/home/owen/sourceverse/ComfyUI' │     │
+│   179 │                                                                                        ╰───────────────────────────────────────────────────────╯     │
+│   180 │   # Inject manager flags based on config mode                                                                                                        │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+FileNotFoundError: [Errno 2] No such file or directory: '/home/owen/sourceverse/ComfyUI'

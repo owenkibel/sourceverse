@@ -8,26 +8,51 @@ const execFileAsync = util.promisify(execFile);
 const COMFY_URL = "http://127.0.0.1:8188";
 const OUTPUT_DIR = "./images";
 
-// // The extracted US and GB voices
-// const ALL_VOICES = [
-//   "🇺🇸 🚺 Heart ❤️", "🇺🇸 🚺 Bella 🔥", "🇺🇸 🚺 Nicole 🎧", "🇺🇸 🚺 Aoede 🎵", "🇺🇸 🚺 Kore", 
-//   "🇺🇸 🚺 Sarah", "🇺🇸 🚺 Nova ⭐", "🇺🇸 🚺 Sky ☁️", "🇺🇸 🚺 Alloy", "🇺🇸 🚺 Jessica", "🇺🇸 🚺 River 🌊", 
-//   "🇺🇸 🚹 Michael", "🇺🇸 🚹 Fenrir 🐺", "🇺🇸 🚹 Puck 🎭", "🇺🇸 🚹 Echo 🔊", "🇺🇸 🚹 Eric", 
-//   "🇺🇸 🚹 Liam", "🇺🇸 🚹 Onyx 💎", "🇺🇸 🚹 Adam", "🇺🇸 🚹 Santa 🎅", 
-//   "🇬🇧 🚺 Emma", "🇬🇧 🚺 Isabella", "🇬🇧 🚺 Alice 📚", "🇬🇧 🚺 Lily 🌸", 
-//   "🇬🇧 🚹 George", "🇬🇧 🚹 Fable 📖", "🇬🇧 🚹 Lewis", "🇬🇧 🚹 Daniel"
-// ];
-
-// The extracted US, GB, and IN voices
+// 1. Curated English Dialect Pool (US + GB + IN — 32 Voices)This configuration includes all American, British, and Indian voices, ensuring proper English phonemization for metrical verse:  JavaScript// In run_kokoro_tts.js
 const ALL_VOICES = [
-  "🇺🇸 🚺 Heart ❤️", "🇺🇸 🚺 Bella 🔥", "🇺🇸 🚺 Nicole 🎧", "🇺🇸 🚺 Aoede 🎵", "🇺🇸 🚺 Kore", 
-  "🇺🇸 🚺 Sarah", "🇺🇸 🚺 Nova ⭐", "🇺🇸 🚺 Sky ☁️", "🇺🇸 🚺 Alloy", "🇺🇸 🚺 Jessica", "🇺🇸 🚺 River 🌊", 
-  "🇺🇸 🚹 Michael", "🇺🇸 🚹 Fenrir 🐺", "🇺🇸 🚹 Puck 🎭", "🇺🇸 🚹 Echo 🔊", "🇺🇸 🚹 Eric", 
-  "🇺🇸 🚹 Liam", "🇺🇸 🚹 Onyx 💎", "🇺🇸 🚹 Adam", "🇺🇸 🚹 Santa 🎅", 
-  "🇬🇧 🚺 Emma", "🇬🇧 🚺 Isabella", "🇬🇧 🚺 Alice 📚", "🇬🇧 🚺 Lily 🌸", 
+  // 🇺🇸 American English (Female)
+  "🇺🇸 🚺 Heart ❤️", "🇺🇸 🚺 Bella 🔥", "🇺🇸 🚺 Nicole 🎧", "🇺🇸 🚺 Aoede 🎵", 
+  "🇺🇸 🚺 Kore", "🇺🇸 🚺 Sarah", "🇺🇸 🚺 Nova ⭐", "🇺🇸 🚺 Sky ☁️", 
+  "🇺🇸 🚺 Alloy", "🇺🇸 🚺 Jessica", "🇺🇸 🚺 River 🌊",
+
+  // 🇺🇸 American English (Male)
+  "🇺🇸 🚹 Michael", "🇺🇸 🚹 Fenrir 🐺", "🇺🇸 🚹 Puck 🎭", "🇺🇸 🚹 Echo 🔊", 
+  "🇺🇸 🚹 Eric", "🇺🇸 🚹 Liam", "🇺🇸 🚹 Onyx 💎", "🇺🇸 🚹 Adam", "🇺🇸 🚹 Santa 🎅",
+
+  // 🇬🇧 British English (Female & Male)
+  "🇬🇧 🚺 Emma", "🇬🇧 🚺 Isabella", "🇬🇧 🚺 Alice 📚", "🇬🇧 🚺 Lily 🌸",
   "🇬🇧 🚹 George", "🇬🇧 🚹 Fable 📖", "🇬🇧 🚹 Lewis", "🇬🇧 🚹 Daniel",
-  "🇮🇳 🚺 Alpha α", "🇮🇳 🚺 Beta β", "🇮🇳 🚹 Omega Ω", "🇮🇳 🚹 Psi Ψ"
+
+  // 🇮🇳 Indian English (Female & Male)
+  "🇮🇳 🚺 Alpha α", "🇮🇳 🚺 Beta β", 
+  "🇮🇳 🚹 Omega Ω", "🇮🇳 🚹 Psi Ψ"
 ];
+// 2. High-Clarity / Metrical Cadence Subset (16 Voices)If you want to filter out indistinct, stylized, or low-intelligibility voices (e.g., Santa 🎅, Echo 🔊, Alloy), this focused list provides the cleanest pronunciation and consistent stanza pacing:  JavaScriptconst ALL_VOICES = [
+//   // Crisp American
+//   "🇺🇸 🚺 Heart ❤️", "🇺🇸 🚺 Bella 🔥", "🇺🇸 🚺 Nicole 🎧", "🇺🇸 🚺 Sarah",
+//   "🇺🇸 🚹 Michael", "🇺🇸 🚹 Fenrir 🐺", "🇺🇸 🚹 Liam", "🇺🇸 🚹 Adam",
+
+//   // Formal British (Optimal for Ballads and Dramatic Metrical Verse)
+//   "🇬🇧 🚺 Isabella", "🇬🇧 🚺 Alice 📚", "🇬🇧 🚺 Emma",
+//   "🇬🇧 🚹 George", "🇬🇧 🚹 Fable 📖", "🇬🇧 🚹 Lewis",
+
+//   // Indian
+//   "🇮🇳 🚺 Beta β",
+//   "🇮🇳 🚹 Omega Ω"
+// ];
+// 3. Full Global Array (All 41 Registered Strings)Kokoro handles non-English voices (French, Spanish, Italian, Brazilian) reading English by phonetically mapping them to accented cadences:JavaScriptconst ALL_VOICES = [
+//   "🇺🇸 🚺 Heart ❤️", "🇺🇸 🚺 Bella 🔥", "🇺🇸 🚺 Nicole 🎧", "🇺🇸 🚺 Aoede 🎵", "🇺🇸 🚺 Kore",
+//   "🇺🇸 🚺 Sarah", "🇺🇸 🚺 Nova ⭐", "🇺🇸 🚺 Sky ☁️", "🇺🇸 🚺 Alloy", "🇺🇸 🚺 Jessica",
+//   "🇺🇸 🚺 River 🌊", "🇺🇸 🚹 Michael", "🇺🇸 🚹 Fenrir 🐺", "🇺🇸 🚹 Puck 🎭", "🇺🇸 🚹 Echo 🔊",
+//   "🇺🇸 🚹 Eric", "🇺🇸 🚹 Liam", "🇺🇸 🚹 Onyx 💎", "🇺🇸 🚹 Adam", "🇺🇸 🚹 Santa 🎅",
+//   "🇬🇧 🚺 Emma", "🇬🇧 🚺 Isabella", "🇬🇧 🚺 Alice 📚", "🇬🇧 🚺 Lily 🌸",
+//   "🇬🇧 🚹 George", "🇬🇧 🚹 Fable 📖", "🇬🇧 🚹 Lewis", "🇬🇧 🚹 Daniel",
+//   "🇪🇸 🚺 Dora", "🇪🇸 🚹 Alex", "🇪🇸 🚹 Santa 🎅",
+//   "🇫🇷 🚺 Siwis",
+//   "🇮🇳 🚺 Alpha α", "🇮🇳 🚺 Beta β", "🇮🇳 🚹 Omega Ω", "🇮🇳 🚹 Psi Ψ",
+//   "🇮🇹 🚺 Sara", "🇮🇹 🚹 Nicola",
+//   "🇧🇷 🚺 Dora", "🇧🇷 🚹 Alex", "🇧🇷 🚹 Santa 🎅"
+// ];
 
 let lastVoice = "";
 

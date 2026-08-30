@@ -1,5 +1,5 @@
 /**
- * Chroma Drift — High-Performance Stereo Spectrogram Player (Astro Optimized)
+ * Chroma Drift — drop-in stereo spectrogram player.
  * Finds every <audio> tag. Spectrogram starts off; toggle vertical / horizontal.
  * Same-origin audio required (Web Audio cannot analyse cross-origin files).
  *
@@ -8,14 +8,14 @@
  */
 (() => {
   if (typeof window === "undefined") return;
-  if (window.__chromaDriftVersion === 4) return;
+  if (window.__chromaDriftVersion === 3) return;
   if (window.__chromaDriftVersion) {
     document.querySelectorAll("[data-chroma-player]").forEach((el) => el.remove());
     document.querySelectorAll(".cd-audio-host").forEach((el) =>
       el.classList.remove("cd-audio-host"),
     );
   }
-  window.__chromaDriftVersion = 4;
+  window.__chromaDriftVersion = 3;
   window.__chromaDriftBooted = true;
 
   const NOTE_MIN = 36;
@@ -34,23 +34,22 @@
   const LAYOUT_VERT = 1;
   const LAYOUT_HORIZ = 2;
 
-  // Richer, perceptually balanced 12-tone pitch-class chromatic palette
   const CHROMA = [
-    [255, 48, 88],   // C  (Vivid Crimson)
-    [255, 105, 24],  // C# (Bright Coral/Orange)
-    [255, 200, 28],  // D  (Amber Gold)
-    [178, 245, 24],  // D# (Lime Chartreuse)
-    [36, 240, 116],  // E  (Emerald)
-    [0, 235, 198],   // F  (Turquoise)
-    [0, 208, 255],   // F# (Electric Sky)
-    [54, 144, 255],  // G  (Cobalt Blue)
-    [128, 92, 255],  // G# (Violet)
-    [202, 74, 255],  // A  (Electric Purple)
-    [255, 50, 218],  // A# (Fuchsia Magenta)
-    [255, 68, 144],  // B  (Deep Rose)
+    [255, 52, 90],
+    [255, 112, 28],
+    [255, 204, 32],
+    [186, 242, 28],
+    [40, 236, 120],
+    [0, 230, 196],
+    [0, 204, 255],
+    [56, 148, 255],
+    [124, 96, 255],
+    [196, 78, 255],
+    [255, 56, 214],
+    [255, 72, 148],
   ];
-  const COL_L = [61, 255, 176]; // Mint Left
-  const COL_R = [61, 176, 255]; // Azure Right
+  const COL_L = [61, 255, 176];
+  const COL_R = [61, 176, 255];
 
   const CSS = `
 .cd-player{margin:1.75rem 0 0;background:#08080a;border-radius:16px 16px 0 0;box-shadow:0 0 0 1px rgba(255,255,255,.08);overflow:hidden;color:#ecece8}
@@ -218,20 +217,18 @@
       const f0 = 440 * 2 ** ((midi - 69) / 12);
       const mag = sampleSpectrum(spectrum, sr, f0) * Math.sqrt(f0 / 220);
       const db = 20 * Math.log10(mag + 1e-12);
-      // Enhanced dynamic thresholding curve
-      out[b] = Math.min(1, Math.max(0, (db + 76) / 60)) ** 1.1;
+      out[b] = Math.min(1, Math.max(0, (db + 78) / 62)) ** 1.2;
     }
   }
 
   function writePix(p, w, x, y, col, v) {
-    if (v < 0.015) return;
-    // Hot incandescent core for vocal and melodic peaks
+    if (v < 0.018) return;
     const hot = v * v * v;
     const i = (y * w + x) << 2;
-    p[i]     = Math.min(255, col[0] * v + 255 * hot);
+    p[i] = Math.min(255, col[0] * v + 255 * hot);
     p[i + 1] = Math.min(255, col[1] * v + 255 * hot);
     p[i + 2] = Math.min(255, col[2] * v + 255 * hot);
-    p[i + 3] = Math.min(255, v * 1.55 * 255);
+    p[i + 3] = Math.min(255, v * 1.45 * 255);
   }
 
   function chromaOfBin(b) {
@@ -305,7 +302,7 @@
   }
 
   function getCtx() {
-    if (!sharedCtx) sharedCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (!sharedCtx) sharedCtx = new AudioContext();
     return sharedCtx;
   }
 
@@ -594,9 +591,7 @@
     host.parentNode.insertBefore(player, host);
     host.classList.add("cd-audio-host");
 
-    // FIXED: willReadFrequently set to true to eliminate browser readback overhead
-    const ctx2d = canvas.getContext("2d", { alpha: false, willReadFrequently: true });
-    
+    const ctx2d = canvas.getContext("2d", { alpha: false });
     const state = {
       player,
       canvas,
@@ -732,40 +727,30 @@
         requestAnimationFrame(paint);
       });
     });
-
     panBtn.addEventListener("click", () => {
       state.pan = !state.pan;
       syncLayoutButtons();
       paint();
     });
-
     speedInput.addEventListener("input", () => {
       state.windowSec = Number(speedInput.value);
       speedVal.textContent = `${state.windowSec.toFixed(1)}s`;
       paint();
     });
 
-    // Mobile & Desktop Safe AudioContext unlock and seek listener
     canvas.addEventListener("pointerdown", (e) => {
-      if (sharedCtx && sharedCtx.state === "suspended") {
-        sharedCtx.resume().catch(() => {});
-      }
       canvas.setPointerCapture(e.pointerId);
       seekFromEvent(e);
     });
-
     canvas.addEventListener("pointermove", (e) => {
       if (e.buttons) seekFromEvent(e);
     });
 
     audio.addEventListener("play", () => {
-      if (sharedCtx && sharedCtx.state === "suspended") {
-        sharedCtx.resume().catch(() => {});
-      }
+      getCtx().resume?.();
       if (state.layout !== LAYOUT_OFF && !state.chroma) attachLive(audio, state);
       if (state.layout !== LAYOUT_OFF && !state.raf) loop();
     });
-
     audio.addEventListener("pause", () => paint());
     audio.addEventListener("seeked", () => paint());
     audio.addEventListener("timeupdate", () => {
@@ -794,18 +779,7 @@
       }
     });
     mo.observe(document.documentElement, { childList: true, subtree: true });
-    
-    // Astro View Transitions lifecycle hooks
     document.addEventListener("astro:page-load", () => enhanceAll(document));
-    document.addEventListener("astro:before-swap", () => {
-      document.querySelectorAll("audio").forEach((el) => {
-        const st = players.get(el);
-        if (st && st.raf) {
-          cancelAnimationFrame(st.raf);
-          st.raf = 0;
-        }
-      });
-    });
   }
 
   function scheduleEnhance() {
