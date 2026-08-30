@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
-import os from 'os';
-import { execSync } from 'child_process';
+import os from 'os';                 // <-- ADD THIS
+import { execSync } from 'child_process'; // <-- ADD THIS
 
 const COMFY_URL = "http://127.0.0.1:8188";
 const OUTPUT_DIR = "./images";
@@ -29,11 +29,12 @@ const CLASSICAL_VOICES = [
     }
 ];
 
-function buildPayload(styleTag, lyrics, seed, duration, selectedVoice, refAudioFilename = null) {
+function buildPayload(styleTag, lyrics, seed, duration, selectedVoice, refAudioPath = null) {
     const timeStamp = new Date().toISOString().replace(/[-:T.]/g, '').slice(0, 14); 
     const safeDuration = Math.ceil(duration / 16) * 16; 
     const cleanStyle = styleTag.split(',')[0].replace(/\[|\]/g, '').trim().substring(0, 50);
 
+    // Verified 14-key natural scale pool
     const KEY_SCALES = [
         "C major", "D major", "E major", "F major", "G major", "A major", "B major",
         "C minor", "D minor", "E minor", "F minor", "G minor", "A minor", "B minor"
@@ -61,29 +62,29 @@ function buildPayload(styleTag, lyrics, seed, duration, selectedVoice, refAudioF
               "tags": ["110", 0], 
               "lyrics": lyrics,
               "seed": seed,
-              "bpm": dynamicBpm,
+              "bpm": dynamicBpm,            // Dynamic tempo (105-135 BPM)
               "duration": safeDuration,
               "timesignature": "4",
               "language": "en",
-              "keyscale": selectedKey,
+              "keyscale": selectedKey,      // Dynamic key scale
               "generate_audio_codes": true,
-              "cfg_scale": 2.0,
-              "temperature": 0.85,
+              "cfg_scale": 2.0,             // Restored for solid lyric adherence
+              "temperature": 0.85,          // Restored to stable vocal-code token generation
               "top_p": 0.9,
-              "top_k": 0,
+              "top_k": 0,                   // Disabled to prevent code hallucination
               "min_p": 0,
               "clip": ["105", 0] 
             },
             "class_type": "TextEncodeAceStepAudio1.5"
-        },
-        "104": {
+          },
+          "104": {
             "inputs": {
               "unet_name": "acestep_v1.5_xl_turbo_fp8_e4m3fn.safetensors",
               "weight_dtype": "default"
             },
             "class_type": "UNETLoader"
-        },
-        "105": {
+          },
+          "105": {
             "inputs": {
               "clip_name1": "qwen_0.6b_ace15.safetensors",
               "clip_name2": "qwen_4b_ace15.safetensors",
@@ -91,32 +92,32 @@ function buildPayload(styleTag, lyrics, seed, duration, selectedVoice, refAudioF
               "device": "default"
             },
             "class_type": "DualCLIPLoader"
-        },
-        "106": {
+          },
+          "106": {
             "inputs": { "vae_name": "ace_1.5_vae.safetensors" },
             "class_type": "VAELoader"
-        },
-        "109": {
+          },
+          "109": {
             "inputs": {
               "filename_prefix": `ACE_Step_4B_${selectedVoice.name.replace(/\s+/g, '_')}_${timeStamp}`, 
               "audio": ["18", 0]
             },
             "class_type": "SaveAudio"
-        },
-        "110": {
+          },
+          "110": {
             "inputs": {
               "style": cleanStyle, 
               "extra": `${selectedVoice.tags}, masterfully mixed, high fidelity, pristine acoustic room spacing, wide stereo image, no modern pop processing`, 
               "voice_style": selectedVoice.gender 
             },
             "class_type": "AceStepPromptGen"
-        }
+          }
     };
 
-    if (refAudioFilename) {
-        console.log(`🔗 Injecting Audio Reference Track Node (LoadAudio): ${refAudioFilename}`);
+    if (refAudioPath && fs.existsSync(refAudioPath)) {
+        console.log(`🔗 Injecting Audio Reference Track Nodes: ${refAudioPath}`);
         nodes["120"] = {
-            "inputs": { "audio": refAudioFilename },
+            "inputs": { "audio": refAudioPath },
             "class_type": "LoadAudio"
         };
         nodes["121"] = {
@@ -131,7 +132,7 @@ function buildPayload(styleTag, lyrics, seed, duration, selectedVoice, refAudioF
               "cfg": 2.0, 
               "sampler_name": "euler",
               "scheduler": "simple",
-              "denoise": 0.68,
+              "denoise": 0.68,               // Balanced denoise for reference tracks
               "use_apg": true, 
               "use_cfg_rescale": false,
               "cfg_rescale_multiplier": 0.25,
@@ -141,9 +142,9 @@ function buildPayload(styleTag, lyrics, seed, duration, selectedVoice, refAudioF
               "noise_ema": 0.08,
               "noise_norm_threshold": 2,
               "anti_autotune_strength": 0.15, 
-              "frequency_damping": 0.18,
+              "frequency_damping": 0.18,      // Restored for clean harmonic resonance
               "temporal_smoothing": 0.10,     
-              "beat_stability": 0.50,
+              "beat_stability": 0.50,        // Restored for steady vocal rhythm
               "enable_quality_check": false,
               "model": ["78", 0],
               "positive": ["94", 0],
@@ -174,9 +175,9 @@ function buildPayload(styleTag, lyrics, seed, duration, selectedVoice, refAudioF
               "noise_ema": 0.08,
               "noise_norm_threshold": 2,
               "anti_autotune_strength": 0.15,
-              "frequency_damping": 0.18,
+              "frequency_damping": 0.18,      // Restored for clean harmonic resonance
               "temporal_smoothing": 0.10,     
-              "beat_stability": 0.50,
+              "beat_stability": 0.50,        // Restored for steady vocal rhythm
               "enable_quality_check": false,
               "model": ["78", 0],
               "positive": ["94", 0],
@@ -191,8 +192,8 @@ function buildPayload(styleTag, lyrics, seed, duration, selectedVoice, refAudioF
 }
 
 async function main() {
+    // 1. Declare the variable here at the top level of the function scope
     let conformedRefPath = null; 
-    let stagedFilename = null;
 
     try {
         console.log("--- Starting ACE-Step 4B Generation ---");
@@ -216,64 +217,44 @@ async function main() {
         const seed = Math.floor(Math.random() * 1000000000);
 
         // =========================================================================
-        // AUDIO CONFORMANCE & COMFYUI INPUT STAGING
+        // AUDIO CONFORMANCE INTERCEPTOR
         // =========================================================================
         const safeDuration = Math.ceil(duration / 16) * 16;
+        let finalRefPath = refAudioPath;
         
+        // 2. REMOVE the 'let' keyword from here so it updates the top-scoped variable
         if (refAudioPath && fs.existsSync(refAudioPath)) {
-            conformedRefPath = path.join(os.tmpdir(), `acestep_ref_${Date.now()}.flac`);
-            console.log(`⚡ Conforming reference track to exactly ${safeDuration}s at 48kHz stereo...`);
-            
+            conformedRefPath = path.join(os.tmpdir(), `acestep_conformed_${Date.now()}.flac`);
+            console.log(`⚡ Conforming reference track to exactly ${safeDuration}s at 48kHz...`);
             try {
-                // Pad with silence if short, truncate if long, force 48kHz stereo FLAC
+                // Pad with silence if short, truncate if long, force 48kHz stereo
                 execSync(`ffmpeg -y -i "${refAudioPath}" -ar 48000 -ac 2 -af "apad" -t ${safeDuration} "${conformedRefPath}"`, { stdio: 'ignore' });
-                
-                // Upload conformed file directly to ComfyUI input directory via Comfy API
-                console.log(`📡 Staging reference audio into ComfyUI input store...`);
-                const fileBuffer = fs.readFileSync(conformedRefPath);
-                const formData = new FormData();
-                formData.append('image', new Blob([fileBuffer]), path.basename(conformedRefPath));
-                formData.append('overwrite', 'true');
-
-                const uploadRes = await fetch(`${COMFY_URL}/upload/image`, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (uploadRes.ok) {
-                    const uploadData = await uploadRes.json();
-                    stagedFilename = uploadData.name || path.basename(conformedRefPath);
-                    console.log(`✅ Staged reference audio in ComfyUI: "${stagedFilename}"`);
-                } else {
-                    console.warn(`⚠️ ComfyUI upload endpoint returned status ${uploadRes.status}. Using raw filename fallback.`);
-                    stagedFilename = path.basename(conformedRefPath);
-                }
+                finalRefPath = conformedRefPath;
             } catch (err) {
-                console.error(`⚠️ Conformance/staging failed: ${err.message}. Running unconditioned.`);
-                stagedFilename = null;
+                console.error(`⚠️ Conformance failed: ${err.message}. Falling back to raw file.`);
             }
         }
 
+// =========================================================================
+        // ROBUST VOCAL PROFILE ROUTING (Word-boundary safe)
         // =========================================================================
-        // VOCAL PROFILE ROUTING
-        // =========================================================================
-        let selectedVoice = CLASSICAL_VOICES[1]; // Fallback: Mezzo-Soprano
+        let selectedVoice = CLASSICAL_VOICES[1]; // Default fallback: Mezzo-Soprano (natural_female)
         const lowerTags = tags.toLowerCase();
 
         if (lowerTags.includes('baritone') || lowerTags.includes('bass')) {
-            selectedVoice = CLASSICAL_VOICES[0];
+            selectedVoice = CLASSICAL_VOICES[0]; // Bass-Baritone (natural_male)
         } else if (lowerTags.includes('dramatic soprano')) {
-            selectedVoice = CLASSICAL_VOICES[3];
+            selectedVoice = CLASSICAL_VOICES[3]; // Dramatic Soprano (natural_female)
         } else if (lowerTags.includes('mezzo') || lowerTags.includes('soprano') || (/\bfemale\b/.test(lowerTags) && !/\bmale\b/.test(lowerTags))) {
-            selectedVoice = CLASSICAL_VOICES[1];
+            selectedVoice = CLASSICAL_VOICES[1]; // Mezzo-Soprano (natural_female)
         } else if (lowerTags.includes('tenor') || /\bmale\b/.test(lowerTags)) {
-            selectedVoice = CLASSICAL_VOICES[2];
+            selectedVoice = CLASSICAL_VOICES[2]; // Lyric Tenor (natural_male)
         }
 
         console.log(`🎭 Selected Vocal Profile: ${selectedVoice.name} -> Routing as [${selectedVoice.gender}]`);
 
-        // Pass the staged filename to Node 120
-        const payload = buildPayload(tags, lyrics, seed, duration, selectedVoice, stagedFilename);
+        // CHANGED: Pass finalRefPath instead of refAudioPath
+        const payload = buildPayload(tags, lyrics, seed, duration, selectedVoice, finalRefPath);
         
         const res = await fetch(`${COMFY_URL}/prompt`, { 
             method: 'POST', 
@@ -324,14 +305,14 @@ async function main() {
             }
             process.stdout.write(".");
         }
-
-        if (!success) throw new Error("Timeout: ACE-Step 4B generation took too long.");
+if (!success) throw new Error("Timeout: ACE-Step 4B generation took too long.");
         fs.writeFileSync(stateFilePath, JSON.stringify(outputInfo, null, 2));
 
     } catch (e) {
         console.error(`\n❌ Run Failed: ${e.message}`);
         process.exit(1);
     } finally {
+        // CLEANUP: Wipe the temporary conformed flac file if it exists
         if (conformedRefPath && fs.existsSync(conformedRefPath)) {
             try { fs.unlinkSync(conformedRefPath); } catch (_) {}
         }

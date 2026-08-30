@@ -46,9 +46,53 @@ const EXCLUDED_STYLES = [
   "Sertanejo Universitário", "Turreo RKT", "Vallenato", "Xote", "Zamba", "Zouk", "Zouk Bass"
 ];
 
-// const APPROVED_STYLES_STRING = RAW_ACE_STYLES
-//     .filter(style => !EXCLUDED_STYLES.includes(style))
-//     .join(', ');
+const DEFAULT_REF_POOL_DIR = path.join(__dirname, 'ref_audio_pool');
+
+async function resolveReferenceAudio(refArgValue) {
+  let targetPoolDir = DEFAULT_REF_POOL_DIR;
+
+  if (refArgValue && refArgValue !== 'true' && refArgValue !== 'pool' && refArgValue !== 'auto') {
+    try {
+      const stats = await fs.stat(refArgValue);
+      if (stats.isFile()) {
+        console.log(`\n🎧 [Ref-Audio] Explicit anchor audio track locked:`);
+        console.log(`   👉 File: ${path.basename(refArgValue)} (${refArgValue})\n`);
+        return refArgValue;
+      }
+      if (stats.isDirectory()) {
+        targetPoolDir = refArgValue;
+        console.log(`🎧 [Ref-Audio Pool] Pointing to custom directory: ${targetPoolDir}`);
+      }
+    } catch {
+      console.warn(`⚠️ Path not found (${refArgValue}). Falling back to default pool.`);
+    }
+  }
+
+  try {
+    await fs.mkdir(targetPoolDir, { recursive: true });
+    const entries = await fs.readdir(targetPoolDir);
+    const audioFiles = entries.filter(f => /\.(opus|mp4|wav|flac|mp3)$/i.test(f));
+
+    if (audioFiles.length > 0) {
+      const chosen = audioFiles[Math.floor(Math.random() * audioFiles.length)];
+      const chosenPath = path.join(targetPoolDir, chosen);
+      
+      console.log(`\n======================================================================`);
+      console.log(`🎧 [REF-AUDIO POOL] ANCHOR REFERENCE CONDITIONING SELECTED:`);
+      console.log(`   👉 Selected File : ${chosen}`);
+      console.log(`   👉 Pool Directory: ${targetPoolDir}`);
+      console.log(`======================================================================\n`);
+
+      return chosenPath;
+    } else {
+      console.log(`\nℹ️ [Ref-Audio Pool] Directory is empty (${targetPoolDir}). Running unconditioned.\n`);
+    }
+  } catch (err) {
+    console.warn(`⚠️ Error reading ref-audio pool: ${err.message}`);
+  }
+
+  return null;
+}
 
 // REPLACE WITH THIS:
 function getShuffledAceStyles() {
@@ -95,9 +139,11 @@ if (ideaArg) {
   customIdea = ideaArg.split('=').slice(1).join('=').trim();
 }
 
-let refAudioPath = null;
-const refArg = args.find(a => a.startsWith('--ref-audio='));
-if (refArg) refAudioPath = refArg.split('=')[1];
+// Matches -ref-audio, --ref-audio, -ref-audio=..., --ref-audio=...
+const rawRefArg = args.find(a => /^--?ref-audio(=|$)/i.test(a));
+const refAudioSetting = rawRefArg 
+  ? (rawRefArg.includes('=') ? rawRefArg.split('=').slice(1).join('=').trim() : 'pool')
+  : null;
 
 let actualModelUsed = "";
 let generationDuration = 128; 
@@ -740,7 +786,6 @@ async function runAceStepGen(tags, lyrics, slug, duration, referenceAudio = null
         }
 
         await execFileAsync('bun', runnerArgs);
-        // ... remainder of standard execution block
         const state = JSON.parse(await fs.readFile(stateFile, 'utf8'));
         const rawFlacPath = state.savedFilePath;
         const opusFilename = `acestep_${slug}_${Date.now()}.opus`;
@@ -749,8 +794,17 @@ async function runAceStepGen(tags, lyrics, slug, duration, referenceAudio = null
         await execFileAsync('ffmpeg', ['-y', '-i', rawFlacPath, '-af', `afade=t=out:st=${Math.max(0, duration - 5)}:d=5`, '-c:a', 'libopus', '-b:a', '128k', opusPath]);
         
         await safeUnlink(rawFlacPath);
-        return { success: true, filename: opusFilename, engine: "ACE-Step 1.5", markdown: `\n<p><audio controls src="/images/${opusFilename}"></audio></p>\n` };
-    } catch (e) { console.error(`ACE-Step pipeline execution failed: ${e.message}`); return { success: false, markdown: '' }; }
+        return { 
+          success: true, 
+          filename: opusFilename, 
+          engine: "ACE-Step 1.5", 
+          refAudio: referenceAudio ? path.basename(referenceAudio) : "None (Unconditioned)",
+          markdown: `\n<p><audio controls src="/images/${opusFilename}"></audio></p>\n` 
+        };
+    } catch (e) { 
+      console.error(`ACE-Step pipeline execution failed: ${e.message}`); 
+      return { success: false, refAudio: "None", markdown: '' }; 
+    }
     finally { await safeUnlink(stateFile); }
 }
 
@@ -1353,11 +1407,13 @@ if (!useGeminiImage) await freeComfyVRAM();
     const ttsRes = await runPoetryTTS(parsed.verse);
     await freeComfyVRAM();
 
-    const finalDuration = parseInt(parsed.musicDuration, 10) || generationDuration;
-// Ensure reference audio tracks are passed directly down to the worker execution layer
+// In main() loop:
+const activeRefAudio = refAudioSetting ? await resolveReferenceAudio(refAudioSetting) : null;
+
+const finalDuration = parseInt(parsed.musicDuration, 10) || generationDuration;
 let audioRes = useGeminiAudio
   ? await runGeminiAudio(safeMusicTagsString, parsed.musicLyrics, slugify(title))
-  : await runAceStepGen(safeMusicTagsString, parsed.musicLyrics, slugify(title), finalDuration, refAudioPath);
+  : await runAceStepGen(safeMusicTagsString, parsed.musicLyrics, slugify(title), finalDuration, activeRefAudio);
     if (!useGeminiAudio) await freeComfyVRAM();
 
 // ==========================================
@@ -1553,7 +1609,8 @@ ${audioRes.markdown || '_Generated background score audio embed is unavailable._
 ##### Musical Score Vocal & Instrument Prompt Mapping
 <blockquote>
 <strong>Target Music Metadata Tags:</strong> <code>${safeMusicTagsString}</code><br>
-<strong>Target Score Audio Duration:</strong> ${finalDuration} seconds
+<strong>Target Score Audio Duration:</strong> ${finalDuration} seconds<br>
+<strong>Reference Anchor Conditioning:</strong> <code>${audioRes.refAudio || 'None (Unconditioned)'}</code>
 </blockquote>
 <pre>${parsed.musicLyrics || '_No lyrical words configuration found._'}</pre>
 
@@ -1566,7 +1623,8 @@ ${audioRes.markdown || '_Generated background score audio embed is unavailable._
 <strong>Image Asset Processing Worker:</strong> <code>${imgRes.engine || 'Skipped/Failed'}</code><br>
 <strong>Video Asset Processing Worker:</strong> <code>${vidRes.engine || 'Skipped/Failed'}</code><br>
 <strong>TTS Spoken Audio Worker:</strong> <code>${ttsRes.engine || 'Skipped/Failed'}</code><br>
-<strong>Soundtrack Audio Score Worker:</strong> <code>${audioRes.engine || 'Skipped/Failed'}</code>
+<strong>Soundtrack Audio Score Worker:</strong> <code>${audioRes.engine || 'Skipped/Failed'}</code><br>
+<strong>Soundtrack Reference Anchor:</strong> <code>${audioRes.refAudio || 'None'}</code>
 
 <br>
 
