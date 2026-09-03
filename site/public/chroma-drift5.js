@@ -18,14 +18,6 @@
   window.__chromaDriftVersion = 6;
   window.__chromaDriftBooted = true;
 
-  // --- BENCHMARK CONFIGURATION ---
-  // Set to false for GPU Hardware Acceleration (Recommended).
-  // Set to true to force CPU Software Rasterization (willReadFrequently).
-  const FORCE_CPU_READBACK = true; 
-
-  // Set export FPS (30 for stability & lower CPU load; 60 for high-refresh smoothness)
-  const EXPORT_FPS = 30;
-
   const NOTE_MIN = 36;
   const NOTE_MAX = 96;
   const BINS_PER_SEMI = 8;
@@ -663,8 +655,8 @@
     host.parentNode.insertBefore(player, host);
     host.classList.add("cd-audio-host");
 
-// Production: Keeps readbacks fast and silences the DevTools warning
-const ctx2d = canvas.getContext("2d", { alpha: false, willReadFrequently: true });
+    // Restored GPU hardware acceleration (removed willReadFrequently)
+    const ctx2d = canvas.getContext("2d", { alpha: false });
     
     const state = {
       player,
@@ -782,9 +774,6 @@ const ctx2d = canvas.getContext("2d", { alpha: false, willReadFrequently: true }
       return state.smoothTime;
     }
 
-   let frameCount = 0;
-    let totalDrawTime = 0;
-
     function paint() {
       if (state.layout === LAYOUT_OFF) return;
       const didResize = resize();
@@ -792,9 +781,7 @@ const ctx2d = canvas.getContext("2d", { alpha: false, willReadFrequently: true }
       const h = canvas.height;
       if (w < 4 || h < 4) return;
       const g = state.ctx;
-
-      const t0 = performance.now(); // Benchmark start
-
+      
       const t = getSmoothTime();
       const spec = state.pan ? state.panSpec : state.chroma;
 
@@ -821,7 +808,6 @@ const ctx2d = canvas.getContext("2d", { alpha: false, willReadFrequently: true }
         g.fillRect(0, 0, w, h);
         drawOverlay(g, w, h, state.layout);
       }
-
     }
 
     function loop() {
@@ -926,8 +912,7 @@ const ctx2d = canvas.getContext("2d", { alpha: false, willReadFrequently: true }
       }
 
       // Synchronous frame capture directly linked to paint() execution
-// Use EXPORT_FPS variable (30 or 60)
-      const canvasStream = canvas.captureStream(EXPORT_FPS);
+      const canvasStream = canvas.captureStream();
       const combinedStream = new MediaStream([
         ...canvasStream.getVideoTracks(),
         ...dest.stream.getAudioTracks()

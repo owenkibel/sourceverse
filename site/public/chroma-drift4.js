@@ -8,23 +8,15 @@
  */
 (() => {
   if (typeof window === "undefined") return;
-  if (window.__chromaDriftVersion === 6) return;
+  if (window.__chromaDriftVersion === 5) return;
   if (window.__chromaDriftVersion) {
     document.querySelectorAll("[data-chroma-player]").forEach((el) => el.remove());
     document.querySelectorAll(".cd-audio-host").forEach((el) =>
       el.classList.remove("cd-audio-host"),
     );
   }
-  window.__chromaDriftVersion = 6;
+  window.__chromaDriftVersion = 5;
   window.__chromaDriftBooted = true;
-
-  // --- BENCHMARK CONFIGURATION ---
-  // Set to false for GPU Hardware Acceleration (Recommended).
-  // Set to true to force CPU Software Rasterization (willReadFrequently).
-  const FORCE_CPU_READBACK = true; 
-
-  // Set export FPS (30 for stability & lower CPU load; 60 for high-refresh smoothness)
-  const EXPORT_FPS = 30;
 
   const NOTE_MIN = 36;
   const NOTE_MAX = 96;
@@ -326,16 +318,17 @@
       analyserL.fftSize = FFT_SIZE;
       analyserR.fftSize = FFT_SIZE;
       analyserL.smoothingTimeConstant = 0.38;
-      analyserR.smoothingTimeConstant = 0.38;
+      analyserL.smoothingTimeConstant = 0.38;
       analyserL.minDecibels = -88;
       analyserL.minDecibels = -88;
       analyserL.maxDecibels = -24;
-      analyserR.maxDecibels = -24;
+      analyserL.maxDecibels = -24;
       src.connect(split);
       src.connect(ctx.destination);
       split.connect(analyserL, 0);
       split.connect(analyserR, 1);
       
+      // CRITICAL FIX: Stash direct stereo source on state for MediaRecorder tap
       state.src = src;
 
       state.live = {
@@ -366,7 +359,7 @@
     const gap = 4;
     const usable = half - gap;
 
-    // 1. Center Seam
+    // 1. Center Seam (Subtle line separating Stereo Left and Right channels)
     ctx.strokeStyle = "rgba(236, 236, 232, 0.14)";
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -379,7 +372,7 @@
     }
     ctx.stroke();
 
-    // 2. Playhead Indicator
+    // 2. Playhead Indicator (Exact synchronization line across the audio spectrum)
     ctx.shadowColor = "rgba(236, 236, 232, 0.45)";
     ctx.shadowBlur = 8;
     ctx.strokeStyle = "rgba(236, 236, 232, 0.95)";
@@ -395,9 +388,9 @@
       ctx.lineTo(w, playY);
     }
     ctx.stroke();
-    ctx.shadowBlur = 0;
+    ctx.shadowBlur = 0; // Reset glow
 
-    // 3. Stereo Channel Badges
+    // 3. Stereo Channel Badges (Mint for Left, Azure for Right)
     ctx.font = "600 11px IBM Plex Sans, system-ui, sans-serif";
     ctx.textBaseline = "middle";
     if (layout === LAYOUT_HORIZ) {
@@ -663,8 +656,7 @@
     host.parentNode.insertBefore(player, host);
     host.classList.add("cd-audio-host");
 
-// Production: Keeps readbacks fast and silences the DevTools warning
-const ctx2d = canvas.getContext("2d", { alpha: false, willReadFrequently: true });
+    const ctx2d = canvas.getContext("2d", { alpha: false, willReadFrequently: true });
     
     const state = {
       player,
@@ -681,10 +673,6 @@ const ctx2d = canvas.getContext("2d", { alpha: false, willReadFrequently: true }
       layout: LAYOUT_OFF,
       pan: false,
       windowSec: WINDOW_DEFAULT,
-      // Continuous phase-locked smoothing trackers
-      smoothTime: 0,
-      lastPerfTime: 0,
-      lastRenderedTime: 0
     };
     players.set(audio, state);
 
@@ -740,51 +728,6 @@ const ctx2d = canvas.getContext("2d", { alpha: false, willReadFrequently: true }
       return false;
     }
 
-    // Phase-locked loop time interpolator (prevents saw-tooth jitter and backward steps)
-    function getSmoothTime() {
-      const raw = audio.currentTime || 0;
-      const now = performance.now();
-
-      if (audio.paused) {
-        state.smoothTime = raw;
-        state.lastPerfTime = now;
-        state.lastRenderedTime = raw;
-        return raw;
-      }
-
-      if (!state.lastPerfTime) {
-        state.lastPerfTime = now;
-        state.smoothTime = raw;
-        state.lastRenderedTime = raw;
-        return raw;
-      }
-
-      const dt = ((now - state.lastPerfTime) / 1000) * (audio.playbackRate || 1);
-      state.lastPerfTime = now;
-
-      // Extrapolate time forward continuously
-      state.smoothTime += dt;
-
-      // Compute drift against coarse audio hardware clock
-      const drift = raw - state.smoothTime;
-
-      // If user scrubbed or large jump (> 150ms), hard-resync
-      if (Math.abs(drift) > 0.15) {
-        state.smoothTime = raw;
-      } else {
-        // Gently pull toward raw clock (5% per frame) without discrete snapping
-        state.smoothTime += drift * 0.05;
-      }
-
-      // Guarantee forward monotonicity
-      state.smoothTime = Math.max(state.lastRenderedTime, state.smoothTime);
-      state.lastRenderedTime = state.smoothTime;
-      return state.smoothTime;
-    }
-
-   let frameCount = 0;
-    let totalDrawTime = 0;
-
     function paint() {
       if (state.layout === LAYOUT_OFF) return;
       const didResize = resize();
@@ -792,10 +735,7 @@ const ctx2d = canvas.getContext("2d", { alpha: false, willReadFrequently: true }
       const h = canvas.height;
       if (w < 4 || h < 4) return;
       const g = state.ctx;
-
-      const t0 = performance.now(); // Benchmark start
-
-      const t = getSmoothTime();
+      const t = audio.currentTime || 0;
       const spec = state.pan ? state.panSpec : state.chroma;
 
       if (spec) {
@@ -821,7 +761,6 @@ const ctx2d = canvas.getContext("2d", { alpha: false, willReadFrequently: true }
         g.fillRect(0, 0, w, h);
         drawOverlay(g, w, h, state.layout);
       }
-
     }
 
     function loop() {
@@ -841,8 +780,6 @@ const ctx2d = canvas.getContext("2d", { alpha: false, willReadFrequently: true }
       const dur = audio.duration;
       if (!Number.isFinite(dur)) return;
       audio.currentTime = Math.min(dur, Math.max(0, (audio.currentTime || 0) + dt));
-      state.smoothTime = audio.currentTime;
-      state.lastRenderedTime = audio.currentTime;
       paint();
     }
 
@@ -879,12 +816,14 @@ const ctx2d = canvas.getContext("2d", { alpha: false, willReadFrequently: true }
         await ctx.resume().catch(() => {});
       }
 
+      // 1. Ensure visual surface is active
       if (state.layout === LAYOUT_OFF) {
         state.layout = LAYOUT_VERT;
         syncLayoutButtons();
       }
       ensureAnalyzed();
 
+      // 2. Pause and reliably seek to 0 (AWAITING 'seeked' event)
       audio.pause();
       recBtn.textContent = "⏳ Seeking...";
       recBtn.setAttribute("aria-pressed", "true");
@@ -909,12 +848,9 @@ const ctx2d = canvas.getContext("2d", { alpha: false, willReadFrequently: true }
           }, 800);
         });
       }
+      paint(); // Render starting playhead frame
 
-      state.smoothTime = 0;
-      state.lastRenderedTime = 0;
-      state.lastPerfTime = performance.now();
-      paint();
-
+      // 3. Connect pristine stereo audio to destination
       attachLive(audio, state);
       const dest = ctx.createMediaStreamDestination();
       dest.channelCount = 2;
@@ -925,9 +861,8 @@ const ctx2d = canvas.getContext("2d", { alpha: false, willReadFrequently: true }
         state.src.connect(dest);
       }
 
-      // Synchronous frame capture directly linked to paint() execution
-// Use EXPORT_FPS variable (30 or 60)
-      const canvasStream = canvas.captureStream(EXPORT_FPS);
+      // 4. Capture 60 FPS video and merge with audio
+      const canvasStream = canvas.captureStream(60);
       const combinedStream = new MediaStream([
         ...canvasStream.getVideoTracks(),
         ...dest.stream.getAudioTracks()
@@ -954,8 +889,8 @@ const ctx2d = canvas.getContext("2d", { alpha: false, willReadFrequently: true }
       try {
         mediaRecorder = new MediaRecorder(combinedStream, {
           mimeType: mimeType,
-          videoBitsPerSecond: 12000000,
-          audioBitsPerSecond: 320000
+          videoBitsPerSecond: 12000000, // 12 Mbps for razor-sharp lines
+          audioBitsPerSecond: 320000    // 320 kbps transparent broadcast audio
         });
       } catch (_) {
         mediaRecorder = new MediaRecorder(combinedStream);
@@ -995,6 +930,7 @@ const ctx2d = canvas.getContext("2d", { alpha: false, willReadFrequently: true }
         }, 200);
       };
 
+      // 5. Start recording and playback
       isRecording = true;
       recBtn.textContent = "⏹ Stop";
       recBtn.setAttribute("aria-pressed", "true");
@@ -1031,6 +967,7 @@ const ctx2d = canvas.getContext("2d", { alpha: false, willReadFrequently: true }
       paint();
     });
 
+    // Mobile & Desktop Safe AudioContext unlock and seek listener
     canvas.addEventListener("pointerdown", (e) => {
       if (sharedCtx && sharedCtx.state === "suspended") {
         sharedCtx.resume().catch(() => {});
@@ -1051,18 +988,8 @@ const ctx2d = canvas.getContext("2d", { alpha: false, willReadFrequently: true }
       if (state.layout !== LAYOUT_OFF && !state.raf) loop();
     });
 
-    audio.addEventListener("pause", () => {
-      state.smoothTime = audio.currentTime || 0;
-      state.lastRenderedTime = state.smoothTime;
-      paint();
-    });
-
-    audio.addEventListener("seeked", () => {
-      state.smoothTime = audio.currentTime || 0;
-      state.lastRenderedTime = state.smoothTime;
-      paint();
-    });
-
+    audio.addEventListener("pause", () => paint());
+    audio.addEventListener("seeked", () => paint());
     audio.addEventListener("timeupdate", () => {
       if (audio.paused) paint();
     });

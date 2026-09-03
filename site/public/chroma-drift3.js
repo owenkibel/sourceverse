@@ -8,23 +8,15 @@
  */
 (() => {
   if (typeof window === "undefined") return;
-  if (window.__chromaDriftVersion === 6) return;
+  if (window.__chromaDriftVersion === 4) return;
   if (window.__chromaDriftVersion) {
     document.querySelectorAll("[data-chroma-player]").forEach((el) => el.remove());
     document.querySelectorAll(".cd-audio-host").forEach((el) =>
       el.classList.remove("cd-audio-host"),
     );
   }
-  window.__chromaDriftVersion = 6;
+  window.__chromaDriftVersion = 4;
   window.__chromaDriftBooted = true;
-
-  // --- BENCHMARK CONFIGURATION ---
-  // Set to false for GPU Hardware Acceleration (Recommended).
-  // Set to true to force CPU Software Rasterization (willReadFrequently).
-  const FORCE_CPU_READBACK = true; 
-
-  // Set export FPS (30 for stability & lower CPU load; 60 for high-refresh smoothness)
-  const EXPORT_FPS = 30;
 
   const NOTE_MIN = 36;
   const NOTE_MAX = 96;
@@ -226,12 +218,14 @@
       const f0 = 440 * 2 ** ((midi - 69) / 12);
       const mag = sampleSpectrum(spectrum, sr, f0) * Math.sqrt(f0 / 220);
       const db = 20 * Math.log10(mag + 1e-12);
+      // Enhanced dynamic thresholding curve
       out[b] = Math.min(1, Math.max(0, (db + 76) / 60)) ** 1.1;
     }
   }
 
   function writePix(p, w, x, y, col, v) {
     if (v < 0.015) return;
+    // Hot incandescent core for vocal and melodic peaks
     const hot = v * v * v;
     const i = (y * w + x) << 2;
     p[i]     = Math.min(255, col[0] * v + 255 * hot);
@@ -328,16 +322,13 @@
       analyserL.smoothingTimeConstant = 0.38;
       analyserR.smoothingTimeConstant = 0.38;
       analyserL.minDecibels = -88;
-      analyserL.minDecibels = -88;
+      analyserR.minDecibels = -88;
       analyserL.maxDecibels = -24;
       analyserR.maxDecibels = -24;
       src.connect(split);
       src.connect(ctx.destination);
       split.connect(analyserL, 0);
       split.connect(analyserR, 1);
-      
-      state.src = src;
-
       state.live = {
         analyserL,
         analyserR,
@@ -361,72 +352,20 @@
 
   function drawOverlay(ctx, w, h, layout) {
     ctx.save();
-
+    ctx.font = "600 10px IBM Plex Sans, system-ui, sans-serif";
+    ctx.fillStyle = "rgba(236,236,232,0.4)";
+    const labels = [36, 48, 60, 72, 84, 96];
     const half = layout === LAYOUT_HORIZ ? h / 2 : w / 2;
     const gap = 4;
     const usable = half - gap;
-
-    // 1. Center Seam
-    ctx.strokeStyle = "rgba(236, 236, 232, 0.14)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    if (layout === LAYOUT_HORIZ) {
-      ctx.moveTo(0, half);
-      ctx.lineTo(w, half);
-    } else {
-      ctx.moveTo(half, 0);
-      ctx.lineTo(half, h);
-    }
-    ctx.stroke();
-
-    // 2. Playhead Indicator
-    ctx.shadowColor = "rgba(236, 236, 232, 0.45)";
-    ctx.shadowBlur = 8;
-    ctx.strokeStyle = "rgba(236, 236, 232, 0.95)";
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    if (layout === LAYOUT_HORIZ) {
-      const playX = w * PLAYHEAD;
-      ctx.moveTo(playX, 0);
-      ctx.lineTo(playX, h);
-    } else {
-      const playY = h * PLAYHEAD;
-      ctx.moveTo(0, playY);
-      ctx.lineTo(w, playY);
-    }
-    ctx.stroke();
-    ctx.shadowBlur = 0;
-
-    // 3. Stereo Channel Badges
-    ctx.font = "600 11px IBM Plex Sans, system-ui, sans-serif";
-    ctx.textBaseline = "middle";
     if (layout === LAYOUT_HORIZ) {
       ctx.textAlign = "left";
-      ctx.fillStyle = "#3dffb0";
-      ctx.fillText("L", 12, 18);
-      ctx.fillStyle = "#3db0ff";
-      ctx.fillText("R", 12, h - 18);
-    } else {
-      ctx.textAlign = "left";
-      ctx.fillStyle = "#3dffb0";
-      ctx.fillText("L", 12, half);
-      ctx.textAlign = "right";
-      ctx.fillStyle = "#3db0ff";
-      ctx.fillText("R", w - 12, half);
-    }
-
-    // 4. Octave / Pitch Class Scale Markers
-    ctx.font = "600 10px IBM Plex Sans, system-ui, sans-serif";
-    ctx.fillStyle = "rgba(236, 236, 232, 0.4)";
-    const labels = [36, 48, 60, 72, 84, 96];
-
-    if (layout === LAYOUT_HORIZ) {
-      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
       for (const midi of labels) {
         const t = (midi - NOTE_MIN) / (NOTE_MAX - NOTE_MIN);
         const name = "C" + (Math.round(midi / 12) - 1);
-        ctx.fillText(name, 36, usable * (1 - t));
-        ctx.fillText(name, 36, half + gap + usable * t);
+        ctx.fillText(name, 10, usable * (1 - t));
+        ctx.fillText(name, 10, half + gap + usable * t);
       }
     } else {
       ctx.textAlign = "center";
@@ -438,7 +377,6 @@
         ctx.fillText(name, half + gap + usable * t, 8);
       }
     }
-
     ctx.restore();
   }
 
@@ -616,13 +554,6 @@
     panBtn.setAttribute("aria-pressed", "false");
     panBtn.title = "Subtractive pan: mint = left, azure = right, center cancels";
 
-    const recBtn = document.createElement("button");
-    recBtn.type = "button";
-    recBtn.className = "cd-pan";
-    recBtn.textContent = "⏺ Export";
-    recBtn.setAttribute("aria-pressed", "false");
-    recBtn.title = "Play track and export spectrogram video with audio";
-
     const speed = document.createElement("label");
     speed.className = "cd-speed";
     const speedName = document.createElement("span");
@@ -639,7 +570,7 @@
     speedVal.textContent = `${WINDOW_DEFAULT.toFixed(1)}s`;
     speed.append(speedName, speedInput, speedVal);
 
-    controls.append(seg, panBtn, recBtn, speed);
+    controls.append(seg, panBtn, speed);
     toolbar.append(brand, controls);
 
     const stage = document.createElement("div");
@@ -663,8 +594,8 @@
     host.parentNode.insertBefore(player, host);
     host.classList.add("cd-audio-host");
 
-// Production: Keeps readbacks fast and silences the DevTools warning
-const ctx2d = canvas.getContext("2d", { alpha: false, willReadFrequently: true });
+    // FIXED: willReadFrequently set to true to eliminate browser readback overhead
+    const ctx2d = canvas.getContext("2d", { alpha: false, willReadFrequently: true });
     
     const state = {
       player,
@@ -676,15 +607,10 @@ const ctx2d = canvas.getContext("2d", { alpha: false, willReadFrequently: true }
       nFrames: 0,
       raf: 0,
       live: null,
-      src: null,
       status,
       layout: LAYOUT_OFF,
       pan: false,
       windowSec: WINDOW_DEFAULT,
-      // Continuous phase-locked smoothing trackers
-      smoothTime: 0,
-      lastPerfTime: 0,
-      lastRenderedTime: 0
     };
     players.set(audio, state);
 
@@ -740,51 +666,6 @@ const ctx2d = canvas.getContext("2d", { alpha: false, willReadFrequently: true }
       return false;
     }
 
-    // Phase-locked loop time interpolator (prevents saw-tooth jitter and backward steps)
-    function getSmoothTime() {
-      const raw = audio.currentTime || 0;
-      const now = performance.now();
-
-      if (audio.paused) {
-        state.smoothTime = raw;
-        state.lastPerfTime = now;
-        state.lastRenderedTime = raw;
-        return raw;
-      }
-
-      if (!state.lastPerfTime) {
-        state.lastPerfTime = now;
-        state.smoothTime = raw;
-        state.lastRenderedTime = raw;
-        return raw;
-      }
-
-      const dt = ((now - state.lastPerfTime) / 1000) * (audio.playbackRate || 1);
-      state.lastPerfTime = now;
-
-      // Extrapolate time forward continuously
-      state.smoothTime += dt;
-
-      // Compute drift against coarse audio hardware clock
-      const drift = raw - state.smoothTime;
-
-      // If user scrubbed or large jump (> 150ms), hard-resync
-      if (Math.abs(drift) > 0.15) {
-        state.smoothTime = raw;
-      } else {
-        // Gently pull toward raw clock (5% per frame) without discrete snapping
-        state.smoothTime += drift * 0.05;
-      }
-
-      // Guarantee forward monotonicity
-      state.smoothTime = Math.max(state.lastRenderedTime, state.smoothTime);
-      state.lastRenderedTime = state.smoothTime;
-      return state.smoothTime;
-    }
-
-   let frameCount = 0;
-    let totalDrawTime = 0;
-
     function paint() {
       if (state.layout === LAYOUT_OFF) return;
       const didResize = resize();
@@ -792,10 +673,7 @@ const ctx2d = canvas.getContext("2d", { alpha: false, willReadFrequently: true }
       const h = canvas.height;
       if (w < 4 || h < 4) return;
       const g = state.ctx;
-
-      const t0 = performance.now(); // Benchmark start
-
-      const t = getSmoothTime();
+      const t = audio.currentTime || 0;
       const spec = state.pan ? state.panSpec : state.chroma;
 
       if (spec) {
@@ -821,7 +699,6 @@ const ctx2d = canvas.getContext("2d", { alpha: false, willReadFrequently: true }
         g.fillRect(0, 0, w, h);
         drawOverlay(g, w, h, state.layout);
       }
-
     }
 
     function loop() {
@@ -841,8 +718,6 @@ const ctx2d = canvas.getContext("2d", { alpha: false, willReadFrequently: true }
       const dur = audio.duration;
       if (!Number.isFinite(dur)) return;
       audio.currentTime = Math.min(dur, Math.max(0, (audio.currentTime || 0) + dt));
-      state.smoothTime = audio.currentTime;
-      state.lastRenderedTime = audio.currentTime;
       paint();
     }
 
@@ -864,173 +739,13 @@ const ctx2d = canvas.getContext("2d", { alpha: false, willReadFrequently: true }
       paint();
     });
 
-    // =========================================================================
-    // HIGH-FIDELITY MEDIARECORDER ENGINE
-    // =========================================================================
-    let mediaRecorder = null;
-    let recordedChunks = [];
-    let isRecording = false;
-
-    async function startSpectrogramCapture() {
-      if (isRecording) return;
-
-      const ctx = getCtx();
-      if (ctx.state === "suspended") {
-        await ctx.resume().catch(() => {});
-      }
-
-      if (state.layout === LAYOUT_OFF) {
-        state.layout = LAYOUT_VERT;
-        syncLayoutButtons();
-      }
-      ensureAnalyzed();
-
-      audio.pause();
-      recBtn.textContent = "⏳ Seeking...";
-      recBtn.setAttribute("aria-pressed", "true");
-
-      if (audio.currentTime > 0.05 || audio.ended) {
-        await new Promise((resolve) => {
-          let resolved = false;
-          const onSeeked = () => {
-            if (resolved) return;
-            resolved = true;
-            audio.removeEventListener("seeked", onSeeked);
-            resolve();
-          };
-          audio.addEventListener("seeked", onSeeked, { once: true });
-          audio.currentTime = 0;
-          setTimeout(() => {
-            if (!resolved) {
-              resolved = true;
-              audio.removeEventListener("seeked", onSeeked);
-              resolve();
-            }
-          }, 800);
-        });
-      }
-
-      state.smoothTime = 0;
-      state.lastRenderedTime = 0;
-      state.lastPerfTime = performance.now();
-      paint();
-
-      attachLive(audio, state);
-      const dest = ctx.createMediaStreamDestination();
-      dest.channelCount = 2;
-      dest.channelCountMode = "explicit";
-      dest.channelInterpretation = "speakers";
-
-      if (state.src) {
-        state.src.connect(dest);
-      }
-
-      // Synchronous frame capture directly linked to paint() execution
-// Use EXPORT_FPS variable (30 or 60)
-      const canvasStream = canvas.captureStream(EXPORT_FPS);
-      const combinedStream = new MediaStream([
-        ...canvasStream.getVideoTracks(),
-        ...dest.stream.getAudioTracks()
-      ]);
-
-      let mimeType = 'video/webm;codecs=vp9,opus';
-      let fileExt = 'webm';
-
-      if (MediaRecorder.isTypeSupported('video/mp4;codecs=avc1,mp4a.40.2')) {
-        mimeType = 'video/mp4;codecs=avc1,mp4a.40.2';
-        fileExt = 'mp4';
-      } else if (MediaRecorder.isTypeSupported('video/mp4')) {
-        mimeType = 'video/mp4';
-        fileExt = 'mp4';
-      } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')) {
-        mimeType = 'video/webm;codecs=vp9,opus';
-        fileExt = 'webm';
-      } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')) {
-        mimeType = 'video/webm;codecs=vp8,opus';
-        fileExt = 'webm';
-      }
-
-      recordedChunks = [];
-      try {
-        mediaRecorder = new MediaRecorder(combinedStream, {
-          mimeType: mimeType,
-          videoBitsPerSecond: 12000000,
-          audioBitsPerSecond: 320000
-        });
-      } catch (_) {
-        mediaRecorder = new MediaRecorder(combinedStream);
-      }
-
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data && e.data.size > 0) {
-          recordedChunks.push(e.data);
-        }
-      };
-
-      mediaRecorder.onstop = () => {
-        isRecording = false;
-        recBtn.textContent = "⏺ Export";
-        recBtn.setAttribute("aria-pressed", "false");
-
-        if (state.src) {
-          try { state.src.disconnect(dest); } catch (_) {}
-        }
-
-        if (recordedChunks.length === 0) return;
-
-        const blob = new Blob(recordedChunks, { type: mimeType });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.style.display = "none";
-        a.href = url;
-
-        const trackName = (audioUrl(audio).split('/').pop() || 'spectrogram').replace(/\.[^/.]+$/, "");
-        a.download = `${trackName}_spectrogram.${fileExt}`;
-        document.body.appendChild(a);
-        a.click();
-
-        setTimeout(() => {
-          document.body.removeChild(a);
-          window.URL.revokeObjectURL(url);
-        }, 200);
-      };
-
-      isRecording = true;
-      recBtn.textContent = "⏹ Stop";
-      recBtn.setAttribute("aria-pressed", "true");
-
-      mediaRecorder.start(1000);
-      try {
-        await audio.play();
-      } catch (err) {
-        mediaRecorder.stop();
-        return;
-      }
-
-      const onSongEnd = () => {
-        if (mediaRecorder && mediaRecorder.state === "recording") {
-          mediaRecorder.stop();
-        }
-        audio.removeEventListener("ended", onSongEnd);
-      };
-      audio.addEventListener("ended", onSongEnd);
-    }
-
-    recBtn.addEventListener("click", () => {
-      if (isRecording && mediaRecorder && mediaRecorder.state === "recording") {
-        mediaRecorder.stop();
-        audio.pause();
-      } else {
-        startSpectrogramCapture();
-      }
-    });
-
     speedInput.addEventListener("input", () => {
       state.windowSec = Number(speedInput.value);
       speedVal.textContent = `${state.windowSec.toFixed(1)}s`;
       paint();
     });
 
+    // Mobile & Desktop Safe AudioContext unlock and seek listener
     canvas.addEventListener("pointerdown", (e) => {
       if (sharedCtx && sharedCtx.state === "suspended") {
         sharedCtx.resume().catch(() => {});
@@ -1051,18 +766,8 @@ const ctx2d = canvas.getContext("2d", { alpha: false, willReadFrequently: true }
       if (state.layout !== LAYOUT_OFF && !state.raf) loop();
     });
 
-    audio.addEventListener("pause", () => {
-      state.smoothTime = audio.currentTime || 0;
-      state.lastRenderedTime = state.smoothTime;
-      paint();
-    });
-
-    audio.addEventListener("seeked", () => {
-      state.smoothTime = audio.currentTime || 0;
-      state.lastRenderedTime = state.smoothTime;
-      paint();
-    });
-
+    audio.addEventListener("pause", () => paint());
+    audio.addEventListener("seeked", () => paint());
     audio.addEventListener("timeupdate", () => {
       if (audio.paused) paint();
     });
@@ -1090,6 +795,7 @@ const ctx2d = canvas.getContext("2d", { alpha: false, willReadFrequently: true }
     });
     mo.observe(document.documentElement, { childList: true, subtree: true });
     
+    // Astro View Transitions lifecycle hooks
     document.addEventListener("astro:page-load", () => enhanceAll(document));
     document.addEventListener("astro:before-swap", () => {
       document.querySelectorAll("audio").forEach((el) => {

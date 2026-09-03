@@ -663,8 +663,14 @@
     host.parentNode.insertBefore(player, host);
     host.classList.add("cd-audio-host");
 
-// Production: Keeps readbacks fast and silences the DevTools warning
-const ctx2d = canvas.getContext("2d", { alpha: false, willReadFrequently: true });
+// Context Allocation with Dynamic Hardware/Software Switch
+    const ctxOptions = FORCE_CPU_READBACK 
+      ? { alpha: false, willReadFrequently: true } 
+      : { alpha: false };
+
+    const ctx2d = canvas.getContext("2d", ctxOptions);
+
+    console.log(`🎨 [Chroma Drift] Canvas Mode: ${FORCE_CPU_READBACK ? '⚠️ CPU Software Rasterizer (willReadFrequently: true)' : '⚡ GPU Hardware Accelerated'}`);
     
     const state = {
       player,
@@ -822,6 +828,18 @@ const ctx2d = canvas.getContext("2d", { alpha: false, willReadFrequently: true }
         drawOverlay(g, w, h, state.layout);
       }
 
+      // Log average draw time every 120 frames (~2 seconds)
+      const renderDuration = performance.now() - t0;
+      totalDrawTime += renderDuration;
+      frameCount++;
+      if (frameCount >= 120) {
+        const avg = (totalDrawTime / frameCount).toFixed(2);
+        if (isRecording) {
+          console.log(`⏱️ [Export Draw Time] Avg: ${avg}ms/frame | Target: ${(1000 / EXPORT_FPS).toFixed(1)}ms budget`);
+        }
+        frameCount = 0;
+        totalDrawTime = 0;
+      }
     }
 
     function loop() {
