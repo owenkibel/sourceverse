@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "courses": {
     "demagoguery-101": {
       "title": "Demagoguery 101",
@@ -478,6 +478,159 @@
         }
       ],
       "updatedAt": "2026-08-27T22:34:16.018Z"
+    },
+    "satire-101": {
+      "title": "Satire 101",
+      "slug": "satire-101",
+      "createdAt": "2026-09-06T22:25:22.942Z",
+      "updatedAt": "2026-09-06T22:48:37.058Z",
+      "runCount": 4,
+      "currentLevel": 4,
+      "sophistication": 2.4,
+      "coreUrls": [
+        "https://babylonbee.com/news/bari-weiss-facing-credible-allegations-of-doing-journalism",
+        "https://x.com/GadSaad/status/2096688038013276312",
+        "https://www.upworthy.com/tolkien-response-to-nazis-asking-if-he-was-jewish-ex1/",
+        "https://x.com/jk_rowling/status/2091118512076935571"
+      ],
+      "modulesCompleted": [
+        "Satire 101 — Layer 1: News-form inversion (journalism as workplace crime)",
+        "Satire 101 — Layer 2: Ally-persona as vehicle (insult dressed as solidarity)",
+        "Satire 101 — Layer 3: Pedantic compliance as contempt (the official inquiry answered too well)",
+        "Satire 101 — Layer 4: Intimate knowledge as anti-ritual (handshake instead of surprise)"
+      ],
+      "keyConcepts": [
+        "News-scandal form used as a costume for the opposite of scandal",
+        "Moral inversion: verification recoded as workplace harm",
+        "Distributed persona: staff, HR, critic all sincere inside the inverted ethic",
+        "Implicit mock-policy: ban research to keep the narrative stable",
+        "Target = institutional habit, not a personal smear campaign",
+        "Ally-credential as costume: one approved tag stands in for ethics",
+        "Self-exoneration plot: block + “I never interacted” as evidence of virtue",
+        "Phraseology as talisman: wording treated as moral completion",
+        "Avatar, not dossier: public names only as stand-ins for a pose",
+        "Platform micro-genre: status update as mock affidavit",
+        "Questionnaire as plot: the demand for descent is the whole conflict",
+        "Pedant-persona: specialist sincerity (definitions, etymology) as moral force",
+        "Courtesy-wrapper: letterhead manners carrying the insult to the inquiry",
+        "Dual-draft irony: the sharper text vs. the version an institution might send",
+        "Merit already granted: they liked the book before they asked for blood",
+        "Settled intimate fact: household knowledge treated as already complete",
+        "Theatrical ignorance: surprise demanded as public performance",
+        "Handshake waiver: civil protocol offered in place of the play",
+        "Dual-path mock-compliance: act surprised *or* agree to continue",
+        "Continuity clause: “soldier on” if the script’s premise fails"
+      ],
+      "structuralTensions": [
+        "Official tone vs. absurd charge (“journalism” as misconduct)",
+        "Safety language vs. ordinary editorial diligence",
+        "“System collapses” if facts are checked vs. journalism’s public claim",
+        "Walkout/protest form vs. the protested act (doing the job)",
+        "Solidarity claim vs. contempt in the same breath",
+        "Identity-language piety vs. the speaker’s actual ranking of people",
+        "Non-interaction as innocence vs. the need to announce the insult",
+        "Conference/system-critique clip vs. a personal-brand punchline (split-engine risk)",
+        "Racial license vs. translation as ordinary commerce",
+        "“Aryan” as Nazi brand vs. “Aryan” as Indo-Iranian fact",
+        "Pride in a German name vs. shame attached to the new German rule",
+        "Private hatred of race-doctrine vs. public form that must still be answered",
+        "Legendary unsent draft vs. milder compliance that may have actually traveled",
+        "Bedroom knowledge vs. a public rule that needs surprise",
+        "Helpful two-options vs. a single demanded ritual",
+        "Marital continuity vs. first-time astonishment as policy",
+        "Short status cadence vs. the longer epistolary engines already stored",
+        "Named speaker as pose vs. turning the piece into a personal feud"
+      ],
+      "techniques": [
+        "Headline inversion: virtue named as allegation",
+        "Dateline + “interviews revealed” as fake authority",
+        "Anonymous insider quotes that confess the real ethic",
+        "Escalation chain: one edit request → HR flood → critic panic → walkout",
+        "Slippery-slope parody in the critic’s voice (“verify… then anarchy”)",
+        "Closing beat that treats research as a toxic workplace demand",
+        "Proof-by-phrase: “I said the correct words, therefore I am an ally”",
+        "Mock affidavit: brief first-person case that the speaker is the injured party",
+        "Inversion of courtesy: etiquette (blocking, labels) recoded as moral high ground",
+        "Single-beat close: the punch is the credential, not a pile of extra jokes",
+        "Refuse the slur-engine: parody the talisman, do not teach the epithet",
+        "Fill the official blank with the wrong category (language family, not blood)",
+        "Invert prestige: regret the absence of the targeted people",
+        "Keep epistolary ritual (date, close) so contempt reads as professionalism",
+        "One-sentence slope: if literature requires ancestry, the name itself becomes a liability",
+        "Let the clerks’ own satisfaction (“you already wanted the book”) cancel their form",
+        "Ignore sidebar content so the engine stays the letter, not the feed",
+        "Counter-offer comedy: replace the demanded scene with a handshake",
+        "Already-know close: the punch is prior knowledge, not extra insults",
+        "Polite continuation: agree to proceed even if the premise changed",
+        "Question-form mock-proposal: two sincere options that expose the ritual",
+        "Keep the body as category, not spectacle; parody the script, not anatomy"
+      ],
+      "openQuestions": [
+        "Can the same engine work without a partisan foil in the quotes?",
+        "Where should surrounding site junk be ignored so the lesson stays on the article?",
+        "How thin can a tweet-length vehicle get before it is only snark?",
+        "When does quoting conference jargon become a second, partisan foil?",
+        "Can ally-talisman satire work with composite voices and zero named targets?",
+        "Where does “blocked me” comedy become scorekeeping rather than institutional irony?",
+        "How much real-letter quotation is needed before the piece becomes documentary, not satire?",
+        "Can the dual-draft (sharp vs. sent) be a running persona without naming historical villains as punchlines?",
+        "When does philological correction feel like lecture instead of inversion?",
+        "Can a mock-form work if the inquirer is a composite HR/compliance desk, not a regime?",
+        "Where does “legendary response” framing turn hagiography and kill the irony?",
+        "When does “I already know” become scorekeeping instead of institutional irony?",
+        "Can handshake-waiver comedy work if the inquirer is a composite desk, not a viral demand?",
+        "How short can the piece stay before it reads as snark, not mock-proposal?",
+        "Does naming a spouse as the known fact pull the engine toward private life?",
+        "When does “soldier on” sound like cruelty rather than continuity etiquette?"
+      ],
+      "narrativeSpine": "Build satire by stealing a solemn genre—scandal report, HR ritual, ally affidavit, official inquiry, or a public demand for theatrical ignorance—and driving one inverted value through a sincere voice, so procedure, costume, magic phrase, or required surprise is treated as the mission while truth, care, solidarity, literary merit, or already-settled knowledge is optional; the comedy is mock-compliance (filling the form too correctly, or offering a handshake instead of the play) until the institution’s claimed purpose looks like the optional extra.",
+      "craftPrompt": "",
+      "analystPrompt": "",
+      "humorPrompt": "",
+      "satirePrompt": "You write satire, not snark and not a harassment script.\nAim irony at an institution, habit, pose, paperwork, or demanded performance—not private humiliation.\nSteal a solemn form: memo, inquiry, affidavit, certificate, status update, or mock-proposal.\nInvert one value and keep it: ritual as mission; truth, care, merit, or already-known fact as optional.\nPersonas sincerely believe the inverted ethic (clerk, ally, pedant, helpful spouse).\nLet filled blanks, questions, and offers confess the priority; no author lecture.\nEscalate inside the form: courtesy → certificate, one question → too-literal answer, demand for surprise → handshake waiver.\nAnswer too correctly (definitions, prior approval, settled knowledge) rather than shouting.\nKeep letterhead manners when the genre is a letter; contempt rides on etiquette.\nExaggerate procedure and bookkeeping, not gore, slurs, targeting lists, or anatomy-as-spectacle.\nMoral pressure is mismatch: claimed mission vs. comic panic, ancestry check, or “we already know.”\nDo not invent documentary quotes from real people; use types and composites.\nIf a named figure appears, they stand in for a practice, not a vendetta.\nDo not give instructions for harm, doxxing, or violence.\nDo not teach epithets; parody the credential, inquiry, or ritual, not insult vocabulary.\nPrefer one engine per piece; no extra punchlines that change the argument.\nEnd on a beat that completes the inversion, not a moral footnote.\nIgnore surrounding site junk that would split the engine.\nOffer two sincere compliance paths when useful: perform the ritual, or skip it with a civil agreement to continue.",
+      "lastPromptKind": "satire",
+      "priorOutputs": [
+        {
+          "run": 1,
+          "level": 1,
+          "mode": "satire",
+          "promptKind": "satire",
+          "moduleTitle": "Satire 101 — Layer 1: News-form inversion (journalism as workplace crime)",
+          "file": "courses/satire-101/run-001.md",
+          "source": "https://babylonbee.com/news/bari-weiss-facing-credible-allegations-of-doing-journalism",
+          "at": "2026-09-06T22:25:49.087Z"
+        },
+        {
+          "run": 2,
+          "level": 2,
+          "mode": "satire",
+          "promptKind": "satire",
+          "moduleTitle": "Satire 101 — Layer 2: Ally-persona as vehicle (insult dressed as solidarity)",
+          "file": "courses/satire-101/run-002.md",
+          "source": "https://x.com/GadSaad/status/2096688038013276312",
+          "at": "2026-09-06T22:34:43.925Z"
+        },
+        {
+          "run": 3,
+          "level": 3,
+          "mode": "satire",
+          "promptKind": "satire",
+          "moduleTitle": "Satire 101 — Layer 3: Pedantic compliance as contempt (the official inquiry answered too well)",
+          "file": "courses/satire-101/run-003.md",
+          "source": "https://www.upworthy.com/tolkien-response-to-nazis-asking-if-he-was-jewish-ex1/",
+          "at": "2026-09-06T22:41:39.637Z"
+        },
+        {
+          "run": 4,
+          "level": 4,
+          "mode": "satire",
+          "promptKind": "satire",
+          "moduleTitle": "Satire 101 — Layer 4: Intimate knowledge as anti-ritual (handshake instead of surprise)",
+          "file": "courses/satire-101/run-004.md",
+          "source": "https://x.com/jk_rowling/status/2091118512076935571",
+          "at": "2026-09-06T22:48:37.058Z"
+        }
+      ]
     }
   }
 }
