@@ -148,6 +148,28 @@ The system combines large language model generation with explicit persistent mem
 
 This is an active research project. The architecture continues to evolve around better long-term coherence, more grounded forecasting, and a cleaner relationship between raw input and expanded oracular output.
 
+## Experiments
+
+Another form of evolving memory - currently prose and without media generation is in the form of the course and rewrite scripts.
+
+## Limericks
+
+Related projects are two Limerick generators
+
+- **App**: [Fifth Line](https://fifth-line.grok.me/)
+- **Repository**: [fifth-line](https://github.com/owenkibel/fifth-line)
+
+- **App**: [Fifth Line: Gemini Edition](https://fifth-line-gemini.vercel.app/)
+- **Repository**: [fifth-line-gemini](https://github.com/owenkibel/fifth-line-gemini)
+
+## History
+
+Sourceverse evolved out an earlier inference system which only at the latest stages had persistent memory. The record is kept at 
+
+- **Blog**: [Groetry](https://groetry.pages.dev)
+- **Repository**: [sourceverse0](https://github.com/owenkibel/sourceverse0)
+
+
 ## Links
 
 - **Blog**: [Latent Verse](https://latent-verse.vercel.app)
