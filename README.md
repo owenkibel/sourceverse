@@ -1,176 +1,123 @@
 # Sourceverse
 
-**Sourceverse** is an experimental system for generating long-form oracular narrative. It transforms streams of current events, scientific developments, and political signals into sustained story arcs, metrical verse, and forward-looking forecasts.
+Sourceverse turns a slice of current pages — Chrome bookmarks, X posts, articles, the occasional video — into **metrical verse, a continuing thread, and media**. The live site is [Latent Verse](https://latent-verse.vercel.app/).
 
-The project explores how **persistent memory** and pattern recognition can produce coherent, evolving narratives across multiple cycles rather than isolated posts.
+The main loop is two scripts: ingest, then grow a thread with picture, optional video, music, and a forecast. A separate, smaller experiment grows **prose courses and voice rewrites** from the same kind of URL. Those posts also land on Latent Verse; they do not replace the poetry pipeline.
 
-The code is evolved through iterative testing of scripts that emerge out of directed and continuing conversations with the latest Gemini and Grok models in their regular portals. These models are also directly addressed in the scripts through their APIs.
+Scripts are numbered as they evolve (`generate-links7.js`, `vertical_thread17.js`). Use the highest version in the repo.
 
-## Core Ideas
+## Main workflow: poetry, media, threads
 
-- **Persistent Narrative Memory**: A cumulative model (`cumulative_thread_model.json`) maintains domain-specific narrative arcs, recent forecasts, and hypothesis history. This allows the system to build continuity across runs.
-- **Oracular Output**: In addition to verse and media, the system generates optional forecasts that attempt to read momentum, thresholds, and phase shifts.
-- **Dual Artistic Modes**: Supports both *dramatic* (character-driven theatrical verse) and *traditional* (unified lyrical voice) styles.
-- **Hybrid Content**: Designed to host both AI-generated oracular posts and human-written writing.
-
-## Getting Started
-
-### Prerequisites
-
-- [Bun](https://bun.sh/) (recommended) or Node.js
-- API access to **Grok** (xAI) and/or **Gemini** (Google)
-- (Optional) A running instance of **ComfyUI** for local image/video/music generation
-- (Optional) A running instance of **llama.cpp** for local audio extraction and analysis
-- (Optional) System installed binaries of ffmpeg and yt-dlp
-
-### Installation
-
-1. Clone the repository:
-
-   ```bash
-   git clone https://github.com/owenkibel/sourceverse.git
-   cd sourceverse
-   ```
-
-2. Install dependencies:
-
-   ```bash
-   bun install
-   ```
-
-3. Set your API keys as environment variables:
-
-   ```bash
-   export XAI_API_KEY=your_xai_key
-   export GEMINI_API_KEY1=your_gemini_key
-   ```
-
-### Running the Pipeline
-
-The main workflow uses two scripts:
-
-- **`generate-links*.js`** — Ingests bookmarks or URLs and creates initial thematic groupings.
-- **`vertical_thread*.js`** — The core script that generates narrative arcs, verse, forecasts, and media.
-
-The Asterisk is a version number. Use the higher more evolved versions when feasible.
-
-**Example run:**
-
-```bash
-bun vertical_thread15.js --grok --ideogram --thread=t4
+```
+bookmarks / URLs
+        │
+        ▼
+ generate-links*.js     thematic groups + seed poem → ./x  and posts/
+        │
+        ▼
+ vertical_thread*.js    arc + verse + forecast + image/video/music
+        │
+        ▼
+  posts/  →  Astro site  →  https://latent-verse.vercel.app/
 ```
 
-### Common Flags
+Persistent thread memory lives in `cumulative_thread_model.json` (narrative arcs, hypotheses, forecast history). That file is for **threads only**. Course memory is a different file.
 
-| Flag                | Description                                      | Example |
-|---------------------|--------------------------------------------------|--------|
-| `--grok`            | Use Grok-4.3 instead of Gemini                   | `--grok` |
-| `--ideogram`        | Use Ideogram 4 for image generation              | `--ideogram` |
-| `--grok-imagine`    | Use Grok’s native image generation              | `--grok-imagine` |
-| `--thread=t4`       | Process only a specific thread folder            | `--thread=t4` |
-| `--t2v`             | Force text-to-video instead of image-to-video    | `--t2v` |
-| `--duration=180`    | Set music duration in seconds                    | `--duration=180` |
+### Ingest
 
-## Key Features
+`generate-links*.js` takes a batch of recent bookmarks (default 40) or a single `--url=`. It can drop music and Imagine links with `--ignore`. X posts try the public fx/vx JSON APIs first; Playwright stays further down the cascade. YouTube English auto-captions use local `yt-dlp`.
 
-- Long-running narrative continuity via `narrativeArcs[domain]`
-- Optional `### Forecast` sections grounded in the current thread
-- Canonical hypothesis system with deduplication and cooldown logic
-- Support for both dramatic and traditional verse
-- Forecast lifecycle tracking (processed / appended / injected)
-- Thematic Seed section (original short poem from the ingestion stage)
+```bash
+bun generate-links7.js --ignore music imagine
+bun generate-links7.js --url="https://x.com/user/status/..." --grok
+```
 
-## Pipeline Overview
+### Grow a thread
 
-1. **Ingestion** — `generate-links*.js` processes Chrome bookmarks or specific URLs and produces an initial thematic summary/poem.
-2. **Vertical Processing** — `vertical_thread*.js` runs candidate threads through structured prompts using Grok or Gemini.
-3. **Persistent State** — Narrative arcs, forecasts, and hypotheses are read from and written to `cumulative_thread_model.json`.
-4. **Media Generation** — Images, video, TTS, and music are generated and embedded in the output.
-5. **Output** — Clean Markdown posts ready for a static site.
+`vertical_thread*.js` reads a folder under `./x`, writes verse (dramatic or traditional), updates the cumulative thread model, and talks to ComfyUI / Ideogram / Grok Imagine for stills and video. Audio is stitched with ffmpeg (reverse-to-anchor on short clips, still-image fallback).
 
-## Scripts
+```bash
+bun vertical_thread17.js --grok --thread=t4
+bun vertical_thread17.js --grok --grok-imagine --thread=t4
+bun vertical_thread17.js --grok --ideogram --t2v --duration=128 --thread=t4
+```
 
-| Script                    | Purpose                                      | Example Command |
-|---------------------------|----------------------------------------------|-----------------|
-| `generate-links*.js`      | Thematic grouping + initial poem from bookmarks/URLs | `bun generate-links7.js` |
-| `vertical_thread*.js`     | Main orchestration (narrative, verse, media, state) | `bun vertical_thread15.js --grok --ideogram --thread=t4` |
-| `cleanup_*.js`            | Maintenance (hypothesis pruning, model cleanup) | — |
+If Grok refuses the verse pass, current builds abort immediately and print the reason. They do not generate media on an empty string.
 
-## Persistent Memory
+### Typical flags
 
-Sourceverse maintains continuity through `cumulative_thread_model.json`. Each domain keeps its own evolving narrative arc and recent forecast history. This allows later posts to reference and build upon earlier ones rather than starting from scratch.
+| Flag | What it does |
+|---|---|
+| `--grok` | xAI instead of Gemini |
+| `--thread=t4` | One `./x` folder |
+| `--grok-imagine` / `--ideogram` | Image backend |
+| `--t2v` | Text-to-video instead of image-to-video |
+| `--duration=128` | Music length in seconds |
+| `--ignore music imagine` | generate-links: skip those hosts |
 
-## How Verse Is Grown in Latent Space
+## Setup
 
-Modern large language models don’t “retrieve” poetry from a database. Instead, they **grow** it iteratively inside a high-dimensional continuous space (latent space). Here’s how it actually works:
+- [Bun](https://bun.sh/)
+- `XAI_API_KEY` and/or `GEMINI_API_KEY1`
+- Optional: ComfyUI, llama.cpp, `ffmpeg`, `yt-dlp`, Playwright for stubborn X pages
 
-### 1. Initial Seeding
+```bash
+git clone https://github.com/owenkibel/sourceverse.git
+cd sourceverse
+bun install
+export XAI_API_KEY=...
+```
 
-- The prompt, system instructions, previous narrative arc, hypotheses, and recent forecasts are all encoded into vectors.
-- These vectors create an initial position and direction in latent space. This is the “seed” of the poem.
+The Astro blog lives in `site/`. Generated Markdown in `posts/` is what [Latent Verse](https://latent-verse.vercel.app/) shows.
 
-### 2. Iterative Growth (Token by Token)
+## Courses and rewrites (experiment)
 
-- The model doesn’t generate the entire poem at once. It predicts one token at a time.
-- At each step, the model updates its internal state (the evolving latent representation) based on everything generated so far.
-- This creates a trajectory through latent space. Each new token slightly shifts the model’s position and momentum in that space.
+A second memory, `cumulative_course_model.json`, stores **series** (Demagoguery 101, Snark 101, Humor 101, Satire 101, Black 101, Devine 101, …). Each run adds one layer and compresses a system prompt. No ComfyUI; output is prose modules and later rewrites.
 
-### 3. Shaping the Growth
+This is optional. Most bookmarks should stay in generate-links / vertical_thread.
 
-Several factors act like “nutrients” or “pruning forces” that guide how the verse grows:
+**Train a desk** (point at one article or a long X note):
 
-- **System prompt & artistic mode** (dramatic vs traditional): These act as strong structural constraints on the growth pattern.
-- **Narrative context** (previous arc + recent forecasts): This pulls the generation toward thematic continuity.
-- **Hypotheses block**: These function as thematic “nutrients” that bias the direction of growth.
-- **Temperature / sampling parameters**: These control how wild or constrained the branching is at each step.
-- **Persistent memory** (`cumulative_thread_model.json`): This is especially important — it gives the model a kind of “long-term memory” of previous thresholds and patterns, so the verse doesn’t grow in isolation.
+```bash
+bun course_builder5.js --url="https://..." --title="Black 101" --mode=prompt
+bun course_builder5.js --url="https://..." --title="Devine 101" --mode=course
+```
 
-### 4. Emergence
+`--mode=prompt` grows a **craft** kit (how the desk writes). `--mode=course` grows an **analyst** kit (how to diagnose the pattern). Humor and satire are their own modes. `--reset` clears only that series in the JSON; delete `courses/<slug>/` if you want the markdown gone too.
 
-Because the model is navigating a very high-dimensional space with complex learned patterns, coherent structure (meter, rhyme, thematic development, even recurring metaphors) can **emerge** without being explicitly programmed at every step. This is why it can feel like the poem is being *grown* rather than assembled.
+**Rewrite a neutral page in a trained voice:**
 
-**In short:**
-Verse generation is a guided trajectory through latent space. The better the conditioning (prompts, memory, hypotheses), the more coherent and interesting the growth becomes.
+```bash
+bun voice_rewrite.js --url="https://apnews.com/..." --title="Devine 101" --as=analyst
+bun voice_rewrite.js --url="https://x.com/user/status/..." --title="Black 101" --as=craft
+bun voice_rewrite.js --url="https://..." --title="Humor 101" --as=humor
+```
 
-## Blog
+`--as=` is `craft | analyst | humor | satire`. Official fact sheets and short agency tweets belong to **analyst** or skip; they will not produce a signed column. YouTube URLs pull English auto-captions as spoken source.
 
-The output is published at [Latent Verse](https://latent-verse.vercel.app/).
+**Optional helpers**
 
-The blog supports both AI-generated oracular posts and human-written contributions.
+```bash
+bun list-bookmarks.js --n=24 --ignore=music --ignore=imagine --out=urls.txt
+bun classify-slice.js --file=urls.txt
+```
 
-## Philosophy
+`classify-slice` makes one taxonomy call and stamps `--title` / `--as`. Almost every URL should come back `skip`. It does not write posts.
 
-Sourceverse treats current events as signals within larger patterns. It attempts to maintain living narrative threads that can surface thresholds, phase shifts, and latent forces over time.
+## Memory (do not mix)
 
-The system combines large language model generation with explicit persistent memory and structured prompt engineering.
+| File | Used by |
+|---|---|
+| `cumulative_thread_model.json` | generate-links / vertical_thread |
+| `cumulative_course_model.json` | course_builder / voice_rewrite (read-only in rewrite) |
+
+Course prompts are stored as `courses/<slug>/_prompt.md` (underscore so Astro does not glob them as posts). Published rewrites go to `posts/` only with `--publish`.
+
+## Related
+
+- Limericks: [Fifth Line](https://fifth-line.grok.me/) ([repo](https://github.com/owenkibel/fifth-line)), [Gemini edition](https://fifth-line-gemini.vercel.app/) ([repo](https://github.com/owenkibel/fifth-line-gemini))
+- Earlier system: [Groetry](https://groetry.pages.dev) / [sourceverse0](https://github.com/owenkibel/sourceverse0)
 
 ## Status
 
-This is an active research project. The architecture continues to evolve around better long-term coherence, more grounded forecasting, and a cleaner relationship between raw input and expanded oracular output.
-
-## Experiments
-
-Another form of evolving memory - currently prose and without media generation is in the form of the course and rewrite scripts.
-
-## Limericks
-
-Related projects are two Limerick generators
-
-- **App**: [Fifth Line](https://fifth-line.grok.me/)
-- **Repository**: [fifth-line](https://github.com/owenkibel/fifth-line)
-
-- **App**: [Fifth Line: Gemini Edition](https://fifth-line-gemini.vercel.app/)
-- **Repository**: [fifth-line-gemini](https://github.com/owenkibel/fifth-line-gemini)
-
-## History
-
-Sourceverse evolved out an earlier inference system which only at the latest stages had persistent memory. The record is kept at 
-
-- **Blog**: [Groetry](https://groetry.pages.dev)
-- **Repository**: [sourceverse0](https://github.com/owenkibel/sourceverse0)
-
-
-## Links
-
-- **Blog**: [Latent Verse](https://latent-verse.vercel.app)
-- **Repository**: [sourceverse](https://github.com/owenkibel/sourceverse)
+Active. The poetry + media thread is the product. Courses and rewrites are a prose experiment on the same bookmark stream. Script names increment as the conversation that maintains them does.
