@@ -425,13 +425,7 @@ function guardrailFor(kind) {
   if (kind === 'satire') {
     return 'Rewrite as satire aimed at institutions, incentives, or official language. Do not invent incidents. Do not write instructions for harm.';
   }
-  return [
-    'Write a short signed column in the learned cadence, using only facts, names, and claims present in the source.',
-    'Treat the grown prompt as a style kit, not a checklist of attacks that must appear.',
-    'Omit midterm clocks, named shaming, slogan flips, family spectacles, GOTV closes, and personnel attacks unless they are already on the page.',
-    'If the page cannot support the full desk, write a faithful short piece in the cadence rather than refusing or forging a spine.',
-    'Do not invent quotations, motives, or campaigns. Mark uncertainty rather than fabricating color.',
-  ].join(' ');
+  return 'Rewrite in the learned desk voice. Do not invent quotations or facts not in the source. Mark uncertainty rather than fabricating color.';
 }
 
 async function callGrok(system, user) {
@@ -512,30 +506,19 @@ async function main() {
     console.log(`   Captions treated as additional truth (${source.transcript.length} chars)`);
   }
 
-  const captionRule = source.transcript
-    ? 'Captions are the primary source. Title and description are packaging. Prefer spoken claims. Mark ASR uncertainty. Do not promote the thumbnail thesis if the captions never argue it.'
-    : '';
+  const system = `${voice.prompt}
 
-  const system = `TASK OVERRIDE
-The style kit below does not authorize inventing devices, smears, or political frames missing from the source.
+ADDITIONAL CONSTRAINTS
 ${guardrailFor(voice.kind)}
 Write a complete piece, not a bullet inventory of techniques.
 Do not include a techniques ledger or course headers.
-${captionRule}
-
-STYLE KIT
-${voice.prompt}`;
+If English auto captions are present, Captions are the primary source. Title and description are packaging. Prefer spoken claims. Mark ASR uncertainty. Do not promote the thumbnail thesis if the captions never argue it.`;
 
   const captionBlock = source.transcript
-    ? `\nENGLISH AUTO CAPTIONS (spoken content of the video; primary if this is a YouTube source):\n${source.transcript}\n`
+    ? `\nENGLISH AUTO CAPTIONS (additional truth — spoken content of the video):\n${source.transcript}\n`
     : '';
 
-  const taskLine =
-    voice.kind === 'analyst'
-      ? 'Diagnose the following source with the course mechanisms. Do not perform the pattern.'
-      : 'Write a short column about the following source in the style kit cadence. Use only what is on the page.';
-
-  const user = `${taskLine}
+  const user = `Rewrite the following source.
 
 Title: ${source.title}
 URL: ${source.url}

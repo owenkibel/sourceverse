@@ -89,58 +89,6 @@ function findBestMatchForUrl(url, enrichedData) {
   return {};
 }
 
-function isXUrl(url) {
-  try {
-    const host = new URL(url).hostname.replace(/^www\./, '');
-    return host === 'x.com' || host === 'twitter.com' || host === 'mobile.twitter.com';
-  } catch {
-    return /x\.com|twitter\.com/i.test(String(url));
-  }
-}
-
-function xStatusId(url) {
-  const m = String(url).match(/status\/(\d+)/);
-  return m ? m[1] : null;
-}
-
-async function fetchXViaFx(url) {
-  const id = xStatusId(url);
-  if (!id) return null;
-  const endpoints = [
-    `https://api.fxtwitter.com/status/${id}`,
-    `https://api.vxtwitter.com/Twitter/status/${id}`,
-  ];
-  for (const ep of endpoints) {
-    try {
-      const res = await fetch(ep, {
-        headers: { 'User-Agent': 'Mozilla/5.0 Sourceverse-generate-links' },
-        signal: AbortSignal.timeout(12000),
-      });
-      if (!res.ok) continue;
-      const data = await res.json();
-      const tweet = data.tweet || data;
-      const text = String(tweet.text || tweet.full_text || '').trim();
-      if (!text) continue;
-      const author = tweet.author?.name || tweet.user_name || tweet.authorName || '';
-      const handle = tweet.author?.screen_name || tweet.user_screen_name || '';
-      const quote = tweet.quote || tweet.quoted_tweet || tweet.quoted_status;
-      const quoteText = quote
-        ? `\n\nQuoted:\n${quote.author?.name || quote.user_name || ''} ${quote.text || quote.full_text || ''}`.trim()
-        : '';
-      const media = tweet.media?.photos?.[0]?.url || tweet.media?.images?.[0] || tweet.media_extended?.[0]?.url || null;
-      return {
-        ogTitle: [author, handle && `@${handle}`].filter(Boolean).join(' ') || 'X post',
-        ogDescription: text + quoteText,
-        ogImage: media,
-        kind: 'x-fx',
-      };
-    } catch (err) {
-      console.warn(`  fx/vx Twitter ${ep} failed: ${err.message}`);
-    }
-  }
-  return null;
-}
-
 function getYouTubeVideoID(url) {
   if (!url) return null;
   try {
@@ -527,34 +475,18 @@ async function runVersificationMode(url, targetModel) {
     } catch (e) {}
   } else {
     let ogsSuccess = false;
-    if (isXUrl(targetFetchUrl)) {
-      try {
-        console.log('  fx/vx Twitter API extract...');
-        const fx = await fetchXViaFx(targetFetchUrl);
-        if (fx?.ogDescription) {
-          title = fx.ogTitle || title;
-          fullText = fx.ogDescription;
-          ogsSuccess = fullText.length > 200;
-          console.log(`  fx/vx got ${fullText.length} chars (${fx.kind})`);
-        }
-      } catch (e) {
-        console.warn(`  fx/vx failed: ${e.message}`);
+    try {
+      const { result, html } = await ogs({ url: targetFetchUrl, timeout: 12000 });
+      if (result?.ogTitle) title = result.ogTitle;
+      if (html) {
+        const cleanHtml = extractMainArticleText(html);
+        const sanitizeHtml = (await import('sanitize-html')).default;
+        const sanitizedHtml = sanitizeHtml(cleanHtml, { allowedTags: ['main', 'article', 'p', 'h1', 'h2', 'h3', 'section'] });
+        const { convert } = await import('html-to-text');
+        fullText = convert(sanitizedHtml, { wordwrap: false }).replace(/\s+/g, ' ').trim();
+        if (fullText.length > 200) ogsSuccess = true;
       }
-    }
-    if (!ogsSuccess) {
-      try {
-        const { result, html } = await ogs({ url: targetFetchUrl, timeout: 12000 });
-        if (result?.ogTitle) title = result.ogTitle;
-        if (html) {
-          const cleanHtml = extractMainArticleText(html);
-          const sanitizeHtml = (await import('sanitize-html')).default;
-          const sanitizedHtml = sanitizeHtml(cleanHtml, { allowedTags: ['main', 'article', 'p', 'h1', 'h2', 'h3', 'section'] });
-          const { convert } = await import('html-to-text');
-          fullText = convert(sanitizedHtml, { wordwrap: false }).replace(/\s+/g, ' ').trim();
-          if (fullText.length > 200) ogsSuccess = true;
-        }
-      } catch (e) {}
-    }
+    } catch (e) {}
 
     if (!ogsSuccess) {
       const pwData = await fetchWithPlaywright(targetFetchUrl, sharedBrowser, true);
@@ -825,35 +757,13 @@ console.log(`Processing batch ${batchIndex} → non-ignored bookmarks ${batchInd
           let ogData = { ogTitle: bm.name || '(no title)', ogDescription: '', ogImage: null };
           let ogsSuccess = false;
 
-          if (isXUrl(targetFetchUrl)) {
-            try {
-              console.log('  fx/vx Twitter API extract...');
-              const fx = await fetchXViaFx(targetFetchUrl);
-              if (fx?.ogDescription) {
-                ogData.ogTitle = fx.ogTitle || ogData.ogTitle;
-                ogData.ogDescription = fx.ogDescription;
-                if (fx.ogImage) ogData.ogImage = fx.ogImage;
-                ogsSuccess = fx.ogDescription.length > 200;
-                console.log(`  fx/vx got ${fx.ogDescription.length} chars (${fx.kind})`);
-              }
-            } catch (e) {
-              console.warn(`  fx/vx failed: ${e.message}`);
-            }
-          }
-
           try {
             const { result, html } = await ogs({ url: targetFetchUrl, timeout: 12000 });
             if (result?.ogTitle) {
-              if (!ogData.ogDescription || ogData.ogDescription.length < 200) {
-                ogData.ogTitle = result.ogTitle || bm.name;
-                ogData.ogDescription = result.ogDescription || ogData.ogDescription;
-              } else if (!ogData.ogTitle || ogData.ogTitle === bm.name) {
-                ogData.ogTitle = result.ogTitle || ogData.ogTitle;
-              }
-              if (!ogData.ogImage) {
-                ogData.ogImage = Array.isArray(result.ogImage) ? result.ogImage[0]?.url : result.ogImage;
-              }
-              ogsSuccess = ogsSuccess || true;
+              ogData.ogTitle = result.ogTitle || bm.name;
+              ogData.ogDescription = result.ogDescription || '';
+              ogData.ogImage = Array.isArray(result.ogImage) ? result.ogImage[0]?.url : result.ogImage;
+              ogsSuccess = true;
 
               if (html && !targetFetchUrl.includes('youtube.com') && !targetFetchUrl.includes('x.com')) {
                 const { convert } = await import('html-to-text');
@@ -881,14 +791,10 @@ console.log(`Processing batch ${batchIndex} → non-ignored bookmarks ${batchInd
             }
             
             if (!transcriptResult.transcript) {
-              if (isXUrl(targetFetchUrl) && (ogData.ogDescription || '').length > 400) {
-                console.log('  Skipping audio pipeline — fx/vx already returned status text.');
-              } else {
-                console.log(`  Text metadata absent or skipped. Initiating local sensory audio pipeline...`);
-                const soundscapeAnalysis = await extractAndAnalyzeAudio(targetFetchUrl);
-                if (soundscapeAnalysis) {
-                  transcriptResult.transcript = soundscapeAnalysis;
-                }
+              console.log(`  Text metadata absent or skipped. Initiating local sensory audio pipeline...`);
+              const soundscapeAnalysis = await extractAndAnalyzeAudio(targetFetchUrl);
+              if (soundscapeAnalysis) {
+                transcriptResult.transcript = soundscapeAnalysis;
               }
             }
           }

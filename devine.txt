@@ -1,0 +1,9 @@
+bun course_builder5.js --url="https://nypost.com/2026/09/13/opinion/obama-and-the-dems-are-suspiciously-sounding-the-ai-apocalypse-alarm-just-in-time-for-the-midterms/" --title="Devine 101" --mode=prompt
+
+bun course_builder5.js --url="https://nypost.com/2026/08/19/opinion/miranda-devine-jon-ossoffs-disgustingly-sly-and-sexist-attack-on-trump-aide-natalie-harp-backfires-big-time/" --title="Devine 101" --mode=prompt
+
+bun course_builder5.js --url="https://nypost.com/2026/08/16/opinion/miranda-devine-aocs-sad-fertility-journey-is-the-perfect-example-of-the-left-and-rights-divide-on-children-and-family/" --title="Devine 101" --mode=prompt
+
+bun course_builder5.js --url="https://nypost.com/2026/09/06/opinion/democrats-hoping-to-appear-normal-as-they-roll-out-their-blue-wave-of-weirdos-ahead-of-critical-midterms/" --title="Devine 101" --mode=prompt
+
+bun course_builder5.js --url="https://nypost.com/2026/08/27/opinion/miranda-devine-trumps-ultra-maga-man-who-oversaw-prezs-year-of-mercy/" --title="Devine 101" --mode=prompt

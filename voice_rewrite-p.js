@@ -25,21 +25,11 @@
  *   posts/ only with --publish
  *
  * Astro-safe front matter. Tags: Rewrite + series slug (+ voice kind).
- *
- * YouTube: yt-dlp English auto captions are additional source truth
- * (same helper as generate-links7.js).
  */
 
 import fs from 'fs/promises';
 import path from 'path';
-import os from 'os';
-import { exec } from 'child_process';
-import { promisify } from 'util';
 import ogs from 'open-graph-scraper';
-
-const execAsync = promisify(exec);
-const YTDLP_TIMEOUT_MS = 45000;
-const TRANSCRIPT_MAX_CHARS = 8000;
 
 const MODEL_PATH = 'cumulative_course_model.json';
 const COURSES_DIR = 'courses';
@@ -80,167 +70,6 @@ function yamlString(value) {
   return JSON.stringify(value == null ? '' : String(value));
 }
 
-function isXUrl(url) {
-  try {
-    const host = new URL(url).hostname.replace(/^www\./, '');
-    return host === 'x.com' || host === 'twitter.com' || host === 'mobile.twitter.com';
-  } catch {
-    return /x\.com|twitter\.com/i.test(url);
-  }
-}
-
-function isYouTubeUrl(url) {
-  try {
-    const host = new URL(url).hostname.replace(/^www\./, '');
-    return host.includes('youtube.com') || host === 'youtu.be';
-  } catch {
-    return /youtube\.com|youtu\.be/i.test(String(url));
-  }
-}
-
-function getYouTubeVideoID(url) {
-  if (!url) return null;
-  try {
-    const parsed = new URL(url);
-    if (parsed.hostname.includes('youtube.com') || parsed.hostname.includes('youtu.be')) {
-      if (parsed.pathname.startsWith('/shorts/') || parsed.pathname.startsWith('/embed/')) {
-        return parsed.pathname.split('/')[2]?.split(/[?#]/)[0] || null;
-      }
-      if (parsed.hostname.includes('youtu.be')) {
-        return parsed.pathname.substring(1).split(/[?#]/)[0] || null;
-      }
-      return parsed.searchParams.get('v');
-    }
-  } catch {
-    const match = String(url).match(/(?:v=|\/shorts\/|\/embed\/|\/)([^&\n?#]+)/);
-    return match ? match[1] : null;
-  }
-  return null;
-}
-
-function parseVttTranscript(transcript) {
-  if (!transcript || !transcript.includes('WEBVTT')) return '';
-  const lines = transcript.split('\n');
-  const transcriptLines = [];
-  let inCue = false;
-  for (let rawLine of lines) {
-    let line = rawLine.trim();
-    if (!line) continue;
-    if (
-      line === 'WEBVTT' ||
-      line.startsWith('Kind:') ||
-      line.startsWith('Language:') ||
-      line.startsWith('Style:') ||
-      line.startsWith('NOTE') ||
-      line.includes('-->')
-    ) {
-      inCue = line.includes('-->');
-      continue;
-    }
-    if (inCue || transcriptLines.length > 0) {
-      line = line.replace(/<[^>]*>/g, '').replace(/&[a-z]+;/gi, ' ').trim();
-      if (line) transcriptLines.push(line);
-    }
-  }
-  return transcriptLines.join(' ').replace(/\s+/g, ' ').trim();
-}
-
-async function extractYouTubeTranscript(url) {
-  if (url.includes('music.youtube.com')) {
-    console.log('  Skipping captions on music.youtube.com');
-    return '';
-  }
-  const videoID = getYouTubeVideoID(url);
-  if (!videoID) {
-    console.warn(`  Could not parse a YouTube video ID from ${url}`);
-    return '';
-  }
-
-  const runId = Date.now().toString(36) + Math.random().toString(36).slice(2);
-  const tempDir = os.tmpdir();
-  const vttPath = path.join(tempDir, `${videoID}-${runId}.en.vtt`);
-
-  try {
-    const files = await fs.readdir(tempDir);
-    for (const file of files) {
-      if (file.startsWith(`${videoID}-`) && file.endsWith('.en.vtt')) {
-        await fs.unlink(path.join(tempDir, file)).catch(() => {});
-      }
-    }
-  } catch {
-    /* ignore */
-  }
-
-  let transcript = '';
-  try {
-    console.log(`  yt-dlp English auto captions (ID: ${videoID})`);
-    await execAsync(
-      `yt-dlp --write-auto-sub --skip-download --sub-lang en --sub-format vtt --no-playlist -o "${path.join(tempDir, `${videoID}-${runId}`)}" "${url}"`,
-      { timeout: YTDLP_TIMEOUT_MS }
-    );
-    transcript = await fs.readFile(vttPath, 'utf8');
-  } catch (err) {
-    console.warn(`  yt-dlp captions failed: ${err.message}`);
-    try {
-      const files = await fs.readdir(tempDir);
-      const cachedFile = files.find((f) => f.startsWith(videoID) && f.endsWith('.en.vtt'));
-      if (cachedFile) transcript = await fs.readFile(path.join(tempDir, cachedFile), 'utf8');
-    } catch {
-      /* ignore */
-    }
-  }
-
-  await fs.unlink(vttPath).catch(() => {});
-
-  let clean = parseVttTranscript(transcript);
-  if (clean.length > TRANSCRIPT_MAX_CHARS) {
-    clean = clean.slice(0, TRANSCRIPT_MAX_CHARS) + '\n\n[Transcript truncated]';
-  }
-  if (clean) console.log(`  captions: ${clean.length} chars`);
-  return clean;
-}
-
-function xStatusId(url) {
-  const m = String(url).match(/status\/(\d+)/);
-  return m ? m[1] : null;
-}
-
-async function fetchXViaFx(url) {
-  const id = xStatusId(url);
-  if (!id) return null;
-  const endpoints = [
-    `https://api.fxtwitter.com/status/${id}`,
-    `https://api.vxtwitter.com/Twitter/status/${id}`,
-  ];
-  for (const ep of endpoints) {
-    try {
-      const res = await fetch(ep, {
-        headers: { 'User-Agent': 'Mozilla/5.0 Sourceverse-voice-rewrite' },
-        signal: AbortSignal.timeout(12000),
-      });
-      if (!res.ok) continue;
-      const data = await res.json();
-      const tweet = data.tweet || data;
-      const text = String(tweet.text || tweet.full_text || '').trim();
-      if (!text) continue;
-      const author = tweet.author?.name || tweet.user_name || tweet.authorName || '';
-      const handle = tweet.author?.screen_name || tweet.user_screen_name || '';
-      const quote = tweet.quote || tweet.quoted_tweet || tweet.quoted_status;
-      const quoteText = quote
-        ? `\n\nQuoted:\n${quote.author?.name || quote.user_name || ''} ${quote.text || quote.full_text || ''}`.trim()
-        : '';
-      return {
-        ogTitle: [author, handle && `@${handle}`].filter(Boolean).join(' ') || 'X post',
-        ogDescription: text + quoteText,
-        kind: 'x-fx',
-      };
-    } catch (err) {
-      console.warn(`  fx/vx Twitter ${ep} failed: ${err.message}`);
-    }
-  }
-  return null;
-}
-
 function stripHtml(html) {
   if (!html) return '';
   return html
@@ -263,46 +92,16 @@ async function enrichUrl(url) {
   let title = url;
   let description = '';
   let body = '';
-  let transcript = '';
-  let targetUrl = url;
-
-  if (targetUrl.includes('music.youtube.com/watch?v=')) {
-    const videoId = getYouTubeVideoID(targetUrl);
-    if (videoId) targetUrl = `https://www.youtube.com/watch?v=${videoId}`;
-  }
-
-  if (isYouTubeUrl(targetUrl)) {
-    transcript = await extractYouTubeTranscript(targetUrl);
-  }
-
-  if (isXUrl(url)) {
-    try {
-      console.log('  fx/vx Twitter API extract...');
-      const fx = await fetchXViaFx(url);
-      if (fx?.ogDescription) {
-        title = fx.ogTitle || title;
-        body = fx.ogDescription;
-        description = fx.ogDescription.slice(0, 280);
-        console.log(`  fx/vx got ${body.length} chars (${fx.kind})`);
-      }
-    } catch (err) {
-      console.warn(`  fx/vx failed: ${err.message}`);
+  try {
+    const { result, html } = await ogs({ url, timeout: 15000 });
+    title = result?.ogTitle || result?.twitterTitle || title;
+    description = result?.ogDescription || result?.twitterDescription || '';
+    if (html) {
+      const article = html.match(/<article[\s\S]*?<\/article>/i)?.[0] || html;
+      body = stripHtml(article);
     }
-  }
-
-  if (!body || body.length < 200) {
-    try {
-      const { result, html } = await ogs({ url, timeout: 15000 });
-      title = result?.ogTitle || result?.twitterTitle || title;
-      description = description || result?.ogDescription || result?.twitterDescription || '';
-      if (html) {
-        const article = html.match(/<article[\s\S]*?<\/article>/i)?.[0] || html;
-        const scraped = stripHtml(article);
-        if (scraped.length > (body || '').length) body = scraped;
-      }
-    } catch (err) {
-      console.warn(`  OGS failed (${err.message}). Falling back to fetch.`);
-    }
+  } catch (err) {
+    console.warn(`  OGS failed (${err.message}). Falling back to fetch.`);
   }
   if (!body || body.length < 200) {
     try {
@@ -313,26 +112,16 @@ async function enrichUrl(url) {
       if (!title || title === url) {
         title = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.trim() || title;
       }
-      const scraped = stripHtml(html);
-      if (scraped.length > (body || '').length) body = scraped;
+      body = stripHtml(html);
     } catch (err) {
       console.warn(`  Fetch fallback failed: ${err.message}`);
     }
   }
   let combined = [description, body].filter(Boolean).join('\n\n').trim();
-  if (description && body && body.startsWith(description.slice(0, 80))) {
-    combined = body;
-  }
   if (combined.length > SOURCE_CHAR_CAP) {
     combined = combined.slice(0, SOURCE_CHAR_CAP) + '\n\n[Source truncated]';
   }
-  return {
-    url: targetUrl,
-    title,
-    description,
-    transcript,
-    text: combined || '[No extractable text]',
-  };
+  return { url, title, description, text: combined || '[No extractable text]' };
 }
 
 function extractPromptFromMarkdown(md) {
@@ -425,13 +214,7 @@ function guardrailFor(kind) {
   if (kind === 'satire') {
     return 'Rewrite as satire aimed at institutions, incentives, or official language. Do not invent incidents. Do not write instructions for harm.';
   }
-  return [
-    'Write a short signed column in the learned cadence, using only facts, names, and claims present in the source.',
-    'Treat the grown prompt as a style kit, not a checklist of attacks that must appear.',
-    'Omit midterm clocks, named shaming, slogan flips, family spectacles, GOTV closes, and personnel attacks unless they are already on the page.',
-    'If the page cannot support the full desk, write a faithful short piece in the cadence rather than refusing or forging a spine.',
-    'Do not invent quotations, motives, or campaigns. Mark uncertainty rather than fabricating color.',
-  ].join(' ');
+  return 'Rewrite in the learned desk voice. Do not invent quotations or facts not in the source. Mark uncertainty rather than fabricating color.';
 }
 
 async function callGrok(system, user) {
@@ -508,41 +291,21 @@ async function main() {
 
   const source = await enrichUrl(urlArg);
   console.log(`   Source : ${source.title} (${source.text.length} chars)`);
-  if (source.transcript) {
-    console.log(`   Captions treated as additional truth (${source.transcript.length} chars)`);
-  }
 
-  const captionRule = source.transcript
-    ? 'Captions are the primary source. Title and description are packaging. Prefer spoken claims. Mark ASR uncertainty. Do not promote the thumbnail thesis if the captions never argue it.'
-    : '';
+  const system = `${voice.prompt}
 
-  const system = `TASK OVERRIDE
-The style kit below does not authorize inventing devices, smears, or political frames missing from the source.
+ADDITIONAL CONSTRAINTS
 ${guardrailFor(voice.kind)}
 Write a complete piece, not a bullet inventory of techniques.
-Do not include a techniques ledger or course headers.
-${captionRule}
+Do not include a techniques ledger or course headers.`;
 
-STYLE KIT
-${voice.prompt}`;
-
-  const captionBlock = source.transcript
-    ? `\nENGLISH AUTO CAPTIONS (spoken content of the video; primary if this is a YouTube source):\n${source.transcript}\n`
-    : '';
-
-  const taskLine =
-    voice.kind === 'analyst'
-      ? 'Diagnose the following source with the course mechanisms. Do not perform the pattern.'
-      : 'Write a short column about the following source in the style kit cadence. Use only what is on the page.';
-
-  const user = `${taskLine}
+  const user = `Rewrite the following source.
 
 Title: ${source.title}
 URL: ${source.url}
 
 SOURCE TEXT:
-${source.text}
-${captionBlock}`;
+${source.text}`;
 
   if (dryRun) {
     console.log('\n🧪 --dry-run: voice resolved, no API call.');

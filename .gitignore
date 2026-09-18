@@ -18,7 +18,11 @@ party*
 courses
 rewrites
 ref_audio_pool
+public
+bookmarks-list.txt
 *(Copy*
+urls.txt
+stamps
 
 # Ignore all hidden files...
 .*
