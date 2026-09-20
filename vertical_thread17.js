@@ -1435,55 +1435,55 @@ let audioRes = useGeminiAudio
 // ==========================================
     // DYNAMIC VIDEO/IMAGE MP4 STITCHING CORE
     // ==========================================
-    if (audioRes.success && (vidRes.success || imgRes.success)) {
-      try {
-        const outputMp4Name = `x_ready_media_${slugify(title)}_${Date.now()}.mp4`;
-        const outputMp4Path = path.join(IMAGES_DIR, outputMp4Name);
+    // if (audioRes.success && (vidRes.success || imgRes.success)) {
+    //   try {
+    //     const outputMp4Name = `x_ready_media_${slugify(title)}_${Date.now()}.mp4`;
+    //     const outputMp4Path = path.join(IMAGES_DIR, outputMp4Name);
 
-        if (vidRes.success) {
-          console.log(`🎬 Stitching 128s audio: Reversing video to freeze on pristine anchor frame...`);
-          await execFileAsync('ffmpeg', [
-            '-y',
-            '-i', path.join(IMAGES_DIR, vidRes.filename),
-            '-i', path.join(IMAGES_DIR, audioRes.filename),
-            '-map', '0:v:0',
-            '-map', '1:a:0',
-            '-vf', 'reverse,setpts=PTS-STARTPTS,tpad=stop_mode=clone:stop=-1',
-            '-c:v', 'libx264',
-            '-preset', 'fast',
-            '-crf', '26',
-            '-c:a', 'aac',
-            '-b:a', '192k',
-            '-pix_fmt', 'yuv420p',
-            '-shortest',
-            '-movflags', '+faststart',
-            outputMp4Path
-          ]);
-        } else {
-          console.log(`🖼️ Video unavailable. Falling back to still-image stitch (${imgRes.filename})...`);
-          await execFileAsync('ffmpeg', [
-            '-y',
-            '-loop', '1',
-            '-framerate', '24',
-            '-i', path.join(IMAGES_DIR, imgRes.filename),
-            '-i', path.join(IMAGES_DIR, audioRes.filename),
-            '-map', '0:v:0',
-            '-map', '1:a:0',
-            '-c:v', 'libx264',
-            '-tune', 'stillimage',
-            '-c:a', 'aac',
-            '-b:a', '192k',
-            '-pix_fmt', 'yuv420p',
-            '-shortest',
-            '-movflags', '+faststart',
-            outputMp4Path
-          ]);
-        }
-        console.log(`✅ Stitched media asset ready: ${outputMp4Name}`);
-      } catch (e) {
-        console.error(`⚠️ Media stitching pass failed: ${e.message}`);
-      }
-    }
+    //     if (vidRes.success) {
+    //       console.log(`🎬 Stitching 128s audio: Reversing video to freeze on pristine anchor frame...`);
+    //       await execFileAsync('ffmpeg', [
+    //         '-y',
+    //         '-i', path.join(IMAGES_DIR, vidRes.filename),
+    //         '-i', path.join(IMAGES_DIR, audioRes.filename),
+    //         '-map', '0:v:0',
+    //         '-map', '1:a:0',
+    //         '-vf', 'reverse,setpts=PTS-STARTPTS,tpad=stop_mode=clone:stop=-1',
+    //         '-c:v', 'libx264',
+    //         '-preset', 'fast',
+    //         '-crf', '26',
+    //         '-c:a', 'aac',
+    //         '-b:a', '192k',
+    //         '-pix_fmt', 'yuv420p',
+    //         '-shortest',
+    //         '-movflags', '+faststart',
+    //         outputMp4Path
+    //       ]);
+    //     } else {
+    //       console.log(`🖼️ Video unavailable. Falling back to still-image stitch (${imgRes.filename})...`);
+    //       await execFileAsync('ffmpeg', [
+    //         '-y',
+    //         '-loop', '1',
+    //         '-framerate', '24',
+    //         '-i', path.join(IMAGES_DIR, imgRes.filename),
+    //         '-i', path.join(IMAGES_DIR, audioRes.filename),
+    //         '-map', '0:v:0',
+    //         '-map', '1:a:0',
+    //         '-c:v', 'libx264',
+    //         '-tune', 'stillimage',
+    //         '-c:a', 'aac',
+    //         '-b:a', '192k',
+    //         '-pix_fmt', 'yuv420p',
+    //         '-shortest',
+    //         '-movflags', '+faststart',
+    //         outputMp4Path
+    //       ]);
+    //     }
+    //     console.log(`✅ Stitched media asset ready: ${outputMp4Name}`);
+    //   } catch (e) {
+    //     console.error(`⚠️ Media stitching pass failed: ${e.message}`);
+    //   }
+    // }
 
 
     // Clean up raw audio intermediates
