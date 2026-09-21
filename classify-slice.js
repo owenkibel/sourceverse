@@ -282,7 +282,7 @@ async function callGrok(system, user) {
         { role: 'system', content: system },
         { role: 'user', content: user },
       ],
-      temperature: 0.2,
+      temperature: 0.4,
       max_tokens: 2500,
       reasoning_effort: 'low',
     }),
@@ -350,7 +350,11 @@ Each object:
 {"url":"...","form":"instrument|wire|signed-column|x-short|x-long|youtube-talk|paywall|page|noise","train":"skip|prompt|course|humor|satire","rewrite":"skip|analyst|craft|humor|satire","series":["slug"],"confidence":0.0,"why":"≤20 words"}
 
 Rules:
-- Default is skip. Keepers should be a small minority.
+- Skip junk, instruments, thin official X, and paywalled stubs.
+- If the slice contains any wire, x-long note, or signed column that matches the catalog, mark 1–3 keepers.
+- Prefer rewrite=analyst over skip for a process/calendar wire.
+- Prefer train=prompt and rewrite=skip when the page IS the trained author (Black writing as Black).
+- Do not return an all-skip array when at least one URL is a wire or x-long.
 - instrument (fact sheet, AFD, proclamation, FR notice) → rewrite analyst or skip; never craft.
 - x-short official posts → skip or analyst; never craft.
 - paywall with thin snippet → skip.
