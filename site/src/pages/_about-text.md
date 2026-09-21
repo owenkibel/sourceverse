@@ -19,6 +19,6 @@ While the majority of published work is currently generated through this pipelin
 
 Latent Verse takes its name from the recognition that the verse it publishes is not retrieved or assembled but grown within the high-dimensional space of large language models. The work is therefore always provisional — shaped by the particular conditioning of prompts, memory, and hypotheses active at the moment of generation. Its value lies less in any claim to finality than in the record it keeps of how patterns, thresholds, and tensions move across time.
 
-The blog is published at [latent-verse.vercel.app](https://latent-verse.vercel.app).
+<!-- The blog is published at [latent-verse.vercel.app](https://latent-verse.vercel.app). -->
 
 The source is published at [sourceverse](https://github.com/owenkibel/sourceverse).
