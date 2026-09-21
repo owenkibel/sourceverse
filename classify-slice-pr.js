@@ -10,7 +10,9 @@
  *   bun classify-slice.js --url="https://..." --url="https://..."
  *   bun classify-slice.js --file=urls.txt --out=stamps/devine-pass
  *
- * Optional: --model=grok-4.7  --dry-run
+ * Optional:
+ *   --model=grok-4.6
+ *   --dry-run
  *
  * Reads series names from cumulative_course_model.json when present.
  * Writes <out>.jsonl and <out>.md (default stamps/stamps-<stamp>).
@@ -30,10 +32,7 @@ const fileArg = args.find((a) => a.startsWith('--file='))?.slice(7);
 const outArg = args.find((a) => a.startsWith('--out='))?.slice(6);
 const modelArg = args.find((a) => a.startsWith('--model='))?.slice(8);
 const dryRun = args.includes('--dry-run');
-const urlArgs = args
-  .filter((a) => a.startsWith('--url='))
-  .map((a) => a.slice(6).trim())
-  .filter(Boolean);
+const urlArgs = args.filter((a) => a.startsWith('--url=')).map((a) => a.slice(6).trim()).filter(Boolean);
 
 const KNOWN_DEFAULTS = [
   { slug: 'demagoguery-101', title: 'Demagoguery 101', kinds: ['analyst'] },
@@ -59,11 +58,6 @@ function hostOf(url) {
 function isXUrl(url) {
   const h = hostOf(url);
   return h === 'x.com' || h === 'twitter.com' || h === 'mobile.twitter.com';
-}
-
-function isShortener(url) {
-  const h = hostOf(url);
-  return h === 't.co' || h === 'bit.ly' || h === 'tinyurl.com' || h === 'lnkd.in';
 }
 
 function xStatusId(url) {
@@ -106,27 +100,11 @@ function packFxTweet(tweet, extraText = '', kind = 'x-fx') {
   const quoteText = quote
     ? `\n\nQuoted:\n${quote.author?.name || quote.user_name || ''} ${tweetText(quote)}`.trim()
     : '';
-  const ogDescription = [text + quoteText, extraText].filter(Boolean).join('\n\n');
   return {
     ogTitle: [author, handle && `@${handle}`].filter(Boolean).join(' ') || 'X post',
-    ogDescription,
+    ogDescription: [text + quoteText, extraText].filter(Boolean).join('\n\n'),
     kind,
-    chars: ogDescription.length,
   };
-}
-
-async function resolveRedirect(url) {
-  try {
-    const res = await fetch(url, {
-      method: 'GET',
-      redirect: 'follow',
-      headers: { 'User-Agent': 'Mozilla/5.0 Sourceverse-classify-slice' },
-      signal: AbortSignal.timeout(8000),
-    });
-    return res.url || url;
-  } catch {
-    return url;
-  }
 }
 
 async function fetchXViaFx(url) {
@@ -150,7 +128,6 @@ async function fetchXViaFx(url) {
           const packed = packFxTweet(root, '', 'x-fx-thread');
           if (packed) {
             packed.ogDescription = body;
-            packed.chars = body.length;
             packed.threadCount = same.length;
             return packed;
           }
@@ -174,10 +151,7 @@ async function fetchXViaFx(url) {
       if (!res.ok) continue;
       const data = await res.json();
       const packed = packFxTweet(data.tweet || data, '', 'x-fx');
-      if (packed) {
-        packed.threadCount = 1;
-        return packed;
-      }
+      if (packed) return packed;
     } catch (err) {
       console.warn(`  fx/vx ${ep} failed: ${err.message}`);
     }
@@ -185,31 +159,17 @@ async function fetchXViaFx(url) {
   return null;
 }
 
-function peekFromFx(url, fx, nameHint = '') {
-  const text = String(fx.ogDescription || fx.snippet || '');
-  const chars = Number.isFinite(fx.chars) ? fx.chars : text.length;
-  return {
-    url,
-    host: hostOf(url),
-    title: fx.ogTitle || fx.title || nameHint || url,
-    nameHint,
-    snippet: text.slice(0, SNIPPET_CAP),
-    chars,
-    formHint: fx.threadCount > 1 || chars >= 400 ? 'x-long' : 'x-short',
-    kind: fx.kind || 'x-fx',
-    threadCount: fx.threadCount || 1,
-  };
-}
-
-async function peekUrl(url, nameHint = '') {
+async function peekUrl(url) {
   const guessed = formGuess(url);
-  let title = nameHint || url;
+  let title = url;
   let snippet = '';
   let chars = 0;
 
   if (isXUrl(url)) {
     const fx = await fetchXViaFx(url);
-    if (fx) return peekFromFx(url, fx, nameHint);
+    if (fx) {
+      return { url, host: hostOf(url), formHint: fx.chars < 400 ? 'x-short' : 'x-long', ...fx };
+    }
   }
 
   try {
@@ -221,7 +181,7 @@ async function peekUrl(url, nameHint = '') {
     snippet = `(ogs failed: ${err.message})`;
   }
 
-  return { url, host: hostOf(url), title, nameHint, snippet, chars, formHint: guessed };
+  return { url, host: hostOf(url), title, snippet, chars, formHint: guessed };
 }
 
 async function loadSeriesCatalog() {
@@ -242,7 +202,7 @@ async function loadSeriesCatalog() {
       });
     }
   } catch {
-    /* defaults */
+    /* use defaults */
   }
   const seen = new Set(fromFile.map((s) => s.slug));
   for (const d of KNOWN_DEFAULTS) {
@@ -252,34 +212,17 @@ async function loadSeriesCatalog() {
 }
 
 async function readUrlList() {
-  const items = urlArgs.map((url) => ({ url, name: '' }));
+  const out = [...urlArgs];
   if (fileArg) {
     const raw = await fs.readFile(fileArg, 'utf8');
-    let pendingName = '';
     for (const line of raw.split('\n')) {
       const t = line.trim();
-      if (!t || t.startsWith('#')) {
-        if (!t) pendingName = '';
-        continue;
-      }
+      if (!t || t.startsWith('#')) continue;
       const m = t.match(/https?:\/\/\S+/);
-      if (m) {
-        items.push({ url: m[0].replace(/[)>,]+$/, ''), name: pendingName });
-        pendingName = '';
-      } else {
-        pendingName = t.slice(0, 160);
-      }
+      if (m) out.push(m[0].replace(/[)>,]+$/, ''));
     }
   }
-  const seen = new Set();
-  const out = [];
-  for (const item of items) {
-    if (seen.has(item.url)) continue;
-    seen.add(item.url);
-    out.push(item);
-    if (out.length >= MAX_URLS) break;
-  }
-  return out;
+  return [...new Set(out)].slice(0, MAX_URLS);
 }
 
 function parseJsonBlock(raw) {
@@ -295,22 +238,16 @@ function normalizeStamp(item, peeks, catalog) {
   const peek = peeks.find((p) => p.url === url) || {};
   const slugs = new Set(catalog.map((s) => s.slug));
   let series = Array.isArray(item.series) ? item.series : item.series ? [item.series] : [];
-  series = series
-    .map((s) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''))
-    .filter((s) => slugs.has(s));
+  series = series.map((s) => String(s).toLowerCase().replace(/[^a-z0-9-]+/g, '-')).filter((s) => slugs.has(s));
   let rewrite = String(item.rewrite || 'skip').toLowerCase();
   if (!['skip', 'analyst', 'craft', 'humor', 'satire'].includes(rewrite)) rewrite = 'skip';
   let train = String(item.train || 'skip').toLowerCase();
   if (!['skip', 'prompt', 'course', 'humor', 'satire'].includes(train)) train = 'skip';
   const form = String(item.form || peek.formHint || 'page');
-  if ((form === 'instrument' || (form === 'paywall' && (peek.chars || 0) < 120)) && rewrite === 'craft') {
-    rewrite = 'analyst';
+  if (form === 'instrument' || form === 'paywall' && (peek.chars || 0) < 120) {
+    if (rewrite === 'craft') rewrite = 'analyst';
   }
   if (form === 'x-short' && rewrite === 'craft') rewrite = 'skip';
-  if ((peek.chars || 0) < 80 && form !== 'x-long') {
-    rewrite = 'skip';
-    train = 'skip';
-  }
   if (!series.length) {
     rewrite = 'skip';
     train = 'skip';
@@ -328,7 +265,6 @@ function normalizeStamp(item, peeks, catalog) {
     as: rewrite === 'skip' ? '' : rewrite,
     confidence: Number(item.confidence) || 0,
     why: String(item.why || '').slice(0, 180),
-    chars: peek.chars || 0,
   };
 }
 
@@ -379,31 +315,21 @@ ${rows}
 }
 
 async function main() {
-  const items = await readUrlList();
-  if (!items.length) {
+  const urls = await readUrlList();
+  if (!urls.length) {
     console.error('Pass --file=urls.txt and/or --url=https://...');
     process.exit(1);
   }
 
   const catalog = await loadSeriesCatalog();
-  console.log(`🔖 classify-slice · ${items.length} urls · series ${catalog.map((s) => s.slug).join(', ')}`);
+  console.log(`🔖 classify-slice · ${urls.length} urls · series ${catalog.map((s) => s.slug).join(', ')}`);
 
   const peeks = [];
-  for (const item of items) {
-    let url = item.url;
-    if (isShortener(url)) {
-      const resolved = await resolveRedirect(url);
-      if (resolved !== url) {
-        console.log(`  resolve ${hostOf(url)} → ${hostOf(resolved)}`);
-        url = resolved;
-        item.url = resolved;
-      }
-    }
+  for (const url of urls) {
     process.stdout.write(`  peek ${hostOf(url)} ... `);
-    const p = await peekUrl(url, item.name);
+    const p = await peekUrl(url);
     peeks.push(p);
-    const extra = p.threadCount > 1 ? ` · ${p.threadCount} posts` : '';
-    console.log(`${p.formHint} · ${p.chars}c${extra}`);
+    console.log(`${p.formHint} · ${p.chars}c`);
   }
 
   const catalogLines = catalog
@@ -413,7 +339,7 @@ async function main() {
   const peekBlock = peeks
     .map(
       (p, i) =>
-        `${i + 1}. ${p.url}\n   host: ${p.host}\n   formHint: ${p.formHint}\n   bookmark: ${p.nameHint || '—'}\n   title: ${p.title}\n   chars: ${p.chars}\n   snippet: ${p.snippet}`
+        `${i + 1}. ${p.url}\n   host: ${p.host}\n   formHint: ${p.formHint}\n   title: ${p.title}\n   chars: ${p.chars}\n   snippet: ${p.snippet}`
     )
     .join('\n\n');
 
@@ -424,18 +350,22 @@ Each object:
 {"url":"...","form":"instrument|wire|signed-column|x-short|x-long|youtube-talk|paywall|page|noise","train":"skip|prompt|course|humor|satire","rewrite":"skip|analyst|craft|humor|satire","series":["slug"],"confidence":0.0,"why":"≤20 words"}
 
 Rules:
-- Skip junk, instruments, thin official X, paywalled stubs, and rows with chars under 80.
+- Skip junk, instruments, thin official X, and paywalled stubs.
 - If the slice contains any wire, x-long note, or signed column that matches the catalog, mark 1–3 keepers.
-- Prefer rewrite=analyst over skip for a process or calendar wire.
+- Prefer rewrite=analyst over skip for a process/calendar wire.
 - Prefer train=prompt and rewrite=skip when the page IS the trained author (Black writing as Black).
-- Do not return an all-skip array when at least one URL is a wire or x-long with a real snippet.
-- signed-column by a trained desk → series for that desk; usually train only.
+- Do not return an all-skip array when at least one URL is a wire or x-long.
+- instrument (fact sheet, AFD, proclamation, FR notice) → rewrite analyst or skip; never craft.
+- x-short official posts → skip or analyst; never craft.
+- paywall with thin snippet → skip.
+- signed-column by a trained desk → series for that desk; train prompt and/or course; rewrite only if someone would actually run voice_rewrite on it (usually skip columns that ARE the desk).
+- wire/process story with a calendar, conversion, or official leftover → analyst + demagoguery-101 and/or devine-101 if the conversion matches.
 - wire with named harm + official answer → craft possible for devine-101; else analyst.
-- long signed argument (Sacks-like, Black-like) → black-101; train if it IS Black, craft rewrite only if it is someone else in that cadence.
-- Futurism-style tech pejorative → snark-101.
+- long signed argument (Sacks-like, Black-like) → black-101 craft, not Devine.
+- Futurism-style tech pejorative → snark-101, usually skip rewrite unless asked.
 - comic observation → humor-101; institutional parody → satire-101.
-- series must be catalog slugs. Empty series means skip.
-- why must cite form and chars, not politics.`;
+- series must be one of the catalog slugs. Empty series means skip.
+- why must cite form, not politics.`;
 
   const user = `CATALOG\n${catalogLines}\n\nURLS\n${peekBlock}`;
 
@@ -459,15 +389,12 @@ Rules:
   await fs.writeFile(jsonlPath, stamps.map((s) => JSON.stringify(s)).join('\n') + '\n', 'utf8');
   await fs.writeFile(mdPath, buildMarkdown(stamps), 'utf8');
 
-  const keepers = stamps.filter((s) => s.rewrite !== 'skip' || s.train !== 'skip');
+  const keepers = stamps.filter((s) => s.rewrite !== 'skip');
   console.log(`✅ ${jsonlPath}`);
   console.log(`✅ ${mdPath}`);
   console.log(`   keepers ${keepers.length}/${stamps.length}`);
   for (const s of keepers) {
-    const bits = [];
-    if (s.as) bits.push(`--as=${s.as}`);
-    if (s.train !== 'skip') bits.push(`train=${s.train}`);
-    console.log(`   --title="${s.title}" ${bits.join(' ')}  ${s.url}`);
+    console.log(`   --title="${s.title}" --as=${s.as}  ${s.url}`);
   }
 }
 
