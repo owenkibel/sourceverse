@@ -45,7 +45,7 @@ const MODEL_PATH = 'cumulative_course_model.json';
 const COURSES_DIR = 'courses';
 const REWRITES_DIR = 'rewrites';
 const POSTS_DIR = 'posts';
-const DEFAULT_MODEL = process.env.XAI_MODEL || 'grok-4.7';
+const DEFAULT_MODEL = process.env.XAI_MODEL || 'grok-4.6';
 const SOURCE_CHAR_CAP = 10000;
 
 const args = process.argv.slice(2);
@@ -205,61 +205,9 @@ function xStatusId(url) {
   return m ? m[1] : null;
 }
 
-function tweetText(t) {
-  return String(t?.text || t?.full_text || '').trim();
-}
-
-function tweetHandle(t) {
-  return String(t?.author?.screen_name || t?.user_screen_name || t?.authorName || '').toLowerCase();
-}
-
-function packFxTweet(tweet, extraText = '', kind = 'x-fx') {
-  const text = tweetText(tweet);
-  if (!text) return null;
-  const author = tweet.author?.name || tweet.user_name || tweet.authorName || '';
-  const handle = tweet.author?.screen_name || tweet.user_screen_name || '';
-  const quote = tweet.quote || tweet.quoted_tweet || tweet.quoted_status;
-  const quoteText = quote
-    ? `\n\nQuoted:\n${quote.author?.name || quote.user_name || ''} ${tweetText(quote)}`.trim()
-    : '';
-  return {
-    ogTitle: [author, handle && `@${handle}`].filter(Boolean).join(' ') || 'X post',
-    ogDescription: [text + quoteText, extraText].filter(Boolean).join('\n\n'),
-    kind,
-  };
-}
-
 async function fetchXViaFx(url) {
   const id = xStatusId(url);
   if (!id) return null;
-
-  try {
-    const res = await fetch(`https://api.fxtwitter.com/2/thread/${id}`, {
-      headers: { 'User-Agent': 'Mozilla/5.0 Sourceverse-fx-thread' },
-      signal: AbortSignal.timeout(12000),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      const parts = data.thread || data.tweets || [];
-      if (parts.length > 1) {
-        const root = parts[0];
-        const handle = tweetHandle(root);
-        const same = parts.filter((p) => !handle || tweetHandle(p) === handle);
-        const body = same.map(tweetText).filter(Boolean).join('\n\n');
-        if (body.length > tweetText(root).length) {
-          const packed = packFxTweet(root, '', 'x-fx-thread');
-          if (packed) {
-            packed.ogDescription = body;
-            packed.threadCount = same.length;
-            return packed;
-          }
-        }
-      }
-    }
-  } catch (err) {
-    console.warn(`  fx thread failed: ${err.message}`);
-  }
-
   const endpoints = [
     `https://api.fxtwitter.com/status/${id}`,
     `https://api.vxtwitter.com/Twitter/status/${id}`,
@@ -267,15 +215,27 @@ async function fetchXViaFx(url) {
   for (const ep of endpoints) {
     try {
       const res = await fetch(ep, {
-        headers: { 'User-Agent': 'Mozilla/5.0 Sourceverse-fx' },
+        headers: { 'User-Agent': 'Mozilla/5.0 Sourceverse-voice-rewrite' },
         signal: AbortSignal.timeout(12000),
       });
       if (!res.ok) continue;
       const data = await res.json();
-      const packed = packFxTweet(data.tweet || data, '', 'x-fx');
-      if (packed) return packed;
+      const tweet = data.tweet || data;
+      const text = String(tweet.text || tweet.full_text || '').trim();
+      if (!text) continue;
+      const author = tweet.author?.name || tweet.user_name || tweet.authorName || '';
+      const handle = tweet.author?.screen_name || tweet.user_screen_name || '';
+      const quote = tweet.quote || tweet.quoted_tweet || tweet.quoted_status;
+      const quoteText = quote
+        ? `\n\nQuoted:\n${quote.author?.name || quote.user_name || ''} ${quote.text || quote.full_text || ''}`.trim()
+        : '';
+      return {
+        ogTitle: [author, handle && `@${handle}`].filter(Boolean).join(' ') || 'X post',
+        ogDescription: text + quoteText,
+        kind: 'x-fx',
+      };
     } catch (err) {
-      console.warn(`  fx/vx ${ep} failed: ${err.message}`);
+      console.warn(`  fx/vx Twitter ${ep} failed: ${err.message}`);
     }
   }
   return null;

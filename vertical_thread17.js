@@ -28,7 +28,7 @@ const HEART_INBOX = '/home/owen/ai-projects/heartmula/inbox';
 const HEART_OUTBOX = '/home/owen/ai-projects/heartmula/outbox';
 
 // Near the top
-const MODEL_GROK = "grok-4.6";   // was "grok-4.3"
+const MODEL_GROK = "grok-4.7";   // was "grok-4.3"
 const MAX_CHARS_GEMINI = 1900000;
 const MAX_CHARS_GROK = 50000;   // was 35000
 
