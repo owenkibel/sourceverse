@@ -24,6 +24,7 @@ bookmarks-list.txt
 urls.txt
 stamps
 limericks
+last-bookmark-timestamp.txt
 
 # Ignore all hidden files...
 .*
