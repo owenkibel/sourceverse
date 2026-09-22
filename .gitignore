@@ -25,6 +25,7 @@ urls.txt
 stamps
 limericks
 last-bookmark-timestamp.txt
+cumulative_course_model.json
 
 # Ignore all hidden files...
 .*
