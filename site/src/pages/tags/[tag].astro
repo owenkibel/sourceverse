@@ -1,41 +1,246 @@
 ---
-// site/src/pages/tags/[tag].astro
 import { getCollection } from 'astro:content';
 
 export async function getStaticPaths() {
-  const allPosts = await getCollection('blog');
-  
-  const uniqueTags = [
-    ...new Set(
-      allPosts
-        .flatMap((post) => post.data.tags || [])
-        .filter(Boolean)
-    )
-  ];
+  let allPosts = [];
 
-  return uniqueTags.map((tag) => {
-    const filteredPosts = allPosts.filter((post) => 
-      post.data.tags?.map(t => t.toLowerCase()).includes(tag.toLowerCase())
-    );
-    
+  // 1. Try Content Collections ('blog' then 'posts')
+  try {
+    allPosts = await getCollection('blog', ({ data }) => !data.draft);
+  } catch {
+    try {
+      allPosts = await getCollection('posts', ({ data }) => !data.draft);
+    } catch {
+      allPosts = [];
+    }
+  }
+
+  // 2. Fallback to glob if collection lookup yields no posts
+  if (!allPosts || allPosts.length === 0) {
+    try {
+      const rawPosts = Object.values(import.meta.glob('../posts/*.{md,mdx}', { eager: true }));
+      allPosts = rawPosts.map((p: any) => ({
+        data: p.frontmatter || {},
+        slug: p.url?.replace(/^\/posts\//, '').replace(/\/$/, '') || '',
+        url: p.url,
+      }));
+    } catch {
+      allPosts = [];
+    }
+  }
+
+  // 3. Extract unique tags preserving raw case
+  const rawTags = allPosts.flatMap((post: any) => post.data.tags || []);
+  const uniqueTags = [...new Set(rawTags)];
+
+  // 4. Return routes for each tag
+  return uniqueTags.map((t: string) => {
+    const filteredPosts = allPosts
+      .filter((post: any) =>
+        (post.data.tags || []).some(
+          (postTag: string) => postTag.toLowerCase() === t.toLowerCase()
+        )
+      )
+      .sort((a: any, b: any) => {
+        const dateA = new Date(a.data.pubDate || a.data.date || 0).getTime();
+        const dateB = new Date(b.data.pubDate || b.data.date || 0).getTime();
+        return dateB - dateA;
+      });
+
     return {
-      params: { tag: tag.toLowerCase() },
-      props: { posts: filteredPosts, tagName: tag }
+      params: { tag: t },
+      props: { posts: filteredPosts, currentTag: t },
     };
   });
 }
 
 const { tag } = Astro.params;
-const { posts, tagName } = Astro.props;
+const { posts, currentTag } = Astro.props;
 ---
 
-<h1>Posts Tagged With: {tagName}</h1>
-<ul>
-  {posts.map((post) => (
-    <li>
-      {/* post.id automatically provides the extensionless filename */}
-      <a href={`/blog/${post.id.toLowerCase()}`}>{post.data.title}</a> 
-      <span>by {post.data.author}</span>
-    </li>
-  ))}
-</ul>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>#{currentTag || tag} | Latent Verse</title>
+    <link rel="stylesheet" href="/styles/global.css" />
+  </head>
+  <body>
+    <main class="tag-archive-container">
+      <header class="tag-archive-header">
+        <nav class="breadcrumb">
+          <a href="/tags/" class="back-link">&larr; All Tags</a>
+        </nav>
+        <div class="title-row">
+          <h1 class="tag-title">#{currentTag || tag}</h1>
+          <span class="count-badge">{posts.length} {posts.length === 1 ? 'entry' : 'entries'}</span>
+        </div>
+        <p class="tag-subtext">Chronological archive of verses, audio, and generations tagged under #{currentTag || tag}.</p>
+      </header>
+
+      <section class="posts-grid">
+        {posts.map((post: any) => {
+          const rawDate = post.data.pubDate || post.data.date;
+          const dateObj = rawDate ? new Date(rawDate) : null;
+          const formattedDate = dateObj && !isNaN(dateObj.getTime())
+            ? dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+            : '';
+          const rawSlug = (post.slug || post.id || '')
+  .replace(/^\/?(posts|blog)\//, '')
+  .replace(/\.(md|mdx)$/, '');
+const postUrl = `/blog/${rawSlug}/`;
+
+          return (
+            <article class="post-card">
+              <div class="card-meta">
+                {formattedDate && <time datetime={dateObj.toISOString()}>{formattedDate}</time>}
+                {post.data.author && <span class="author-label">by {post.data.author}</span>}
+              </div>
+
+              <h2 class="card-title">
+                <a href={postUrl}>{post.data.title || 'Untitled'}</a>
+              </h2>
+
+              {post.data.description && (
+                <p class="card-desc">{post.data.description}</p>
+              )}
+
+              {post.data.tags && post.data.tags.length > 1 && (
+                <div class="card-tags">
+                  {post.data.tags
+                    .filter((t: string) => t.toLowerCase() !== (currentTag || tag || '').toLowerCase())
+                    .map((t: string) => (
+                      <a href={`/tags/${t}/`} class="sub-tag">#{t}</a>
+                    ))}
+                </div>
+              )}
+            </article>
+          );
+        })}
+      </section>
+    </main>
+  </body>
+</html>
+
+<style>
+  body {
+    background-color: #0f0f11;
+    color: #e4e4e7;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  .tag-archive-container {
+    max-width: 860px;
+    margin: 2.5rem auto;
+    padding: 0 1.25rem;
+  }
+  .tag-archive-header {
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .breadcrumb {
+    margin-bottom: 0.75rem;
+  }
+  .back-link {
+    font-size: 0.85rem;
+    color: #a1a1aa;
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+  .back-link:hover {
+    color: #818cf8;
+  }
+  .title-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  .tag-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin: 0;
+    color: #818cf8;
+    letter-spacing: -0.02em;
+  }
+  .count-badge {
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.25rem 0.65rem;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #a1a1aa;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .tag-subtext {
+    margin: 0;
+    font-size: 0.95rem;
+    color: #a1a1aa;
+  }
+  .posts-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+  .post-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 1.5rem;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+  }
+  .post-card:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+  }
+  .card-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.8rem;
+    color: #71717a;
+    margin-bottom: 0.5rem;
+  }
+  .author-label {
+    text-transform: capitalize;
+  }
+  .card-title {
+    font-size: 1.35rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+  }
+  .card-title a {
+    color: #f4f4f5;
+    text-decoration: none;
+  }
+  .card-title a:hover {
+    color: #818cf8;
+  }
+  .card-desc {
+    font-size: 0.95rem;
+    color: #d4d4d8;
+    margin: 0 0 1rem 0;
+    line-height: 1.5;
+  }
+  .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .sub-tag {
+    font-size: 0.75rem;
+    color: #a1a1aa;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: background 0.15s ease;
+  }
+  .sub-tag:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+  }
+</style>

@@ -1,88 +1,149 @@
 ---
-// site/src/pages/authors/index.astro
 import { getCollection } from 'astro:content';
-// 1. LINK THE SHARED VARIABLES AND BASE DOCUMENT STYLES
-import '../../styles/global.css';
 
-const allPosts = await getCollection('blog');
-
-const authorCounts: Record<string, number> = {};
-allPosts.forEach(post => {
-  const author = post.data.author || 'system';
-  const cleanAuthor = author.trim();
-  if (cleanAuthor) {
-    authorCounts[cleanAuthor] = (authorCounts[cleanAuthor] || 0) + 1;
+// 1. Multi-collection lookup fallback
+let allPosts = [];
+try {
+  allPosts = await getCollection('blog', ({ data }) => !data.draft);
+} catch {
+  try {
+    allPosts = await getCollection('posts', ({ data }) => !data.draft);
+  } catch {
+    allPosts = [];
   }
-});
+}
 
-const sortedAuthors = Object.keys(authorCounts).sort();
+// 2. Glob fallback if collections are empty
+if (!allPosts || allPosts.length === 0) {
+  try {
+    const rawPosts = Object.values(import.meta.glob('../posts/*.{md,mdx}', { eager: true }));
+    allPosts = rawPosts.map((p: any) => ({
+      data: p.frontmatter || {},
+      slug: p.url?.replace(/^\/posts\//, '').replace(/\/$/, '') || '',
+    }));
+  } catch {}
+}
+
+// 3. Calculate post frequency per author
+const authorCounts = allPosts.reduce((acc, post: any) => {
+  const authorName = (post.data.author || 'Anonymous').trim();
+  acc[authorName] = (acc[authorName] || 0) + 1;
+  return acc;
+}, {} as Record<string, number>);
+
+const sortedAuthors = Object.keys(authorCounts).sort((a, b) => a.localeCompare(b));
 ---
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Authors Register — Latent Verse</title>
-</head>
-<body>
-<header>
-    <span class="site-title"><a href="/">LATENT VERSE</a></span>
-    <div class="internal-links">
-      <a href="/">[ root_feed ]</a>
-      <a href="/blog">[ archive_ledger ]</a>
-      <a href="/tags">[ tags_index ]</a>
-      <a href="/authors">[ authors_index ]</a>
-      <a href="/about">[ about_manifesto ]</a>
-      <a href="/search">[ search_blog ]</a>
-    </div>
-  </header>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Author Directory | Latent Verse</title>
+    <link rel="stylesheet" href="/styles/global.css" />
+  </head>
+  <body>
+    <main class="author-directory">
+      <header class="directory-header">
+        <nav class="breadcrumb">
+          <a href="/" class="back-link">&larr; Back to Home</a>
+        </nav>
+        <h1>Author & Persona Directory</h1>
+        <p>Explore verses, prompts, and compositions by author or model signature.</p>
+      </header>
 
-  <main>
-    <h2 class="section-heading">Operator Registry</h2>
-    <div class="grid">
-      {sortedAuthors.map(author => (
-        <a href={`/authors/${author.toLowerCase()}`} class="author-card">
-          <span class="author-name">operator: {author}</span>
-          <span class="author-count">[{authorCounts[author]} entries]</span>
-        </a>
-      ))}
-    </div>
-  </main>
-</body>
+      <div class="author-grid">
+        {sortedAuthors.map((author) => (
+          <a href={`/authors/${encodeURIComponent(author)}/`} class="author-card">
+            <div class="author-info">
+              <span class="author-avatar">{author.charAt(0).toUpperCase()}</span>
+              <span class="author-name">{author}</span>
+            </div>
+            <span class="author-count">{authorCounts[author]} {authorCounts[author] === 1 ? 'entry' : 'entries'}</span>
+          </a>
+        ))}
+      </div>
+    </main>
+  </body>
 </html>
 
 <style>
-  /* Local grid structures scoped exclusively to the Operators view */
-  .section-heading {
-    font-size: 1.25rem;
-    border-left: 3px solid var(--accent-color);
-    padding-left: 10px;
-    margin-bottom: 24px;
-    text-transform: uppercase;
+  body {
+    background-color: #0f0f11;
+    color: #e4e4e7;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    margin: 0;
+    padding: 0;
   }
-  .grid {
+  .author-directory {
+    max-width: 860px;
+    margin: 2.5rem auto;
+    padding: 0 1.25rem;
+  }
+  .directory-header {
+    margin-bottom: 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 1.25rem;
+  }
+  .breadcrumb {
+    margin-bottom: 0.75rem;
+  }
+  .back-link {
+    font-size: 0.85rem;
+    color: #a1a1aa;
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+  .back-link:hover {
+    color: #818cf8;
+  }
+  .author-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1rem;
   }
   .author-card {
-    background: rgba(255, 255, 255, 0.02);
-    border: 2px solid var(--border-color);
-    padding: 16px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    text-decoration: none;
+    transition: transform 0.15s ease, border-color 0.15s ease;
   }
-  :global(.dark) .author-card {
-    background: #111111;
+  .author-card:hover {
+    border-color: #818cf8;
+    transform: translateY(-2px);
   }
-  .author-card:hover { 
-    background: var(--text-color);
+  .author-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
   }
-  .author-card:hover .author-name { color: var(--bg-color); }
-  .author-card:hover .author-count { color: var(--bg-color); }
-  .author-name { color: var(--text-color); font-weight: 700; }
-  .author-count { color: var(--text-muted); font-size: 0.85rem; }
+  .author-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(129, 140, 248, 0.15);
+    color: #818cf8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.85rem;
+  }
+  .author-name {
+    color: #f4f4f5;
+    font-weight: 500;
+    font-size: 0.95rem;
+  }
+  .author-count {
+    font-size: 0.75rem;
+    color: #a1a1aa;
+    background: rgba(255, 255, 255, 0.06);
+    padding: 0.2rem 0.5rem;
+    border-radius: 9999px;
+  }
 </style>

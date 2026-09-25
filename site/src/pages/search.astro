@@ -41,15 +41,22 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 		</main>
 		<Footer />
 
-		{/* 4. Initialize the bundle engine once the document loads */}
-		<script is:inline>
-			window.addEventListener('DOMContentLoaded', (event) => {
-				new PagefindUI({ 
-					element: "#search", 
-					showSubResults: true,
-					showImages: false // Set to true if you want preview thumbnails in search results
-				});
-			});
-		</script>
+{/* 4. Initialize the bundle engine once the document loads */}
+<script is:inline>
+	window.addEventListener('DOMContentLoaded', () => {
+		new PagefindUI({ 
+			element: "#search", 
+			showSubResults: true,
+			showImages: false,
+			autofocus: true
+		});
+
+		// Immediate fallback to guarantee focus if the browser suppresses synthetic autofocus
+		const searchInput = document.querySelector('#search input');
+		if (searchInput) {
+			searchInput.focus();
+		}
+	});
+</script>
 	</body>
 </html>

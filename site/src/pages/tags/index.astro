@@ -1,91 +1,102 @@
 ---
-// site/src/pages/tags/index.astro
 import { getCollection } from 'astro:content';
-// 1. LINK THE SHARED VARIABLES AND BASE DOCUMENT STYLES
-import '../../styles/global.css';
 
-const allPosts = await getCollection('blog');
+// Tries 'blog' first, falls back to 'posts' or an empty array
+let allPosts = [];
+try {
+  allPosts = await getCollection('blog', ({ data }) => !data.draft);
+} catch {
+  try {
+    allPosts = await getCollection('posts', ({ data }) => !data.draft);
+  } catch {
+    allPosts = [];
+  }
+}
 
-const tagCounts: Record<string, number> = {};
-allPosts.forEach(post => {
-  const tags = post.data.tags || [];
-  const normalizedTags = Array.isArray(tags) ? tags : [tags];
-  normalizedTags.forEach(tag => {
-    const cleanTag = tag.trim();
-    if (cleanTag) {
-      tagCounts[cleanTag] = (tagCounts[cleanTag] || 0) + 1;
-    }
+// If your project uses Astro.glob instead of Content Collections:
+if (allPosts.length === 0) {
+  try {
+    const rawPosts = Object.values(import.meta.glob('../posts/*.{md,mdx}', { eager: true }));
+    allPosts = rawPosts.map((p: any) => ({
+      data: p.frontmatter || {},
+      slug: p.url?.replace(/^\/posts\//, '').replace(/\/$/, '') || ''
+    }));
+  } catch {}
+}
+
+const tagCounts = allPosts.reduce((acc, post: any) => {
+  (post.data.tags || []).forEach((tag: string) => {
+    acc[tag] = (acc[tag] || 0) + 1;
   });
-});
+  return acc;
+}, {} as Record<string, number>);
 
-const sortedTags = Object.keys(tagCounts).sort();
+const sortedTags = Object.keys(tagCounts).sort((a, b) => a.localeCompare(b));
 ---
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tags Register — Latent Verse</title>
-</head>
-<body>
-<header>
-    <span class="site-title"><a href="/">LATENT VERSE</a></span>
-    <div class="internal-links">
-      <a href="/">[ root_feed ]</a>
-      <a href="/blog">[ archive_ledger ]</a>
-      <a href="/tags">[ tags_index ]</a>
-      <a href="/authors">[ authors_index ]</a>
-      <a href="/about">[ about_manifesto ]</a>
-      <a href="/search">[ search_blog ]</a>
-    </div>
-  </header>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Topic Directory | Latent Verse</title>
+    <link rel="stylesheet" href="/styles/global.css" />
+  </head>
+  <body>
+    <main class="tag-directory">
+      <header class="directory-header">
+        <nav class="breadcrumb">
+          <a href="/" class="back-link">&larr; Back to Home</a>
+        </nav>
+        <h1>Topic Directory</h1>
+        <p>Browse verses, audio, and generations by tag.</p>
+      </header>
 
-  <main>
-    <h2 class="section-heading">System Tags Register</h2>
-    <div class="grid">
-      {sortedTags.map(tag => (
-        <a href={`/tags/${tag.toLowerCase()}`} class="tag-card">
-          <span class="tag-name">#{tag}</span>
-          <span class="tag-count">[{tagCounts[tag]} units]</span>
-        </a>
-      ))}
-    </div>
-  </main>
-</body>
+      <div class="tag-cloud">
+        {sortedTags.map((tag) => (
+          <a href={`/tags/${tag}/`} class="tag-pill">
+            <span class="tag-name">#{tag}</span>
+            <span class="tag-count">{tagCounts[tag]}</span>
+          </a>
+        ))}
+      </div>
+    </main>
+  </body>
 </html>
 
 <style>
-  /* Local grid structures scoped exclusively to the Tags view */
-  .section-heading {
-    font-size: 1.25rem;
-    border-left: 3px solid var(--accent-color);
-    padding-left: 10px;
-    margin-bottom: 24px;
-    text-transform: uppercase;
+  body {
+    background-color: #0f0f11;
+    color: #e4e4e7;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    margin: 0;
+    padding: 0;
   }
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 16px;
-  }
-  .tag-card {
-    background: rgba(255, 255, 255, 0.02);
-    border: 2px solid var(--border-color);
-    padding: 16px;
-    display: flex;
-    justify-content: space-between;
+  .tag-directory { max-width: 860px; margin: 2.5rem auto; padding: 0 1.25rem; }
+  .directory-header { margin-bottom: 2rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 1.25rem; }
+  .breadcrumb { margin-bottom: 0.75rem; }
+  .back-link { font-size: 0.85rem; color: #a1a1aa; text-decoration: none; }
+  .back-link:hover { color: #818cf8; }
+  .tag-cloud { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+  .tag-pill {
+    display: inline-flex;
     align-items: center;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    gap: 0.5rem;
+    padding: 0.45rem 0.9rem;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.04);
+    color: #f4f4f5;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: transform 0.15s ease, border-color 0.15s ease;
   }
-  :global(.dark) .tag-card {
-    background: #111111;
+  .tag-pill:hover { border-color: #818cf8; transform: translateY(-2px); }
+  .tag-count {
+    font-size: 0.75rem;
+    padding: 0.1rem 0.45rem;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #a1a1aa;
   }
-  .tag-card:hover { 
-    background: var(--text-color);
-  }
-  .tag-card:hover .tag-name { color: var(--bg-color); }
-  .tag-card:hover .tag-count { color: var(--bg-color); }
-  .tag-name { color: var(--text-color); font-weight: 700; text-transform: lowercase; }
-  .tag-count { color: var(--text-muted); font-size: 0.85rem; }
 </style>
