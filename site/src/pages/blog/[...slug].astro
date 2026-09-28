@@ -41,5 +41,110 @@ const safeData = {
 	)}
 
 	<Content />
+
+<!-- Mermaid and svg-pan-zoom CDN bundles -->
+<script is:inline src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<script is:inline src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"></script>
+
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', async () => {
+    const targets = document.querySelectorAll(
+      'pre[data-language="mermaid"], pre.language-mermaid, pre code.language-mermaid'
+    );
+
+    if (targets.length === 0 || typeof mermaid === 'undefined') return;
+
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: 'dark'
+    });
+
+    // 1. Replace code fences with mermaid container wrappers
+    const containers = [];
+    targets.forEach((el) => {
+      const pre = el.tagName.toLowerCase() === 'pre' ? el : el.closest('pre');
+      if (!pre) return;
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'mermaid-viewport';
+
+      const container = document.createElement('div');
+      container.className = 'mermaid';
+      container.textContent = pre.textContent || '';
+
+      wrapper.appendChild(container);
+      pre.parentNode.replaceChild(wrapper, pre);
+      containers.push(wrapper);
+    });
+
+    // 2. Render all diagrams into SVG
+    await mermaid.run();
+
+    // 3. Attach pan & zoom to the rendered SVGs
+    containers.forEach((wrapper) => {
+      const svg = wrapper.querySelector('svg');
+      if (!svg) return;
+
+      // Remove fixed dimensions Mermaid injects so svg-pan-zoom controls layout
+      svg.removeAttribute('height');
+      svg.style.width = '100%';
+      svg.style.height = '100%';
+      svg.style.maxWidth = 'none';
+
+      // Initialize pan-zoom instance
+      if (typeof svgPanZoom !== 'undefined') {
+        svgPanZoom(svg, {
+          zoomEnabled: true,
+          controlIconsEnabled: true,    // Adds [+] [-] [⟲] buttons in the corner
+          mouseWheelZoomEnabled: true, // Prevents hijacking page scroll while reading
+          dblClickZoomEnabled: true,
+          fit: true,
+          center: true,
+          minZoom: 0.2,
+          maxZoom: 10
+        });
+      }
+    });
+  });
+</script>
+
+<style is:global>
+  .mermaid-viewport {
+    position: relative;
+    width: 100%;
+    height: 480px; /* Fixed viewport height prevents layout jumps while panning */
+    margin: 2rem 0;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: grab;
+  }
+
+  .mermaid-viewport:active {
+    cursor: grabbing;
+  }
+
+  .mermaid-viewport .mermaid {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Style built-in pan-zoom controller icons for dark backgrounds */
+  .svg-pan-zoom-control {
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+  }
+  .svg-pan-zoom-control:hover {
+    opacity: 1;
+  }
+  .svg-pan-zoom-control path {
+    fill: #e4e4e7 !important;
+  }
+  .svg-pan-zoom-control rect {
+    fill: #27272a !important;
+    stroke: #3f3f46 !important;
+  }
+</style>
 </BlogPost>
 

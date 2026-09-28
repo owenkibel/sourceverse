@@ -1,20 +1,17 @@
 const path = require('path');
 const fs = require('fs/promises');
 const os = require('os');
-const { execFile, execSync } = require('child_process'); // Consolidate execSync here
+const { execFile, execSync } = require('child_process');
 const util = require('util');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-const { writeFileSync } = require('fs'); // Bring in synchronous writer cleanly
+const { writeFileSync } = require('fs');
 const execFileAsync = util.promisify(execFile);
 
-const MAX_CANONICAL_HYPOTHESES = 2;   // Randomly sample up to this many human hypotheses
-const MAX_AI_HYPOTHESES = 2;      // Take the most recent N AI hypotheses
+const MAX_CANONICAL_HYPOTHESES = 2;
+const MAX_AI_HYPOTHESES = 2;
 
 // --- CONFIGURATION MAPS ---
-// Set the pointer straight to your fresh V7 prompt engine directory
 const PROMPTS_DIR = path.join(__dirname, 'prompts-dramatic-v7');
-
-// Canonical hypotheses directory (previously human-hypotheses)
 const CANONICAL_HYPOTHESES_DIR = path.join(__dirname, 'canonical-hypotheses');
 const CANONICAL_HYPOTHESES_FILE = path.join(__dirname, 'canonical-hypotheses.json');
 const POSTS_DIR = 'posts';
@@ -23,14 +20,9 @@ const X_DIR = './x';
 const PROMPT_STATE_FILE = path.join(__dirname, '.prompt_state.json');
 const MODEL_PATH = 'cumulative_thread_model.json';
 
-// --- Watchdog Directories ---
-const HEART_INBOX = '/home/owen/ai-projects/heartmula/inbox';
-const HEART_OUTBOX = '/home/owen/ai-projects/heartmula/outbox';
-
-// Near the top
-const MODEL_GROK = "grok-4.7";   // was "grok-4.3"
+const MODEL_GROK = "grok-4.7";
 const MAX_CHARS_GEMINI = 1900000;
-const MAX_CHARS_GROK = 50000;   // was 35000
+const MAX_CHARS_GROK = 50000;
 
 // --- ACE-STEP VALID STYLES ---
 const RAW_ACE_STYLES = [
@@ -94,36 +86,41 @@ async function resolveReferenceAudio(refArgValue) {
   return null;
 }
 
-// REPLACE WITH THIS:
 function getShuffledAceStyles() {
   const filtered = RAW_ACE_STYLES.filter(style => !EXCLUDED_STYLES.includes(style));
-  
-  // High-uniformity Fisher-Yates shuffle to completely break primacy bias
   for (let i = filtered.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [filtered[i], filtered[j]] = [filtered[j], filtered[i]];
   }
-  
   return filtered.join(', ');
 }
 
 // =========================================================================
-// 1. CLI FLAGS & IDEA PARSER
+// 1. CLI FLAGS & ARGUMENT PARSING
 // =========================================================================
 const args = process.argv.slice(2);
+
+// Image Engine Flag Extraction
+let t2iModel = "z_turbo";
+const t2iArgIndex = args.findIndex(arg => arg === "--t2i" || arg === "-t");
+if (t2iArgIndex !== -1 && args[t2iArgIndex + 1]) {
+  const modelArg = args[t2iArgIndex + 1].toLowerCase();
+  if (["qwen", "qwen-image", "qwen2.1"].includes(modelArg)) {
+    t2iModel = "qwen";
+  } else if (modelArg === "lens") {
+    t2iModel = "lens";
+  } else if (["zturbo", "z-turbo", "z_turbo"].includes(modelArg)) {
+    t2iModel = "z_turbo";
+  } else {
+    t2iModel = modelArg;
+  }
+}
+
 const noMemory = args.includes('--no-memory');
 const useGrok = args.includes('--grok');
 const forceT2V = args.includes('--t2v'); 
-const useHunyuan = args.includes('--hunyuan');
-const forceOmniGen = args.includes('--omnigen');
-const refineWithOmniGen = args.includes('--omnigen-refine');
-const useErnie = args.includes('--ernie'); 
-const useLens = args.includes('--lens'); 
-const useIdeogram = args.includes('--ideogram');
-const useQwen = args.includes('--qwen') || t2iModel === 'qwen'; // <-- ADD THIS
-const useHeartmula = args.includes('--heartmula');
-const useOmniVoice = args.includes('--omnivoice');
-const useVoxCPM2 = args.includes('--voxcpm2');
+const useLens = args.includes('--lens') || t2iModel === 'lens'; 
+const useQwen = args.includes('--qwen') || t2iModel === 'qwen'; 
 
 const useGeminiImage = args.includes('--gemini-image');
 const useGeminiAudio = args.includes('--gemini-audio');
@@ -133,14 +130,12 @@ const useLimericks = args.includes('--limericks');
 const useCanonical = args.includes('--canonical');   
 const useFortune = args.includes('--fortune');       
 
-// Parse custom --idea argument (supports inline text or $(cat idea.txt))
 let customIdea = null;
 const ideaArg = args.find(a => a.startsWith('--idea='));
 if (ideaArg) {
   customIdea = ideaArg.split('=').slice(1).join('=').trim();
 }
 
-// Matches -ref-audio, --ref-audio, -ref-audio=..., --ref-audio=...
 const rawRefArg = args.find(a => /^--?ref-audio(=|$)/i.test(a));
 const refAudioSetting = rawRefArg 
   ? (rawRefArg.includes('=') ? rawRefArg.split('=').slice(1).join('=').trim() : 'pool')
@@ -170,8 +165,6 @@ function cleanVerseText(text) {
   return text.replace(/```[a-z]*\n?/gi, '').replace(/```/g, '').replace(/\*\*|__|###/g, '').replace(/<[^>]*>?/gm, '').split('\n').map(line => line.trim()).join('\n').replace(/\n{3,}/g, '\n\n').trim();
 }
 
-const HYPOTHESIS_COOLDOWN_ACTS = 8; // Increased from 7
-
 function deduplicateAndFilterHypotheses(hypotheses, cumulativeModel, maxItems = 4) {
     if (!hypotheses || hypotheses.length === 0) return [];
 
@@ -200,17 +193,15 @@ function deduplicateAndFilterHypotheses(hypotheses, cumulativeModel, maxItems = 
 
         const norm = normalize(h.claim);
 
-        // 1. Check against items already selected this run
         let isDuplicate = false;
         for (const existing of seen) {
-            if (jaccardSimilarity(norm, existing) > 0.65) { // More aggressive
+            if (jaccardSimilarity(norm, existing) > 0.65) {
                 isDuplicate = true;
                 break;
             }
         }
         if (isDuplicate) continue;
 
-        // 2. Stronger time-based cooldown
         let inCooldown = false;
         for (const recent of recentHistory) {
             if (jaccardSimilarity(norm, recent) > 0.70) {
@@ -220,10 +211,9 @@ function deduplicateAndFilterHypotheses(hypotheses, cumulativeModel, maxItems = 
         }
         if (inCooldown) continue;
 
-        // 3. Hard block on the specific repetitive claim family
         const isGatekeepingClaim = /institutional gatekeeping|ai-origin cinema|dropped project|narrative containment|de-facto veto/i.test(h.claim);
         if (isGatekeepingClaim && result.length > 0) {
-            continue; // Only allow it once per run at most
+            continue;
         }
 
         seen.push(norm);
@@ -235,39 +225,25 @@ function deduplicateAndFilterHypotheses(hypotheses, cumulativeModel, maxItems = 
     return result;
 }
 
-/**
- * Returns true only if the hypothesis claim is substantial enough to be worth storing.
- * This helps reduce repetitive/low-value entries in predictionHistory.
- */
 function isStrongHypothesis(claim) {
     if (!claim || typeof claim !== 'string') return false;
-
     const trimmed = claim.trim();
-
-    // Minimum length threshold (adjust as needed)
     if (trimmed.length < 120) return false;
-
-    // Skip very generic or low-information claims
     const lower = trimmed.toLowerCase();
     if (lower.includes('no new') || lower.includes('no hypothesis')) return false;
-
-    // Skip claims that are mostly the old repetitive pattern
     if (/institutional gatekeeping|ai-origin cinema|dropped project|narrative containment/i.test(trimmed)) {
         return false;
     }
-
     return true;
 }
 
 /**
- * Core image coordinator for vertical_thread8.js
- * Attempts Nano Banana 2 Lite at 9:16; falls back down the ComfyUI chain on failure.
+ * Image coordinator with cloud-first track and local Lens fallback.
  */
 async function executeImagePipeline(promptText, slug) {
   const API_KEY = process.env.GEMINI_API_KEY1;
   const filename = `img_${slug}_${Date.now()}.jpg`;
   const outputDestination = path.join(process.cwd(), 'site/public/images', filename);
-  let cloudSuccess = false;
 
   if (API_KEY) {
     const targetUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-image:generateContent?key=${API_KEY}`;
@@ -283,7 +259,7 @@ async function executeImagePipeline(promptText, slug) {
           generationConfig: {
             responseModalities: ["TEXT", "IMAGE"],
             imageConfig: {
-              aspectRatio: "9:16" // FIXED: Unknown "outputMimeType" field completely removed
+              aspectRatio: "9:16"
             }
           }
         })
@@ -295,7 +271,6 @@ async function executeImagePipeline(promptText, slug) {
       }
 
       const data = await response.json();
-      
       const finishReason = data.candidates?.[0]?.finishReason;
       if (finishReason && finishReason !== "STOP") {
         throw new Error(`Inference blocked by safety rules. Reason code: ${finishReason}`);
@@ -316,7 +291,6 @@ async function executeImagePipeline(promptText, slug) {
 
       writeFileSync(outputDestination, Buffer.from(base64Bytes, 'base64'));
       console.log(`⚡ Cloud Render Successful! Saved to target: ${outputDestination}`);
-      cloudSuccess = true;
 
       return {
         success: true,
@@ -328,63 +302,44 @@ async function executeImagePipeline(promptText, slug) {
     } catch (cloudError) {
       console.error(`❌ Cloud Generation Failed: ${cloudError.message}`);
     }
-  } else {
-    console.warn("⚠️ System Alert: GEMINI_API_KEY1 missing. Skipping cloud track entirely.");
   }
 
-  // =========================================================================
-  // LOCAL FALLBACK TRACK: Triggers if the cloud function failed or was skipped
-  // =========================================================================
   console.log(`🔄 Initiating local fallback array chain...`);
-  const localModules = ['run_lens.js', 'run_ernie.js'];
+  const localModules = ['run_lens.js'];
   const stateFile = path.join(os.tmpdir(), `fallback-state-${Date.now()}.json`);
   
   for (const scriptFile of localModules) {
     try {
       console.log(`🎨 [Fallback Track] Invoking native local module: ${scriptFile}...`);
-      
-      // 1. FIXED: Write the temporary prompt.txt file required by the ComfyUI modules
       require('fs').writeFileSync('prompt.txt', promptText || 'Abstract composition', 'utf8');
       
       const scriptPath = path.join(process.cwd(), scriptFile);
-      
-      // 2. FIXED: Pass the correct state-file flag signature used by your run_ scripts
-      execSync(`bun run ${scriptPath} --state-file ${stateFile}`, {
-        stdio: 'inherit' 
-      });
+      execSync(`bun run ${scriptPath} --state-file ${stateFile}`, { stdio: 'inherit' });
 
-      // 3. FIXED: Ingest the state JSON to read the correct filename generated by ComfyUI
       const state = JSON.parse(require('fs').readFileSync(stateFile, 'utf8'));
       const localFilename = state.filename;
 
       if (localFilename) {
         console.log(`✅ Local compilation successful via ${scriptFile}: ${localFilename}`);
-        
-        // 4. FIXED: Copy the file from your root images folder over to the Astro directory
         const localSrcPath = path.join(process.cwd(), 'images', localFilename);
         const targetDestPath = path.join(process.cwd(), 'site/public/images', localFilename);
         require('fs').copyFileSync(localSrcPath, targetDestPath);
         
-        const engineName = scriptFile === 'run_lens.js' ? 'Lens' : 'Ernie';
-        
-        // Clean up temporary tracking files
         try { require('fs').unlinkSync('prompt.txt'); } catch(e){}
         try { require('fs').unlinkSync(stateFile); } catch(e){}
 
         return {
           success: true,
           filename: localFilename,
-          engine: engineName,
+          engine: 'Lens',
           markdown: `<p><img src="/images/${localFilename}" style="max-width:100%; border-radius:8px;" alt="Visual Anchor" /></p>`
         };
       }
-
     } catch (fallbackError) {
-      console.error(`⚠️ Local module ${scriptFile} choked or failed: ${fallbackError.message}. Shifting down the chain...`);
+      console.error(`⚠️ Local module ${scriptFile} failed: ${fallbackError.message}`);
     }
   }
 
-  // Final emergency cleanup if everything completely fails
   try { require('fs').unlinkSync('prompt.txt'); } catch(e){}
   try { require('fs').unlinkSync(stateFile); } catch(e){}
 
@@ -401,16 +356,10 @@ async function updateNarrativeArc(domain, newNarrativeText, parsedForecast, cumu
     }
 
     const arc = cumulativeModel.narrativeArcs[domain];
-
-    // Append ONLY the descriptive prose synthesis blocks
     const combined = (arc.currentArc + "\n\n" + newNarrativeText).trim();
-    arc.currentArc = combined.length > 4500 
-        ? combined.slice(-4200) 
-        : combined;
+    arc.currentArc = combined.length > 4500 ? combined.slice(-4200) : combined;
 
     let forecastAppended = false;
-
-    // Push the forecast exclusively to the structured tracking array
     if (parsedForecast && parsedForecast.trim().length > 40) {
         if (!arc.forecastHistory) arc.forecastHistory = [];
         
@@ -468,15 +417,13 @@ async function loadPrompts() {
   return available;
 }
 
-// =========================================================================
-// 2. PARSER UPDATE (HYPOTHESIS LIMERICK INGEST)
-// =========================================================================
 function parseUnifiedOutput(text) {
   const sections = { 
     verse: '', 
     forecast: '',           
     hypothesis: '', 
-    hypothesis_limerick: '', // <-- NEW PARSER TARGET
+    hypothesis_limerick: '',
+    diagram: '', // <-- 1. ADD DIAGRAM TARGET
     narrative_synthesis: '',
     image: '', 
     t2v: '', 
@@ -491,8 +438,10 @@ function parseUnifiedOutput(text) {
         current = 'narrative_synthesis';
     } else if (l.match(/^(#+|\*\*|__|-)*\s*(forecast|prediction)/i)) {   
         current = 'forecast';
-    } else if (l.match(/^(#+|\*\*|__|-)*\s*(hypothesis|paradigm)\s*limerick/i)) { // <-- NEW MATCH
+    } else if (l.match(/^(#+|\*\*|__|-)*\s*(hypothesis|paradigm)\s*limerick/i)) {
         current = 'hypothesis_limerick';
+    } else if (l.match(/^(#+|\*\*|__|-)*\s*(semantic (architecture )?diagram|mermaid( diagram)?)/i)) { // <-- 2. MATCH DIAGRAM HEADER
+        current = 'diagram';
     } else if (l.match(/^(#+|\*\*|__|-)*\s*(image|visual)( generation)? prompt/i)) {
         current = 'image';
     } else if (l.match(/^(#+|\*\*|__|-)*\s*(t2v|text[- ]to[- ]video|video)( generation)? prompt/i)) {
@@ -513,9 +462,20 @@ function parseUnifiedOutput(text) {
   const hypothesis = sections.hypothesis.replace(/```[a-z]*\n?/gi, '').replace(/```/g, '').replace(/\*\*|__|###/g, '').trim();
   const hypothesisLimerick = cleanVerseText(sections.hypothesis_limerick);
 
+  // 3. CLEAN & NORMALIZE MERMAID BLOCK
+  let rawDiagram = sections.diagram.trim();
+  let diagram = '';
+  if (rawDiagram) {
+    const match = rawDiagram.match(/```(?:mermaid)?([\s\S]*?)```/i);
+    if (match) {
+      diagram = `\`\`\`mermaid\n${match[1].trim()}\n\`\`\``;
+    } else if (rawDiagram.includes('graph ') || rawDiagram.includes('flowchart ')) {
+      diagram = `\`\`\`mermaid\n${rawDiagram}\n\`\`\``;
+    }
+  }
+
   let rawMusic = sections.music.trim().replace(/```[a-z]*\n?/gi, '').replace(/```/g, '');
   
-  // Upbeat Folk/Americana fallback array
   let tags = "Folk, Americana, Bluegrass, Country, Acoustic Guitar";
   let duration = "128"; 
   let lyrics = "";
@@ -534,11 +494,12 @@ function parseUnifiedOutput(text) {
   const durMatch = metaText.match(/DURATION:\s*(\d+)/i);
   if (durMatch) duration = durMatch[1].trim();
 
-  return {
+return {
     verse: verse,
     forecast: forecast,                    
     hypothesis: hypothesis,
-    hypothesisLimerick: hypothesisLimerick, // <-- RETURN NEW VARIABLE
+    hypothesisLimerick: hypothesisLimerick,
+    diagram: diagram, // <-- 4. EXPORT DIAGRAM
     narrative_synthesis: sections.narrative_synthesis.trim(),
     image: sections.image.trim(),
     t2v: sections.t2v.trim(), 
@@ -554,59 +515,57 @@ async function generateText(system, user) {
 
   if (useGrok) {
     console.log(`Generating with Grok (${MODEL_GROK})...`);
-const payload = {
-  model: MODEL_GROK,
-  messages: [{ role: "system", content: system }, { role: "user", content: truncatedUser }],
-  temperature: 1.0,
-  reasoning_effort: "low",           // ← ADD THIS (use "medium" only if you want deeper thinking)
-  max_tokens: 8192,           // ← ADD THIS (or 12288 for longer dramatic outputs)
-};
+    const payload = {
+      model: MODEL_GROK,
+      messages: [{ role: "system", content: system }, { role: "user", content: truncatedUser }],
+      temperature: 1.0,
+      reasoning_effort: "low",
+      max_tokens: 8192
+    };
     const res = await fetch('https://api.x.ai/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.XAI_API_KEY}` },
       body: JSON.stringify(payload)
     });
-const bodyText = await res.text();
-let data = {};
-try { data = JSON.parse(bodyText); } catch { data = {}; }
+    const bodyText = await res.text();
+    let data = {};
+    try { data = JSON.parse(bodyText); } catch { data = {}; }
 
-const choice = data.choices?.[0];
-const msg = choice?.message || {};
-const content = String(msg.content || '').trim();
-if (/(can'?t|cannot|unable to|won'?t)\s+(help|comply|generate|create|assist)|content.?policy|against (my|the) (guidelines|policies)/i.test(content.slice(0, 400))) {
-  console.error(`🚫 Grok refusal — aborting. ${content.slice(0, 280)}`);
-  process.exit(1);
-}
-const finish = choice?.finish_reason || choice?.native_finish_reason || '';
-const refusal =
-  data.error?.message ||
-  data.error ||
-  msg.refusal ||
-  (!res.ok && `HTTP ${res.status}: ${bodyText.slice(0, 400)}`) ||
-  (finish && !/^stop$/i.test(finish) && `finish_reason=${finish}`) ||
-  (!content && (msg.reasoning_content ? 'empty content (reasoning only)' : 'empty content')) ||
-  '';
+    const choice = data.choices?.[0];
+    const msg = choice?.message || {};
+    const content = String(msg.content || '').trim();
+    if (/(can'?t|cannot|unable to|won'?t)\s+(help|comply|generate|create|assist)|content.?policy|against (my|the) (guidelines|policies)/i.test(content.slice(0, 400))) {
+      console.error(`🚫 Grok refusal — aborting. ${content.slice(0, 280)}`);
+      process.exit(1);
+    }
+    const finish = choice?.finish_reason || choice?.native_finish_reason || '';
+    const refusal =
+      data.error?.message ||
+      data.error ||
+      msg.refusal ||
+      (!res.ok && `HTTP ${res.status}: ${bodyText.slice(0, 400)}`) ||
+      (finish && !/^stop$/i.test(finish) && `finish_reason=${finish}`) ||
+      (!content && (msg.reasoning_content ? 'empty content (reasoning only)' : 'empty content')) ||
+      '';
 
-if (refusal || !content) {
-  const reason = String(refusal || 'empty Grok content').slice(0, 500);
-  console.error(`🚫 Grok refusal — aborting. ${reason}`);
-  process.exit(1);
-}
+    if (refusal || !content) {
+      const reason = String(refusal || 'empty Grok content').slice(0, 500);
+      console.error(`🚫 Grok refusal — aborting. ${reason}`);
+      process.exit(1);
+    }
 
-actualModelUsed = MODEL_GROK;
-return content;
- } else {
+    actualModelUsed = MODEL_GROK;
+    return content;
+  } else {
     console.log("Generating with Gemini...");
     for (const modelName of ["gemini-3.1-pro-preview", "gemini-3-flash-preview"]) {
       try {
-        // FIXED: Map prompt system instructions natively to force absolute alignment
         const model = genAI.getGenerativeModel({ 
           model: modelName, 
           generationConfig: { temperature: 1 },
-          systemInstruction: system // Moves structural guardrails out of user text channel
+          systemInstruction: system
         });
         
-        // Pass ONLY the compiled context and link chunks to the generation call
         const res = await model.generateContent(truncatedUser);
         actualModelUsed = modelName;
         return res.response.text();
@@ -619,7 +578,7 @@ return content;
 }
 
 // ==========================================
-// --- MEDIA CORES GENERATION ARTIFACTS ---
+// MEDIA CORES GENERATION ARTIFACTS
 // ==========================================
 async function runGeminiImage(prompt, slug) {
    try {
@@ -690,26 +649,15 @@ async function runImageGen(prompt) {
   try {
     await fs.writeFile('prompt.txt', prompt || 'Abstract composition', 'utf8');
     
-    // Route to runner scripts based on active flags
-    let runnerArgs = refineWithOmniGen ? ['run_omnigen_i2i.js'] : 
-                     (forceOmniGen ? ['run_omnigen_t2i.js'] : 
-                     (useErnie ? ['run_ernie.js'] : 
-                     (useLens ? ['run_lens.js'] : 
-                     (useIdeogram ? ['run_ideogram.js'] : 
-                     (useQwen ? ['run_qwen.js'] : ['run_z_turbo.js']))))); // <-- ADDED run_qwen.js
-    
-    if (refineWithOmniGen) {
-        await execFileAsync('bun', ['run_z_turbo.js', '--state-file', 'anchor_state.json']);
-    }
-    
+    let runnerArgs = useLens ? ['run_lens.js'] : 
+                     (useQwen ? ['run_qwen.js'] : ['run_z_turbo.js']);
+
     await execFileAsync('bun', [...runnerArgs, '--state-file', stateFile]);
     const state = JSON.parse(await fs.readFile(stateFile, 'utf8'));
     const finalFilename = state.filename;
 
     const engineName = runnerArgs[0] === 'run_qwen.js' ? 'Qwen-Image 2.1' :
-                       (runnerArgs[0] === 'run_lens.js' ? 'Lens' : 
-                       (runnerArgs[0] === 'run_ideogram.js' ? 'Ideogram 4' : 
-                       (runnerArgs[0] === 'run_z_turbo.js' ? 'Z-Turbo' : 'OmniGen2')));
+                       (runnerArgs[0] === 'run_lens.js' ? 'Lens' : 'Z-Turbo');
 
     return { 
       success: true, 
@@ -729,17 +677,28 @@ async function runImageGen(prompt) {
 async function runVideoGen(videoPrompt, anchorImageName, isT2V) {
   const stateFile = path.join(os.tmpdir(), `vid-state-${Date.now()}.json`);
   try {
-    let runnerArgs = useHunyuan ? ['run_fasthunyuan_t2v.js', '--state-file', stateFile, '--prompt', videoPrompt] : ['run_ltx_video.js', '--state-file', stateFile, '--prompt', videoPrompt];
-    if (!useHunyuan) {
-        if (isT2V) runnerArgs.push('--t2v');
-        else if (anchorImageName) runnerArgs.push('--image', anchorImageName);
+    let runnerArgs = ['run_ltx_video.js', '--state-file', stateFile, '--prompt', videoPrompt];
+    if (isT2V) {
+      runnerArgs.push('--t2v');
+    } else if (anchorImageName) {
+      runnerArgs.push('--image', anchorImageName);
     }
+
     await execFileAsync('bun', runnerArgs);
     const state = JSON.parse(await fs.readFile(stateFile, 'utf8'));
     const filename = state.filename || path.basename(state.savedFilePath);
-    return { success: true, filename: filename, engine: useHunyuan ? "Hunyuan" : "LTX-Video", markdown: `\n<p><video controls src="/images/${filename}" style="max-width:100%; border-radius:8px;" loop muted></video></p>\n` };
-  } catch (e) { console.error(`Video generation worker failed: ${e.message}`); return { success: false, markdown: '' }; }
-  finally { await safeUnlink(stateFile); }
+    return { 
+      success: true, 
+      filename: filename, 
+      engine: "LTX-Video", 
+      markdown: `\n<p><video controls src="/images/${filename}" style="max-width:100%; border-radius:8px;" loop muted></video></p>\n` 
+    };
+  } catch (e) { 
+    console.error(`Video generation worker failed: ${e.message}`); 
+    return { success: false, markdown: '' }; 
+  } finally { 
+    await safeUnlink(stateFile); 
+  }
 }
 
 async function runPoetryTTS(poemText) {
@@ -747,17 +706,14 @@ async function runPoetryTTS(poemText) {
     const poemFile = 'temp_poem.txt';
     try {
         await fs.writeFile(poemFile, poemText || 'Silence.', 'utf8');
-        let runnerArgs = useOmniVoice ? ['run_omnivoice_clone.js'] : (useVoxCPM2 ? ['run_voxcpm2.js'] : ['run_kokoro_tts.js']);
-        await execFileAsync('bun', [...runnerArgs, '--state-file', stateFile, '--prompt-file', poemFile]);
+        await execFileAsync('bun', ['run_kokoro_tts.js', '--state-file', stateFile, '--prompt-file', poemFile]);
         const state = JSON.parse(await fs.readFile(stateFile, 'utf8'));
         
         const rawFlacPath = state.savedFilePath;
         const finalOpusFilename = state.filename.replace(/\.(flac|wav)$/, '.opus');
         const finalOpusPath = path.join(IMAGES_DIR, finalOpusFilename);
 
-        // await execFileAsync('ffmpeg', ['-y', '-i', rawFlacPath, '-c:a', 'libopus', '-b:a', '128k', finalOpusPath]);
-
-         console.log(`   🎵 Applying Spatial Field and Opus compression...`);
+        console.log(`   🎵 Applying Spatial Field and Opus compression...`);
         const filterGraph = [
             '[0:a]loudnorm=I=-16:TP=-1.5:LRA=11[norm]',
             '[norm]stereotools=mlev=0.9:slev=1.2[wide]',
@@ -772,9 +728,19 @@ async function runPoetryTTS(poemText) {
         ]);
         
         await safeUnlink(rawFlacPath);
-        return { success: true, filename: finalOpusFilename, engine: runnerArgs[0] === 'run_kokoro_tts.js' ? 'Kokoro' : 'Multi-Speaker Voice Clone', markdown: `\n<p><audio controls src="/images/${finalOpusFilename}"></audio></p>\n` };
-    } catch (e) { console.error(`TTS synthesis failed: ${e.message}`); return { success: false, markdown: '' }; }
-    finally { await safeUnlink(stateFile); await safeUnlink(poemFile); }
+        return { 
+          success: true, 
+          filename: finalOpusFilename, 
+          engine: 'Kokoro', 
+          markdown: `\n<p><audio controls src="/images/${finalOpusFilename}"></audio></p>\n` 
+        };
+    } catch (e) { 
+      console.error(`TTS synthesis failed: ${e.message}`); 
+      return { success: false, markdown: '' }; 
+    } finally { 
+      await safeUnlink(stateFile); 
+      await safeUnlink(poemFile); 
+    }
 }
 
 async function runAceStepGen(tags, lyrics, slug, duration, referenceAudio = null) {
@@ -795,7 +761,6 @@ async function runAceStepGen(tags, lyrics, slug, duration, referenceAudio = null
           runnerArgs.push('--ref-audio', referenceAudio);
           refAudioName = path.basename(referenceAudio);
 
-          // Ensure the reference file is mirrored into images/ so Astro can serve it
           const destRefPath = path.join(IMAGES_DIR, refAudioName);
           try {
             await fs.copyFile(referenceAudio, destRefPath);
@@ -827,36 +792,14 @@ async function runAceStepGen(tags, lyrics, slug, duration, referenceAudio = null
     } catch (e) { 
       console.error(`ACE-Step pipeline execution failed: ${e.message}`); 
       return { success: false, refAudioName: 'None', refAudioMarkdown: '', markdown: '' }; 
+    } finally { 
+      await safeUnlink(stateFile); 
     }
-    finally { await safeUnlink(stateFile); }
-}
-
-async function runAudioGen(tags, lyrics, slug, duration) {
-    const baseName = `hm_${slug}_${Date.now()}`;
-    const txtFile = path.join(HEART_INBOX, `${baseName}.txt`);
-    const wavFile = path.join(HEART_OUTBOX, `${baseName}.wav`);
-    const opusFile = path.join(IMAGES_DIR, `${baseName}.opus`);
-    try {
-        await fs.writeFile(txtFile, `TAGS: ${tags}\nDURATION: ${duration}\n\n${lyrics}`);
-        let attempts = 0;
-        while (attempts < 60) {
-            await new Promise(r => setTimeout(r, 2000));
-            const stats = await fs.stat(wavFile).catch(() => null);
-            if (stats && stats.size > 1000) {
-                await execFileAsync('ffmpeg', ['-y', '-i', wavFile, '-af', `afade=t=out:st=${Math.max(0, duration - 5)}:d=5`, '-c:a', 'libopus', '-b:a', '128k', opusFile]);
-                await safeUnlink(wavFile);
-                return { success: true, filename: path.basename(opusFile), engine: "Heartmula", markdown: `\n<p><audio controls src="/images/${path.basename(opusFile)}"></audio></p>\n` };
-            }
-            attempts++;
-        }
-    } catch (e) { console.error(`Watchdog pipeline error: ${e.message}`); }
-  return { success: false, markdown: '' };
 }
 
 // ==========================================
-// --- MEMORY MAP LIFECYCLES ---
+// MEMORY MAP & HYPOTHESES LIFECYCLES
 // ==========================================
-
 async function updateUnifiedDomainModel(domain, nextActNumber, folder, parsedOutput, activeHypotheses) {
     let model = { dramaticPlays: {}, predictionHistory: [], narrativeArcs: {} };
 
@@ -865,19 +808,17 @@ async function updateUnifiedDomainModel(domain, nextActNumber, folder, parsedOut
         model = JSON.parse(existing);
     } catch (e) {}
 
-    // Defensive initialization
     if (!model.dramaticPlays) model.dramaticPlays = {};
     if (!model.predictionHistory) model.predictionHistory = [];
     if (!model.narrativeArcs) model.narrativeArcs = {};
- if (!model.narrativeArcs[domain]) {
-    model.narrativeArcs[domain] = {
-        currentArc: "",
-        lastUpdated: "",
-        forecastHistory: []
-    };
-}
+    if (!model.narrativeArcs[domain]) {
+        model.narrativeArcs[domain] = {
+            currentArc: "",
+            lastUpdated: "",
+            forecastHistory: []
+        };
+    }
 
-    // Existing dramaticPlays logic (unchanged)
     if (!model.dramaticPlays[domain]) model.dramaticPlays[domain] = [];
 
     model.dramaticPlays[domain].push({
@@ -892,7 +833,6 @@ async function updateUnifiedDomainModel(domain, nextActNumber, folder, parsedOut
         }))
     });
 
-    // Store hypothesis in predictionHistory (existing logic)
     const prospectiveHypothesis = parsedOutput.hypothesis_elaboration_ai || parsedOutput.hypothesis;
     if (prospectiveHypothesis && isStrongHypothesis(prospectiveHypothesis)) {
         model.predictionHistory.push({
@@ -903,76 +843,77 @@ async function updateUnifiedDomainModel(domain, nextActNumber, folder, parsedOut
         });
     }
 
-// === Store forecast in structured format ===
-if (parsedOutput.forecast && parsedOutput.forecast.trim().length > 40) {
-    const arc = model.narrativeArcs[domain];
+    if (parsedOutput.forecast && parsedOutput.forecast.trim().length > 40) {
+        const arc = model.narrativeArcs[domain];
+        if (!arc.forecastHistory) arc.forecastHistory = [];
 
-    if (!arc.forecastHistory) arc.forecastHistory = [];
+        const forecastText = parsedOutput.forecast.trim();
+        const benchmarkMatch = forecastText.match(/\*\*Benchmark\*\*\s*—\s*(.+?)(?=\n\*\*|$)/s);
+        const triggerMatch   = forecastText.match(/\*\*Trigger Condition\*\*\s*—\s*(.+?)(?=\n\*\*|$)/s);
+        const vectorMatch    = forecastText.match(/\*\*Expected Vector\*\*\s*—\s*(.+?)(?=\n|$)/s);
 
-    const forecastText = parsedOutput.forecast.trim();
+        arc.forecastHistory.push({
+            act: nextActNumber,
+            timestamp: new Date().toISOString(),
+            forecast: forecastText,
+            benchmark: benchmarkMatch ? benchmarkMatch[1].trim() : null,
+            trigger: triggerMatch ? triggerMatch[1].trim() : null,
+            expectedVector: vectorMatch ? vectorMatch[1].trim() : null
+        });
 
-    // Optional: Try to extract structured parts
-    const benchmarkMatch = forecastText.match(/\*\*Benchmark\*\*\s*—\s*(.+?)(?=\n\*\*|$)/s);
-    const triggerMatch   = forecastText.match(/\*\*Trigger Condition\*\*\s*—\s*(.+?)(?=\n\*\*|$)/s);
-    const vectorMatch    = forecastText.match(/\*\*Expected Vector\*\*\s*—\s*(.+?)(?=\n|$)/s);
-
-    arc.forecastHistory.push({
-        act: nextActNumber,
-        timestamp: new Date().toISOString(),
-        forecast: forecastText,
-        benchmark: benchmarkMatch ? benchmarkMatch[1].trim() : null,
-        trigger: triggerMatch ? triggerMatch[1].trim() : null,
-        expectedVector: vectorMatch ? vectorMatch[1].trim() : null
-    });
-
-    // Keep only the last 8 forecasts per domain
-    if (arc.forecastHistory.length > 8) {
-        arc.forecastHistory = arc.forecastHistory.slice(-8);
+        if (arc.forecastHistory.length > 8) {
+            arc.forecastHistory = arc.forecastHistory.slice(-8);
+        }
     }
-}
 
     await fs.writeFile(MODEL_PATH, JSON.stringify(model, null, 2), 'utf8');
     console.log(`💾 Ledger state tracking committed to ${MODEL_PATH}`);
 }
-/**
- * Asynchronously loads canonical hypotheses and merges them with historic AI claims.
- * Preserves downstream execution tracking without pausing the pipeline node.
- */
-async function loadAndMergeHypotheses(domain, cumulativeModel, isTraditional = false) {
-    let canonicalHyps = [];
-    const HYPOTHESES_DIR = path.join(__dirname, 'canonical-hypotheses');   // ← Updated directory name
 
+async function loadCanonicalHypotheses(domain) {
+    let canonicalHyps = [];
     try {
-        const files = await fs.readdir(HYPOTHESES_DIR);
+        const files = await fs.readdir(CANONICAL_HYPOTHESES_DIR);
         for (const file of files) {
             if (!file.endsWith('.json')) continue;
-            const content = JSON.parse(await fs.readFile(path.join(HYPOTHESES_DIR, file), 'utf8'));
-            if (content.hypotheses) canonicalHyps.push(...content.hypotheses);
+            const content = JSON.parse(await fs.readFile(path.join(CANONICAL_HYPOTHESES_DIR, file), 'utf8'));
+            if (Array.isArray(content.hypotheses)) canonicalHyps.push(...content.hypotheses);
         }
     } catch (e) {
         try {
-            // Fallback to single file if directory doesn't exist
-            const unified = JSON.parse(await fs.readFile(
-                path.join(__dirname, 'canonical-hypotheses.json'), 'utf8'   // ← Updated fallback
-            ));
-            if (unified.hypotheses) canonicalHyps = unified.hypotheses;
+            const unified = JSON.parse(await fs.readFile(CANONICAL_HYPOTHESES_FILE, 'utf8'));
+            if (Array.isArray(unified.hypotheses)) canonicalHyps = unified.hypotheses;
         } catch (_) {}
     }
 
     const domainLower = (domain || '').toLowerCase();
-    let filteredCanonical = canonicalHyps.filter(h =>
+    return canonicalHyps.filter(h =>
         (h.domain || '').toLowerCase() === domainLower ||
         (h.domain || '').toLowerCase() === 'general'
     );
+}
 
-    // === Mode-aware selection ===
-    let selectedCanonical = filteredCanonical;   // ← renamed
+async function loadAndMergeHypotheses(domain, cumulativeModel, isTraditional = false, includeCanonical = false) {
+    let selectedCanonical = [];
     let selectedAI = [];
 
-    if (isTraditional) {
-        // Traditional mode: keep only canonical + at most 1 recent AI
-        selectedCanonical = filteredCanonical.slice(0, MAX_CANONICAL_HYPOTHESES);
-        if (cumulativeModel?.predictionHistory) {
+    if (includeCanonical) {
+        const filteredCanonical = await loadCanonicalHypotheses(domain);
+        if (isTraditional) {
+            selectedCanonical = filteredCanonical.slice(0, MAX_CANONICAL_HYPOTHESES);
+        } else if (filteredCanonical.length > MAX_CANONICAL_HYPOTHESES) {
+            selectedCanonical = filteredCanonical
+                .map(h => ({ h, sort: Math.random() }))
+                .sort((a, b) => a.sort - b.sort)
+                .slice(0, MAX_CANONICAL_HYPOTHESES)
+                .map(item => item.h);
+        } else {
+            selectedCanonical = filteredCanonical;
+        }
+    }
+
+    if (cumulativeModel?.predictionHistory) {
+        if (isTraditional) {
             const recent = cumulativeModel.predictionHistory
                 .filter(entry => entry.hypothesis && entry.hypothesis.length > 25)
                 .slice(-1);
@@ -981,18 +922,7 @@ async function loadAndMergeHypotheses(domain, cumulativeModel, isTraditional = f
                 claim: entry.hypothesis,
                 source: "ai"
             }));
-        }
-    } else {
-        // Dramatic mode: random sample canonical + recent AI with deduplication
-        if (filteredCanonical.length > MAX_CANONICAL_HYPOTHESES) {
-            selectedCanonical = filteredCanonical
-                .map(h => ({ h, sort: Math.random() }))
-                .sort((a, b) => a.sort - b.sort)
-                .slice(0, MAX_CANONICAL_HYPOTHESES)
-                .map(item => item.h);
-        }
-
-        if (cumulativeModel?.predictionHistory) {
+        } else {
             const recentAI = cumulativeModel.predictionHistory
                 .filter(entry => entry.hypothesis && entry.hypothesis.length > 25)
                 .slice(-MAX_AI_HYPOTHESES);
@@ -1007,12 +937,10 @@ async function loadAndMergeHypotheses(domain, cumulativeModel, isTraditional = f
         }
     }
 
-    const merged = [
-        ...selectedCanonical.map(h => ({ ...h, source: "canonical" })),   // ← changed source
+    return [
+        ...selectedCanonical.map(h => ({ ...h, source: "canonical" })),
         ...selectedAI
     ];
-
-    return merged;
 }
 
 async function buildNarrativeContext(domain, cumulativeModel) {
@@ -1027,12 +955,10 @@ async function buildNarrativeContext(domain, cumulativeModel) {
     context += `CRITICAL RUNTIME INSTRUCTION: Treat the historical records above strictly as background baseline. You are forbidden from repeating their specific phrasing, thematic metaphors, or titles.\n\n`;
 
     let injectedCount = 0;
-
     if (arc.forecastHistory && arc.forecastHistory.length > 0) {
         const recentForecasts = arc.forecastHistory.slice(-2);
-
         context += "--- RECENT UNRESOLVED PREDICTIVE TELEMETRY ---\n";
-        recentForecasts.forEach((f, i) => {
+        recentForecasts.forEach((f) => {
             const shortForecast = f.forecast.length > 220 
                 ? f.forecast.substring(0, 217) + "..." 
                 : f.forecast;
@@ -1046,19 +972,19 @@ async function buildNarrativeContext(domain, cumulativeModel) {
     return { context, injected: injectedCount };
 }
 
+// ==========================================
+// MAIN RUNTIME LOOP
+// ==========================================
 async function main() {
   await Promise.all([fs.mkdir(POSTS_DIR, { recursive: true }), fs.mkdir(IMAGES_DIR, { recursive: true })]);
-
-  // FIX: Old pre-loop 'useFortuneOracle' block completely purged from this layout location.
 
   let forecastsProcessedThisRun = 0;
   let forecastsAppendedThisRun = 0;
   let forecastsInjectedThisRun = 0;
 
   const prompts = await loadPrompts();
-  if (prompts.length === 0) throw new Error("No files discovered inside prompts-dramatic-v5 directory.");
+  if (prompts.length === 0) throw new Error(`No prompt files discovered inside ${PROMPTS_DIR}.`);
 
-  // Prompt cycling
   let promptIndex = 0;
   try {
     const stateData = JSON.parse(await fs.readFile(PROMPT_STATE_FILE, 'utf8'));
@@ -1069,16 +995,14 @@ async function main() {
   const selPrompt = prompts[promptIndex];
   await fs.writeFile(PROMPT_STATE_FILE, JSON.stringify({ lastIndex: promptIndex }));
 
-  // Stateful Voice Tracking Configuration
-const VOICE_STATE_FILE = path.join(__dirname, '.voice_state.json');
-const VOICE_CYCLE = [
-  "Bass-Baritone male vocals",
-  "Mezzo-Soprano female vocals",
-  "Lyric Tenor male vocals",
-  "Dramatic Soprano female vocals"
-];
+  const VOICE_STATE_FILE = path.join(__dirname, '.voice_state.json');
+  const VOICE_CYCLE = [
+    "Bass-Baritone male vocals",
+    "Mezzo-Soprano female vocals",
+    "Lyric Tenor male vocals",
+    "Dramatic Soprano female vocals"
+  ];
 
-// Read persistent voice index and assign statefully
   let voiceIndex = 0;
   try {
     const vStateData = JSON.parse(await fs.readFile(VOICE_STATE_FILE, 'utf8'));
@@ -1108,16 +1032,14 @@ const VOICE_CYCLE = [
       continue;
     }
 
-const title = payload.title || folder.toUpperCase();
-const originalThematicPoem = payload.grok_poem || '';   // ← ADD THIS
+    const title = payload.title || folder.toUpperCase();
+    const originalThematicPoem = payload.grok_poem || '';
 
-    // Build rich context
     let richContextBlock = `THEMATIC SUMMARY:\n${payload.grok_poem || ''}\n\nRAW SOURCES TO TRANSMUTE:\n`;
     (payload.sources || []).forEach((src, idx) => {
       richContextBlock += `\n--- SOURCE ${idx + 1} ---\nURL: ${src.url}\nDATA ANALYSIS:\n${src.rich_text || src.description_short}\n`;
     });
     
-    // === HARDENED DOMAIN DETECTION ===
     let domain = "technological";
     const cleanContextText = richContextBlock
       .replace(/alexa science space environment wildlife/gi, '')
@@ -1131,75 +1053,62 @@ const originalThematicPoem = payload.grok_poem || '';   // ← ADD THIS
       domain = "artistic";
     }
 
-console.log(`📡 Domain Classification Segment settled: [${domain.toUpperCase()}]`);
+    console.log(`📡 Domain Classification Segment settled: [${domain.toUpperCase()}]`);
 
-// =========================================================================
-// 1. CUMULATIVE MODEL INITIALIZATION
-// =========================================================================
-let cumulativeModel = { dramaticPlays: {}, predictionHistory: [], narrativeArcs: {} };
+    let cumulativeModel = { dramaticPlays: {}, predictionHistory: [], narrativeArcs: {} };
+    if (!noMemory) {
+      try {
+        const existing = await fs.readFile(MODEL_PATH, 'utf8');
+        const parsed = JSON.parse(existing);
+        cumulativeModel.dramaticPlays     = parsed.dramaticPlays   || {};
+        cumulativeModel.predictionHistory = parsed.predictionHistory || [];
+        cumulativeModel.narrativeArcs     = parsed.narrativeArcs   || {};
+      } catch (e) {}
+    }
 
-if (!noMemory) { // <-- Guard layout memory ingest
-  try {
-    const existing = await fs.readFile(MODEL_PATH, 'utf8');
-    const parsed = JSON.parse(existing);
-    cumulativeModel.dramaticPlays     = parsed.dramaticPlays   || {};
-    cumulativeModel.predictionHistory = parsed.predictionHistory || [];
-    cumulativeModel.narrativeArcs     = parsed.narrativeArcs   || {};
-  } catch (e) {}
-}
+    const nextActNumber = noMemory ? 1 : ((cumulativeModel.dramaticPlays?.[domain]?.length || 0) + 1);
 
-const nextActNumber = noMemory ? 1 : ((cumulativeModel.dramaticPlays?.[domain]?.length || 0) + 1);
+    // Scriptorium Paradigm Selection
+    let activeHypothesisPayload = "";
+    let activeHypothesisMode = "CLEAN CORE RUN (No Paradigm Injection)";
 
- // =========================================================================
-// 3. SCRIPTORIUM ORACLE COUPLER WITH --idea PRIORITY
-// =========================================================================
-let activeHypothesisPayload = "";
-let activeHypothesisMode = "CLEAN CORE RUN (No Paradigm Injection)";
+    if (customIdea) {
+      activeHypothesisPayload = customIdea;
+      activeHypothesisMode = "DIRECT INJECTED IDEA PARADIGM";
+    } else if (useLimericks) {
+      try {
+        activeHypothesisPayload = execSync('fortune limericks', { encoding: 'utf8' }).trim();
+        activeHypothesisMode = "SYSTEM LIMERICK SUBVERSION ACTIVE";
+      } catch (err) {
+        console.warn("   ⚠️ Scriptorium Alert: fortune limericks execution failed.");
+      }
+    } else if (useCanonical) {
+      const canonicalClaims = await loadCanonicalHypotheses(domain);
+      if (canonicalClaims.length > 0) {
+        const chosen = canonicalClaims[Math.floor(Math.random() * canonicalClaims.length)];
+        activeHypothesisPayload = chosen.claim;
+        activeHypothesisMode = `CANONICAL SYSTEM LOG Matrix ON [Domain: ${domain.toUpperCase()}]`;
+        console.log(`🔥 [CANONICAL] Ingested Hypothesis Active for Act ${nextActNumber}:`);
+        console.log(`   📜 ID: [${chosen.id || 'exploratory'}] | Claim: "${chosen.claim.substring(0, 95)}..."`);
+      } else {
+        try {
+          const targetDbs = ["wisdom", "tao", "paradoxum", "politics"];
+          const selectedDb = targetDbs[Math.floor(Math.random() * targetDbs.length)];
+          activeHypothesisPayload = execSync(`fortune ${selectedDb}`, { encoding: 'utf8' }).trim().replace(/\s+/g, ' ');
+          activeHypothesisMode = `CANONICAL FALLBACK: System Fortune Proverbs [File: ${selectedDb}]`;
+        } catch (_) {}
+      }
+    } else if (useFortune) {
+      try {
+        const targetDbs = ["wisdom", "tao", "paradoxum", "politics"];
+        const selectedDb = targetDbs[Math.floor(Math.random() * targetDbs.length)];
+        activeHypothesisPayload = execSync(`fortune ${selectedDb}`, { encoding: 'utf8' }).trim().replace(/\s+/g, ' ');
+        activeHypothesisMode = `SYSTEM FORTUNE PROVERBS ACTIVE [File: ${selectedDb}]`;
+      } catch (err) {
+        console.warn("   ⚠️ Scriptorium Alert: fortune path execution failed.");
+      }
+    }
 
-// Route 0: Direct CLI Idea Injection (--idea)
-if (customIdea) {
-  activeHypothesisPayload = customIdea;
-  activeHypothesisMode = "DIRECT INJECTED IDEA PARADIGM";
-}
-// Route A: Explicit Limerick Subversion via Shell Pipeline
-else if (useLimericks) {
-  try {
-    activeHypothesisPayload = execSync('fortune limericks', { encoding: 'utf8' }).trim();
-    activeHypothesisMode = "SYSTEM LIMERICK SUBVERSION ACTIVE";
-  } catch (err) {
-    console.warn("   ⚠️ Scriptorium Alert: fortune limericks execution failed.");
-  }
-} 
-// Route B: Canonical Ledger Selection
-else if (useCanonical) {
-  const parsedModelHistory = await loadAndMergeHypotheses(domain, cumulativeModel, isTraditional);
-  const canonicalClaims = parsedModelHistory.filter(h => h.source === "canonical");
-  
-  if (canonicalClaims.length > 0) {
-    activeHypothesisPayload = canonicalClaims[Math.floor(Math.random() * canonicalClaims.length)].claim;
-    activeHypothesisMode = `CANONICAL SYSTEM LOG Matrix ON [Domain: ${domain.toUpperCase()}]`;
-  } else {
-    try {
-      const targetDbs = ["wisdom", "tao", "paradoxum", "politics"];
-      const selectedDb = targetDbs[Math.floor(Math.random() * targetDbs.length)];
-      activeHypothesisPayload = execSync(`fortune ${selectedDb}`, { encoding: 'utf8' }).trim().replace(/\s+/g, ' ');
-      activeHypothesisMode = `CANONICAL FALLBACK: System Fortune Proverbs [File: ${selectedDb}]`;
-    } catch (_) {}
-  }
-} 
-// Route C: Pure Philosophical Fortune Stream
-else if (useFortune) {
-  try {
-    const targetDbs = ["wisdom", "tao", "paradoxum", "politics"];
-    const selectedDb = targetDbs[Math.floor(Math.random() * targetDbs.length)];
-    activeHypothesisPayload = execSync(`fortune ${selectedDb}`, { encoding: 'utf8' }).trim().replace(/\s+/g, ' ');
-    activeHypothesisMode = `SYSTEM FORTUNE PROVERBS ACTIVE [File: ${selectedDb}]`;
-  } catch (err) {
-    console.warn("   ⚠️ Scriptorium Alert: fortune path execution failed.");
-  }
-}
-
-    // --- HIGH-VISIBILITY TERMINAL REPORTERS PANEL ---
     console.log(`\n======================================================================`);
     console.log(`🔮 [ORACLE ENGINE] EXECUTION NODE INITIALIZATION METRICS:`);
     console.log(`   👉 Target Execution Node  : ${folder.toUpperCase()}`);
@@ -1211,10 +1120,8 @@ else if (useFortune) {
     }
     console.log(`======================================================================\n`);
 
-    // =========================================================================
-    // 3. HYPOTHESIS BLOCK STRING COMPILATION
-    // =========================================================================
-    const mergedHypotheses = await loadAndMergeHypotheses(domain, cumulativeModel, isTraditional);
+    // Hypothesis Compilation (Canonical claims are only merged when explicitly enabled)
+    const mergedHypotheses = await loadAndMergeHypotheses(domain, cumulativeModel, isTraditional, useCanonical);
     let hypothesisBlock = '';
     
     if (activeHypothesisPayload) {
@@ -1233,101 +1140,46 @@ else if (useFortune) {
       });
     }
 
-    const activeCanonicalClaims = mergedHypotheses.filter(h => h.source === "canonical");
-    if (activeCanonicalClaims.length > 0 && !useLimericks && !useCanonical && !useFortune) {
-      console.log(`🔥 [CRITICAL] Canonical Hypothesis Active for Act ${nextActNumber}!`);
-      activeCanonicalClaims.forEach(h => {
-        console.log(`   📜 ID: [${h.id}] | Active Context: "${h.claim.substring(0, 95)}..."`);
-      });
-    }
-    
-    
-    // === NEW: Build narrative context for story continuity ===
     const narrativeResult = await buildNarrativeContext(domain, cumulativeModel);
     const narrativeContext = narrativeResult.context;
     forecastsInjectedThisRun += narrativeResult.injected;
 
-    // === USER PROMPT ASSEMBLY ===
-// === USER PROMPT ASSEMBLY ===
-    let userPrompt = selPrompt.chat; // <-- Intercepting the JSON key payload[cite: 11]
+    // Prompt Synthesis
+    let userPrompt = selPrompt.chat;
 
-// Clean out any hardcoded voice example across ALL prompt templates
-const targetVoices = [
-  "Bass-Baritone male vocals",
-  "Lyric Tenor male vocals",
-  "Mezzo-Soprano female vocals",
-  "Dramatic Soprano female vocals"
-];
-const randomVoiceBaseline = targetVoices[Math.floor(Math.random() * targetVoices.length)];
-
-
-// Inject assignedVoice directly into prompt templates to guide LLM lyric writing
-userPrompt = userPrompt.replace(
-  /TAGS:\s*.*?(Bass-Baritone|Lyric Tenor|Mezzo-Soprano|Dramatic Soprano)\s*(male|female)?\s*vocals/gi,
-  `TAGS: Folk, Americana, Instrumental, ${assignedVoice}`
-);
-
-    // 1. HARDENED REGEX RESTRUCTURING: Clean out any trailing whitelist blocks from the bottom
-    // This strips out "### SONIC GENRE WHITELIST" down to the end of the file if present.
+    userPrompt = userPrompt.replace(
+      /TAGS:\s*.*?(Bass-Baritone|Lyric Tenor|Mezzo-Soprano|Dramatic Soprano)\s*(male|female)?\s*vocals/gi,
+      `TAGS: Folk, Americana, Instrumental, ${assignedVoice}`
+    );
     userPrompt = userPrompt.replace(/### SONIC GENRE WHITELIST[\s\S]*$/, '').trim();
-
-    // 2. SURGICAL REGEX INJECTION: Target the Music Prompt block header
-    // This guarantees the token [[ace_styles]] is placed right below the music instructions.
     userPrompt = userPrompt.replace(
       /## MUSIC PROMPT/i,
       "## MUSIC PROMPT\n\n### REFERENCE GENRE WHITELIST (CHOOSE 2-3 TERMS MAX FROM THIS LIST):\n[[ace_styles]]"
     );
 
-    // 3. IDEOGRAM INTERCEPTOR: (Preserve your existing workflow rules)[cite: 11]
-    if (useIdeogram) {
-      const ideogramJSONRules = `## IMAGE PROMPT
-CRITICAL IMAGE GENERATION RULES:
-1. You MUST output exactly one clean, valid, single-line minified JSON object matching the contract below. Do not wrap it in markdown code fences or add conversational notes.
-2. Define a master 'high_level_description' framing the overall composition, medium, and atmosphere based on the active act.
-3. Populate the 'compositional_deconstruction' object with a 'background' description and an 'elements' array containing 1 to 3 core objects or typography layers mapped to coordinates on a 0 to 1000 grid layout [y_min, x_min, y_max, x_max].
-
-Target Format Blueprint:
-{"aspect_ratio":"9:16","high_level_description":"A theatrical stage set layout...","compositional_deconstruction":{"background":"A stark digital lattice shell...","elements":[{"type":"obj","bbox":[450,200,850,750],"desc":"A glowing artifact center stage"}]}}`;
-
-      userPrompt = userPrompt.replace(/## IMAGE PROMPT[\s\S]*?## T2V PROMPT/i, `${ideogramJSONRules}\n\n## T2V PROMPT`); //[cite: 11]
-    }
-
-    // 4. TRADITIONAL VERSE MODE INSTRUCTION SWAP[cite: 11]
     if (isTraditional) {
       const traditionalVerseInstructions =
-        "[Write traditional metrical rhymed verse in a unified lyrical voice. Do not use named character dialogue, stage directions, or theatrical play format. Focus on compressed insight, symbolic imagery, musical language, direct observation, and thematic resonance. Maintain perfect end-rhymes and consistent meter across stanzas.]"; //[cite: 11]
+        "[Write traditional metrical rhymed verse in a unified lyrical voice. Do not use named character dialogue, stage directions, or theatrical play format. Focus on compressed insight, symbolic imagery, musical language, direct observation, and thematic resonance. Maintain perfect end-rhymes and consistent meter across stanzas.]";
 
       userPrompt = userPrompt.replace(
         /\[Write bold, unflinching, truth-revealing metrical rhymed verse dialogue featuring named characters and stage directions\..*?Maintain strict metrical and rhyme discipline\.\]/s,
         traditionalVerseInstructions
-      ); //[cite: 11]
+      );
     }
 
- // =========================================================================
-    // 5. STANDARD TOKEN GLOBAL REPLACEMENTS
-    // =========================================================================
-    // Safely replaces the context within its designated template wrapper slot
     userPrompt = userPrompt.replace(/\[\[narrative_context\]\]/g, narrativeContext);
-    
-    // Ingested data chunk is safely appended at the very bottom
     userPrompt = userPrompt.replace(/\[\[chunk\]\]/g, richContextBlock);
-
-    // High-uniformity Fisher-Yates shuffle array placement
-    const dynamicStylesString = getShuffledAceStyles();
-    userPrompt = userPrompt.replace(/\[\[ace_styles\]\]/g, dynamicStylesString);
-
+    userPrompt = userPrompt.replace(/\[\[ace_styles\]\]/g, getShuffledAceStyles());
     userPrompt = userPrompt.replace(/\[\[act_number\]\]/g, nextActNumber.toString());
 
-    // Inject hypotheses blocks cleanly without redundant stacking checks
     if (userPrompt.includes('[[hypotheses_block]]')) {
       userPrompt = userPrompt.replace(/\[\[hypotheses_block\]\]/g, hypothesisBlock);
     } else {
       userPrompt += `\n\n## ACCUMULATING STRUCTURAL TENSIONS\n${hypothesisBlock}`;
     }
 
-    // Enforce dynamic sonic directives based on current run profiles[cite: 11]
-    let stylisticEnforcement = ""; //[cite: 11]
-    if (selPrompt.name.includes("traditional") || selPrompt.name.includes("cantata") || selPrompt.name.includes("polyphony") || selPrompt.name.includes("opera")) { //[cite: 11]
+    let stylisticEnforcement = "";
+    if (selPrompt.name.includes("traditional") || selPrompt.name.includes("cantata") || selPrompt.name.includes("polyphony") || selPrompt.name.includes("opera")) {
       stylisticEnforcement = "\n\n--- CRITICAL SONIC DIRECTIVE ---\n" +
                              "The music pipeline is currently configured for an ACOUSTIC UN-AMPLIFIED RUN. " +
                              "You must strictly select tags representing acoustic, classical, vocal, or folk traditions. " +
@@ -1335,163 +1187,90 @@ Target Format Blueprint:
     } else {
       stylisticEnforcement = "\n\n--- CRITICAL SONIC DIRECTIVE ---\n" +
                              "The music pipeline is configured for a SYNTHESIZED DRAMATIC RUN. " +
-                             "You are encouraged to leverage modern electronic, atmospheric, or heavy production textures (such as Darksynth, Industrial Techno, Ambient, or Trip Hop)."; //[cite: 11]
+                             "You are encouraged to leverage modern electronic, atmospheric, or heavy production textures (such as Darksynth, Industrial Techno, Ambient, or Trip Hop).";
     }
-    userPrompt += stylisticEnforcement; //[cite: 11]
+    userPrompt += stylisticEnforcement;
 
-    // Generate
-const rawOutput = await generateText(selPrompt.system, userPrompt);
-       const parsed = parseUnifiedOutput(rawOutput);
-// After: const parsed = parseUnifiedOutput(rawOutput);
+    const rawOutput = await generateText(selPrompt.system, userPrompt);
+    const parsed = parseUnifiedOutput(rawOutput);
 
-// === Forecast Structure Check ===
-const forecastLower = parsed.forecast.toLowerCase();
+    const forecastLower = parsed.forecast.toLowerCase();
+    const hasStructuredFormat = 
+        forecastLower.includes("benchmark") && 
+        forecastLower.includes("trigger condition") && 
+        forecastLower.includes("expected vector");
 
-const hasStructuredFormat = 
-    forecastLower.includes("benchmark") && 
-    forecastLower.includes("trigger condition") && 
-    forecastLower.includes("expected vector");
+    if (hasStructuredFormat) {
+        console.log("✅ Forecast followed structured format");
+    } else {
+        console.log("⚠️ Forecast did NOT follow the structured Benchmark/Trigger/Vector format");
+    }
 
-if (hasStructuredFormat) {
-    console.log("✅ Forecast followed structured format");
-} else {
-    console.log("⚠️ Forecast did NOT follow the structured Benchmark/Trigger/Vector format");
-}
-    // Count processed forecasts
     if (parsed.forecast && parsed.forecast.trim().length > 40) {
         forecastsProcessedThisRun++;
     }
-    
 
-// =========================================================================
-// PROGRAMMATIC VOICE ENFORCEMENT & TAG SANITIZATION
-// =========================================================================
-let rawTagsString = (parsed.musicTags || "").replace(/[\[\]()]/g, ''); 
+    // Programmatic Voice Enforcement & Tag Sanitization
+    let rawTagsString = (parsed.musicTags || "").replace(/[\[\]()]/g, ''); 
+    let cleanTagsArray = rawTagsString
+      .split(',')
+      .map(t => t.trim())
+      .filter(t => {
+        if (!t) return false;
+        if (/baritone|tenor|soprano|mezzo|vocals|male|female/i.test(t)) return false;
+        return RAW_ACE_STYLES.some(style => style.toLowerCase() === t.toLowerCase());
+      });
 
-// Filter out genre tags while removing any voice profile tags generated by the LLM
-let cleanTagsArray = rawTagsString
-  .split(',')
-  .map(t => t.trim())
-  .filter(t => {
-    if (!t) return false;
-    // Strip out voice keywords so we don't duplicate vocal tags
-    if (/baritone|tenor|soprano|mezzo|vocals|male|female/i.test(t)) return false;
-    return RAW_ACE_STYLES.some(style => style.toLowerCase() === t.toLowerCase());
-  });
+    if (cleanTagsArray.length === 0) {
+      cleanTagsArray = ["Folk", "Americana", "Bluegrass"];
+    }
 
-if (cleanTagsArray.length === 0) {
-  cleanTagsArray = ["Folk", "Americana", "Bluegrass"];
-}
+    cleanTagsArray = cleanTagsArray.slice(0, 3);
+    cleanTagsArray.push(assignedVoice);
 
-cleanTagsArray = cleanTagsArray.slice(0, 3);
+    const safeMusicTagsString = cleanTagsArray.join(', ');
+    console.log(`🎵 Sanitized Music Tags submitted to worker: "${safeMusicTagsString}"`);
 
-// Programmatically append the statefully assigned voice
-cleanTagsArray.push(assignedVoice);
+    if (!noMemory) {
+      if (parsed.narrative_synthesis && parsed.narrative_synthesis.trim().length > 50) {
+          const appended = await updateNarrativeArc(domain, parsed.narrative_synthesis, parsed.forecast, cumulativeModel);
+          if (appended) forecastsAppendedThisRun++;
+          await fs.writeFile(MODEL_PATH, JSON.stringify(cumulativeModel, null, 2));
+          console.log(`📖 Narrative arc updated for [${domain}]`);
+      }
+      await updateUnifiedDomainModel(domain, nextActNumber, folder, parsed, mergedHypotheses);
+    } else {
+      console.log(`🛡️ Stateless Running Active: Skipping database mutations for ${folder}`);
+    }
 
-const safeMusicTagsString = cleanTagsArray.join(', ');
-console.log(`🎵 Sanitized Music Tags submitted to worker: "${safeMusicTagsString}"`);
+    // Media Generation Dispatches
+    let imgRes = { success: false, filename: '', engine: 'Skipped/Failed', markdown: '' };
 
-// Only commit telemetry data states to disk if memory is globally enabled
-if (!noMemory) {
-  if (parsed.narrative_synthesis && parsed.narrative_synthesis.trim().length > 50) {
-      const appended = await updateNarrativeArc(domain, parsed.narrative_synthesis, parsed.forecast, cumulativeModel);
-      if (appended) forecastsAppendedThisRun++;
-      await fs.writeFile(MODEL_PATH, JSON.stringify(cumulativeModel, null, 2));
-      console.log(`📖 Narrative arc updated for [${domain}]`);
-  }
-  await updateUnifiedDomainModel(domain, nextActNumber, folder, parsed, mergedHypotheses);
-} else {
-  console.log(`🛡️ Stateless Running Active: Skipping database mutations for ${folder}`);
-}
-
-// ==========================================
-// MEDIA GENERATION
-// ==========================================
-let imgRes = { success: false, filename: '', engine: 'Skipped/Failed', markdown: '' };
-
-if (useGrokImagine) {
-  imgRes = await runGrokImagine(parsed.image, slugify(title));
-} else if (useGeminiImage) {
-  // Construct your targeted contextual dramatic prompt string from the parsed token output
-  const creativePrompt = `${parsed.image || slugify(title)}, dramatic counterpoint layout, highly-detailed traditional theatrical framing`;
-  
-  // Hand execution off to the dual-layer cloud + local fallback pipeline
-  imgRes = await executeImagePipeline(creativePrompt, slugify(title));
-} else {
-  imgRes = await runImageGen(parsed.image);
-}
-if (!useGeminiImage) await freeComfyVRAM();
+    if (useGrokImagine) {
+      imgRes = await runGrokImagine(parsed.image, slugify(title));
+    } else if (useGeminiImage) {
+      const creativePrompt = `${parsed.image || slugify(title)}, dramatic counterpoint layout, highly-detailed traditional theatrical framing`;
+      imgRes = await executeImagePipeline(creativePrompt, slugify(title));
+    } else {
+      imgRes = await runImageGen(parsed.image);
+    }
+    if (!useGeminiImage) await freeComfyVRAM();
 
     let vidRes = useGeminiVideo
       ? await runGeminiVideo(parsed.t2v, slugify(title))
-      : await runVideoGen(parsed.t2v, imgRes.filename, forceT2V || useHunyuan);
+      : await runVideoGen(parsed.t2v, imgRes.filename, forceT2V);
     if (!useGeminiVideo) await freeComfyVRAM();
 
     const ttsRes = await runPoetryTTS(parsed.verse);
     await freeComfyVRAM();
 
-// In main() loop:
-const activeRefAudio = refAudioSetting ? await resolveReferenceAudio(refAudioSetting) : null;
+    const activeRefAudio = refAudioSetting ? await resolveReferenceAudio(refAudioSetting) : null;
+    const finalDuration = parseInt(parsed.musicDuration, 10) || generationDuration;
 
-const finalDuration = parseInt(parsed.musicDuration, 10) || generationDuration;
-let audioRes = useGeminiAudio
-  ? await runGeminiAudio(safeMusicTagsString, parsed.musicLyrics, slugify(title))
-  : await runAceStepGen(safeMusicTagsString, parsed.musicLyrics, slugify(title), finalDuration, activeRefAudio);
+    let audioRes = useGeminiAudio
+      ? await runGeminiAudio(safeMusicTagsString, parsed.musicLyrics, slugify(title))
+      : await runAceStepGen(safeMusicTagsString, parsed.musicLyrics, slugify(title), finalDuration, activeRefAudio);
     if (!useGeminiAudio) await freeComfyVRAM();
-
-// ==========================================
-    // DYNAMIC VIDEO/IMAGE MP4 STITCHING CORE
-    // ==========================================
-    // if (audioRes.success && (vidRes.success || imgRes.success)) {
-    //   try {
-    //     const outputMp4Name = `x_ready_media_${slugify(title)}_${Date.now()}.mp4`;
-    //     const outputMp4Path = path.join(IMAGES_DIR, outputMp4Name);
-
-    //     if (vidRes.success) {
-    //       console.log(`🎬 Stitching 128s audio: Reversing video to freeze on pristine anchor frame...`);
-    //       await execFileAsync('ffmpeg', [
-    //         '-y',
-    //         '-i', path.join(IMAGES_DIR, vidRes.filename),
-    //         '-i', path.join(IMAGES_DIR, audioRes.filename),
-    //         '-map', '0:v:0',
-    //         '-map', '1:a:0',
-    //         '-vf', 'reverse,setpts=PTS-STARTPTS,tpad=stop_mode=clone:stop=-1',
-    //         '-c:v', 'libx264',
-    //         '-preset', 'fast',
-    //         '-crf', '26',
-    //         '-c:a', 'aac',
-    //         '-b:a', '192k',
-    //         '-pix_fmt', 'yuv420p',
-    //         '-shortest',
-    //         '-movflags', '+faststart',
-    //         outputMp4Path
-    //       ]);
-    //     } else {
-    //       console.log(`🖼️ Video unavailable. Falling back to still-image stitch (${imgRes.filename})...`);
-    //       await execFileAsync('ffmpeg', [
-    //         '-y',
-    //         '-loop', '1',
-    //         '-framerate', '24',
-    //         '-i', path.join(IMAGES_DIR, imgRes.filename),
-    //         '-i', path.join(IMAGES_DIR, audioRes.filename),
-    //         '-map', '0:v:0',
-    //         '-map', '1:a:0',
-    //         '-c:v', 'libx264',
-    //         '-tune', 'stillimage',
-    //         '-c:a', 'aac',
-    //         '-b:a', '192k',
-    //         '-pix_fmt', 'yuv420p',
-    //         '-shortest',
-    //         '-movflags', '+faststart',
-    //         outputMp4Path
-    //       ]);
-    //     }
-    //     console.log(`✅ Stitched media asset ready: ${outputMp4Name}`);
-    //   } catch (e) {
-    //     console.error(`⚠️ Media stitching pass failed: ${e.message}`);
-    //   }
-    // }
-
 
     // Clean up raw audio intermediates
     const rawFlacDirScan = await fs.readdir(IMAGES_DIR);
@@ -1501,10 +1280,9 @@ let audioRes = useGeminiAudio
       }
     }
 
-    // === BUILD ASTRO MARKDOWN POST ===
+    // Build Astro Markdown Post
     const postDate = new Date().toISOString();
-const frontMatter = [
-      // SWAPPED: Unicode en-dash (–) replaced with a safe ASCII hyphen (-)
+    const frontMatter = [
       `title: ${JSON.stringify(`${title} - Transmuted Pass`)}`,
       `date: "${postDate}"`,
       `pubDate: "${postDate.split('T')[0]}"`,
@@ -1517,31 +1295,9 @@ const frontMatter = [
     if (imgRes.success) frontMatter.push(`image: "/images/${imgRes.filename}"`);
     if (vidRes.success) frontMatter.push(`video: "/images/${vidRes.filename}"`);
 
-// === HUMAN-READABLE IDEOGRAM PROMPT EXTRACTION ===
-    let displayImagePrompt = parsed.image || '_No image prompt generated._';
+    const displayImagePrompt = parsed.image || '_No image prompt generated._';
 
-    if (useIdeogram && parsed.image.trim().startsWith('{')) {
-      try {
-        const jsonPromptObj = JSON.parse(parsed.image.trim());
-        if (jsonPromptObj.high_level_description) {
-          // Pull the clean natural sentence structure out of the JSON envelope
-          displayImagePrompt = jsonPromptObj.high_level_description;
-          
-          // Optional: If you want to also list the specific element descriptions, append them:
-          if (jsonPromptObj.compositional_deconstruction?.elements?.length > 0) {
-            displayImagePrompt += "<br><br><strong>Compositional Elements:</strong><ul>" + 
-              jsonPromptObj.compositional_deconstruction.elements
-                .map(el => `<li><code>${el.type.toUpperCase()}</code>: ${el.desc || el.text || ''}</li>`)
-                .join('') + "</ul>";
-          }
-        }
-      } catch (e) {
-        console.warn("⚠️ Failed to parse image layout JSON for markdown display view, using raw string.");
-        displayImagePrompt = parsed.image;
-      }
-    }    
-
-const markdownPost = `---
+    const markdownPost = `---
 ${frontMatter.join('\n')}
 ---
 
@@ -1549,14 +1305,13 @@ ${frontMatter.join('\n')}
 
 ## Navigation
 - [Ongoing Narrative Arc](#ongoing-narrative-arc)
+- [Semantic Architecture](#semantic-architecture)
 - [Primary Poetic Artifact](#primary-poetic-artifact)
 - [Kinetic Dynamic Video](#kinetic-dynamic-video)
 - [Visual Anchor Representation](#visual-anchor-representation)
 - [Generated Musical Score](#generated-musical-score)
 - [Pipeline & Debug Analytics](#pipeline-and-debug-analytics)
-
 ---
-
 
 ${activeHypothesisPayload ? `
 ### Active Underlying Paradigm
@@ -1589,6 +1344,14 @@ ${parsed.forecast && parsed.forecast.length > 30 ? `
 ### Forecast
 
 ${parsed.forecast}
+` : ''}
+
+${parsed.diagram ? `
+---
+
+## Semantic Architecture
+
+${parsed.diagram}
 ` : ''}
 
 ---
@@ -1670,7 +1433,6 @@ ${userPrompt}
 </details>
 `;
 
-    // Collision-proof file writing
     const baseSlug = `${slugify(title).substring(0, 40)}-${folder}-${Date.now()}`;
     let finalFilePath = path.join(POSTS_DIR, `${baseSlug}.md`);
     let counter = 1;
@@ -1690,7 +1452,6 @@ ${userPrompt}
     await freeComfyVRAM();
   }
 
-  // === One-line summary log ===
   console.log(`\n📊 Run complete — ${forecastsProcessedThisRun} processed | ${forecastsAppendedThisRun} appended | ${forecastsInjectedThisRun} injected.`);
 }
 
