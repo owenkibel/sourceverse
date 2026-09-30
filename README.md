@@ -1,6 +1,6 @@
 # Sourceverse
 
-Sourceverse turns a slice of current pages — Chrome bookmarks, X posts, articles, the occasional video — into **metrical verse, a continuing thread, and media**. The live site is [Latent Verse](https://latent-verse.vercel.app/).
+Sourceverse turns a slice of current pages — Chrome bookmarks, X posts, articles, the occasional video — into **metrical verse, a continuing thread, and media**. The live site is [Latent Verse](https://latent-verse.pages.dev/).
 
 The main loop is two scripts: ingest, then grow a thread with picture, optional video, music, and a forecast. A separate, smaller experiment grows **prose courses and voice rewrites** from the same kind of URL. Those posts also land on Latent Verse; they do not replace the poetry pipeline.
 
@@ -18,7 +18,7 @@ bookmarks / URLs
  vertical_thread*.js    arc + verse + forecast + image/video/music
         │
         ▼
-  posts/  →  Astro site  →  https://latent-verse.vercel.app/
+  posts/  →  Astro site  →  https://latent-verse.pages.dev/
 ```
 
 Persistent thread memory lives in `cumulative_thread_model.json` (narrative arcs, hypotheses, forecast history). That file is for **threads only**. Course memory is a different file.
@@ -68,7 +68,7 @@ bun install
 export XAI_API_KEY=...
 ```
 
-The Astro blog lives in `site/`. Generated Markdown in `posts/` is what [Latent Verse](https://latent-verse.vercel.app/) shows.
+The Astro blog lives in `site/`. Generated Markdown in `posts/` is what [Latent Verse](https://latent-verse.pages.dev/) shows.
 
 ## Courses and rewrites (experiment)
 
