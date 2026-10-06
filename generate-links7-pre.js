@@ -16,10 +16,6 @@ const BOOKMARKS_PATH = '/home/owen/.config/google-chrome-unstable/Default/Bookma
 const OUTPUT_DIR = './posts';
 const X_OUTPUT_DIR = './x';
 
-// Whisper Configuration (from kitchen-ingest)
-const WHISPER_BIN = path.join(os.homedir(), 'whisper.cpp/build/bin/whisper-cli');
-const WHISPER_MODEL = path.join(os.homedir(), 'whisper.cpp/models/ggml-large-v3-turbo.bin');
-
 // Collect everything after --ignore until the next flag or end of argv
 const ignoreArgs = [];
 const ignoreIdx = process.argv.indexOf('--ignore');
@@ -274,8 +270,6 @@ function chunkTextSmart(text, maxChunkSize = 20000) {
   return chunks;
 }
 
-// --- Audio Transcription Pipeline via local Whisper ---
-
 async function extractAndAnalyzeAudio(url) {
   if (url.includes('/playlist?list=') || url.includes('/view_playlist') || url.includes('/channel/')) {
     console.log(`  [Audio Pipeline] Skipping playlist container URL.`);
@@ -286,7 +280,6 @@ async function extractAndAnalyzeAudio(url) {
   const runId = Date.now().toString(36);
   const tempRawAudio = path.join(TEMP_DIR, `raw-${videoID}-${runId}`);
   const tempProcessedWav = path.join(TEMP_DIR, `proc-${videoID}-${runId}.wav`);
-  let actualRawFile = null;
 
   try {
     console.log(`  [Audio Pipeline] Verifying media asset stream availability...`);
@@ -304,36 +297,44 @@ async function extractAndAnalyzeAudio(url) {
     );
     
     const files = await fs.readdir(TEMP_DIR);
-    actualRawFile = files.find(f => f.startsWith(`raw-${videoID}-${runId}`));
+    const actualRawFile = files.find(f => f.startsWith(`raw-${videoID}-${runId}`));
     if (!actualRawFile) throw new Error("Range stream extraction failed to produce a temporary block.");
 
-    console.log(`  [Audio Pipeline] Filtering noise and converting to 16kHz mono pcm_s16le for Whisper...`);
+    console.log(`  [Audio Pipeline] Normalizing file format to 16kHz mono PCM for Gemma 4...`);
     await execAsync(
-      `ffmpeg -y -i "${path.join(TEMP_DIR, actualRawFile)}" -af "afftdn=nr=12:nf=-30" -ar 16000 -ac 1 -c:a pcm_s16le "${tempProcessedWav}" -loglevel error`
+      `ffmpeg -y -i "${path.join(TEMP_DIR, actualRawFile)}" -ar 16000 -ac 1 -c:a pcm_f32le "${tempProcessedWav}"`
     );
 
-    console.log(`  [Audio Pipeline] Running Whisper CLI (ggml-large-v3-turbo)...`);
-    const { stdout: transcript } = await execAsync(
-      `"${WHISPER_BIN}" -m "${WHISPER_MODEL}" -f "${tempProcessedWav}" --no-timestamps --language en -nt 2>/dev/null`,
-      { timeout: 60000 }
-    );
+    const wavBuffer = await fs.readFile(tempProcessedWav);
+    const base64Audio = wavBuffer.toString('base64');
 
-    const cleanTranscript = (transcript || '').trim();
-    if (!cleanTranscript) {
-      console.log(`  [Audio Pipeline] Whisper produced an empty transcript.`);
-      return "";
-    }
+    await fs.unlink(path.join(TEMP_DIR, actualRawFile)).catch(() => {});
+    await fs.unlink(tempProcessedWav).catch(() => {});
 
-    return `\n\n[Local Whisper Transcript]:\n${cleanTranscript}`;
+    console.log(`  [Audio Pipeline] Dispatching sensory vector arrays to local llama-server...`);
+    const response = await fetch("http://localhost:8080/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "gemma-4-E4B-it-GGUF",
+        messages: [{
+          role: "user",
+          content: [
+            { type: "text", text: "Analyze this raw audio sample. Extrapolate on any verbal messaging, vocal pacing, mood markers, emotional delivery, speaker switches, and overall clarity." },
+            { type: "input_audio", input_audio: { data: base64Audio, format: "wav" } }
+          ]
+        }]
+      })
+    });
+
+    if (!response.ok) throw new Error(`Local backend engine returned status: ${response.status}`);
+    const data = await response.json();
+    return `\n\n[Local Gemma 4 Audio Analysis]:\n${data.choices[0].message.content.trim()}`;
 
   } catch (err) {
-    console.warn(`  ⚠️ Local Whisper transcription bypassed: ${err.message}`);
-    return "";
-  } finally {
-    if (actualRawFile) {
-      await fs.unlink(path.join(TEMP_DIR, actualRawFile)).catch(() => {});
-    }
+    console.warn(`  ⚠️ Local multimodal audio processing bypassed: ${err.message}`);
     await fs.unlink(tempProcessedWav).catch(() => {});
+    return "";
   }
 }
 
@@ -348,110 +349,120 @@ async function fetchWithPlaywright(url, browser, skipTruncate = false) {
     try {
       await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 25000 });
       
-      if (url.includes('x.com') || url.includes('twitter.com')) {
-        await page.evaluate(async () => {
-          for (let i = 0; i < 6; i++) {
-            window.scrollBy(0, 1200);
-            await new Promise(r => setTimeout(r, 600));
-          }
-          document.querySelectorAll('button, div[role="button"]').forEach(btn => {
-            const t = (btn.innerText || '').toLowerCase();
-            if (t.includes('show more') || t.includes('show replies') || t.includes('view more')) {
-              try { btn.click(); } catch {}
-            }
-          });
-        });
-        await page.waitForTimeout(1500);
-
-        const data = await page.evaluate((targetUrl) => {
-          const isTrending = /\/i\/trending\//.test(targetUrl);
-          const articleTitleEl = document.querySelector('[data-testid="twitter-article-title"]');
-          const articleBodyEl = document.querySelector('[data-testid="twitterArticleRichTextView"]')
-                             || document.querySelector('[data-testid="twitterArticleReadView"]');
-
-          if (articleBodyEl) {
-            const title = (articleTitleEl?.innerText || document.title || '').trim();
-            const paragraphs = Array.from(
-              articleBodyEl.querySelectorAll('p, [data-block="true"], .public-DraftStyleDefault-block, h1, h2, h3, li')
-            )
-              .map(el => el.innerText.trim())
-              .filter(t => t.length > 20);
-
-            const fullText = paragraphs.length
-              ? paragraphs.join('\n\n')
-              : articleBodyEl.innerText.trim();
-
-            const cover = document.querySelector('[data-testid="twitterArticleReadView"] [data-testid="tweetPhoto"] img')
-                       || document.querySelector('meta[property="og:image"]');
-
-            return {
-              ogTitle: title || 'X Article',
-              paragraphs: [fullText],
-              ogImage: cover?.src || cover?.content || null,
-              kind: 'article'
-            };
-          }
-
-          if (isTrending) {
-            const summaryCandidates = Array.from(document.querySelectorAll(
-              'div[dir="auto"], [data-testid="tweetText"], article, h1, h2'
-            ))
-              .map(el => el.innerText.trim())
-              .filter(t => t.length > 80 && !t.startsWith('Show') && !t.includes('·'));
-
-            const mainSummary = summaryCandidates[0] || document.title || '';
-            const relatedPosts = Array.from(document.querySelectorAll('[data-testid="tweetText"]'))
-              .map(el => el.innerText.trim())
-              .filter(t => t.length > 25)
-              .slice(0, 12);
-
-            return {
-              ogTitle: (document.querySelector('h1, h2')?.innerText || document.title || 'X Trending').trim(),
-              paragraphs: [mainSummary, ...relatedPosts],
-              ogImage: document.querySelector('meta[property="og:image"]')?.content || null,
-              kind: 'trending'
-            };
-          }
-
-          const tweetElements = Array.from(document.querySelectorAll(
-            '[data-testid="tweetText"], article div[dir="auto"]'
-          ))
-            .map(el => el.innerText.trim())
-            .filter(t => t.length > 15);
-
-          const structuralHeader = document.querySelector(
-            '[data-testid="sidebarColumn"] h2, h2 span, h1, [data-testid="User-Name"]'
-          )?.innerText || document.title || '';
-
-          const primary = tweetElements.slice(0, 8);
-
-          let images = Array.from(document.querySelectorAll(
-            'img[src^="https://pbs.twimg.com/media/"], img[alt*="image"]'
-          ))
-            .map(el => el.src)
-            .filter(src => src && src.includes('pbs.twimg.com') && !src.includes('profile'));
-
-          return {
-            ogTitle: structuralHeader.trim() || document.title,
-            paragraphs: primary,
-            ogImage: images[0] || document.querySelector('meta[property="og:image"]')?.content || null,
-            kind: 'post'
-          };
-        }, url);
-
-        await context.close();
-        if (data && data.paragraphs) {
-          const processedParas = skipTruncate ? data.paragraphs : data.paragraphs.slice(0, 80);
-          return {
-            ogTitle: data.ogTitle,
-            ogDescription: processedParas.join('\n\n').trim(),
-            ogImage: data.ogImage
-          };
-        }
-        return null;
+     if (url.includes('x.com') || url.includes('twitter.com')) {
+  // More aggressive scroll + “Show more” expansion for long content
+  await page.evaluate(async () => {
+    for (let i = 0; i < 6; i++) {
+      window.scrollBy(0, 1200);
+      await new Promise(r => setTimeout(r, 600));
+    }
+    // Expand truncated text / “Show more” / “Show replies” buttons
+    document.querySelectorAll('button, div[role="button"]').forEach(btn => {
+      const t = (btn.innerText || '').toLowerCase();
+      if (t.includes('show more') || t.includes('show replies') || t.includes('view more')) {
+        try { btn.click(); } catch {}
       }
+    });
+  });
+  await page.waitForTimeout(1500);
+
+  const data = await page.evaluate((targetUrl) => {
+    const isTrending = /\/i\/trending\//.test(targetUrl);
+    const isStatus = /\/status\//.test(targetUrl);
+
+    // --- X Articles (long-form) ---
+    const articleTitleEl = document.querySelector('[data-testid="twitter-article-title"]');
+    const articleBodyEl = document.querySelector('[data-testid="twitterArticleRichTextView"]')
+                       || document.querySelector('[data-testid="twitterArticleReadView"]');
+
+    if (articleBodyEl) {
+      const title = (articleTitleEl?.innerText || document.title || '').trim();
+      // Prefer structured blocks; fall back to all text
+      const paragraphs = Array.from(
+        articleBodyEl.querySelectorAll('p, [data-block="true"], .public-DraftStyleDefault-block, h1, h2, h3, li')
+      )
+        .map(el => el.innerText.trim())
+        .filter(t => t.length > 20);
+
+      const fullText = paragraphs.length
+        ? paragraphs.join('\n\n')
+        : articleBodyEl.innerText.trim();
+
+      const cover = document.querySelector('[data-testid="twitterArticleReadView"] [data-testid="tweetPhoto"] img')
+                 || document.querySelector('meta[property="og:image"]');
+
+      return {
+        ogTitle: title || 'X Article',
+        paragraphs: [fullText],
+        ogImage: cover?.src || cover?.content || null,
+        kind: 'article'
+      };
+    }
+
+    // --- /i/trending/ story pages (AI/Grok summaries + posts) ---
+    if (isTrending) {
+      // Main narrative / AI summary is usually near the top
+      const summaryCandidates = Array.from(document.querySelectorAll(
+        'div[dir="auto"], [data-testid="tweetText"], article, h1, h2'
+      ))
+        .map(el => el.innerText.trim())
+        .filter(t => t.length > 80 && !t.startsWith('Show') && !t.includes('·'));
+
+      const mainSummary = summaryCandidates[0] || document.title || '';
+      const relatedPosts = Array.from(document.querySelectorAll('[data-testid="tweetText"]'))
+        .map(el => el.innerText.trim())
+        .filter(t => t.length > 25)
+        .slice(0, 12);
+
+      return {
+        ogTitle: (document.querySelector('h1, h2')?.innerText || document.title || 'X Trending').trim(),
+        paragraphs: [mainSummary, ...relatedPosts],
+        ogImage: document.querySelector('meta[property="og:image"]')?.content || null,
+        kind: 'trending'
+      };
+    }
+
+    // --- Regular posts / threads ---
+    const tweetElements = Array.from(document.querySelectorAll(
+      '[data-testid="tweetText"], article div[dir="auto"]'
+    ))
+      .map(el => el.innerText.trim())
+      .filter(t => t.length > 15);
+
+    const structuralHeader = document.querySelector(
+      '[data-testid="sidebarColumn"] h2, h2 span, h1, [data-testid="User-Name"]'
+    )?.innerText || document.title || '';
+
+    // Prefer the primary post text; keep a few more for short threads
+    const primary = tweetElements.slice(0, 8);
+
+    let images = Array.from(document.querySelectorAll(
+      'img[src^="https://pbs.twimg.com/media/"], img[alt*="image"]'
+    ))
+      .map(el => el.src)
+      .filter(src => src && src.includes('pbs.twimg.com') && !src.includes('profile'));
+
+    return {
+      ogTitle: structuralHeader.trim() || document.title,
+      paragraphs: primary,
+      ogImage: images[0] || document.querySelector('meta[property="og:image"]')?.content || null,
+      kind: 'post'
+    };
+  }, url);
+
+  // ... rest of the existing return logic (process paragraphs, etc.)
+}
 
       await context.close();
+      
+      if (data && data.paragraphs) {
+        const processedParas = skipTruncate ? data.paragraphs : data.paragraphs.slice(0, 80);
+        return {
+          ogTitle: data.ogTitle,
+          ogDescription: processedParas.join('\n\n').trim(),
+          ogImage: data.ogImage
+        };
+      }
       return null;
     } catch (error) {
       attempts++;
@@ -602,6 +613,7 @@ async function runVersificationMode(url, targetModel) {
   const chunks = chunkTextSmart(fullText, 20000); 
   let activePoemBody = '';
 
+  // Configure endpoint parameters dynamically based on model targets
   let apiUrl = 'https://api.x.ai/v1/chat/completions';
   let headers = {
     'Content-Type': 'application/json',
@@ -632,7 +644,7 @@ ${chunks[i]}`;
       bodyPayload = {
         model: targetModel === "gemma-12b" ? "unsloth/gemma-4-12b-it-GGUF:UD-Q4_K_XL" : "ggml-org/gemma-4-E4B-it-GGUF",
         messages: [{ role: 'user', content: prompt }],
-        temperature: 0.65,
+        temperature: 0.65, // Lower temperature keeps local structural rhyme metrics precise
         max_tokens: 4096
       };
     } else {
@@ -645,7 +657,7 @@ ${chunks[i]}`;
       };
     }
 
-    try {
+try {
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: headers,
@@ -658,9 +670,12 @@ ${chunks[i]}`;
       const message = apiData.choices[0].message;
       let stanzas = (message.content || '').trim();
       
+      // FALLBACK: If standard content is empty, pull the text from the reasoning stream
       if (!stanzas && message.reasoning_content) {
         console.log(`   [Engine Note] Standard content empty. Extracting from reasoning_content...`);
         stanzas = message.reasoning_content.trim();
+        
+        // Clean out any raw thinking/thought syntax wrapper remnants if present
         stanzas = stanzas.replace(/<thought>|<\/thought>|Thinking\.\.\.|\.\.\.done thinking\./gi, '').trim();
       }
       
@@ -676,6 +691,7 @@ ${chunks[i]}`;
     }
   }
 
+  // Inject line breaks into standalone verse records
   activePoemBody = activePoemBody.split('\n').map(line => {
     const trimmed = line.trim();
     if (trimmed !== '') return line.trimEnd() + '  ';
@@ -805,19 +821,20 @@ async function main() {
       collectBookmarks(bookmarksJson.roots[key], allBookmarks);
     }
 
-    const sortedBookmarks = allBookmarks
-      .map(bm => ({ ...bm, date: chromeDateToJsDate(bm.date_added) }))
-      .sort((a, b) => b.date - a.date);
+  const sortedBookmarks = allBookmarks
+  .map(bm => ({ ...bm, date: chromeDateToJsDate(bm.date_added) }))
+  .sort((a, b) => b.date - a.date);
 
-    const nonIgnored = sortedBookmarks.filter(bm => !shouldIgnoreUrl(bm.url));
+// Filter first so we dig deeper
+const nonIgnored = sortedBookmarks.filter(bm => !shouldIgnoreUrl(bm.url));
 
-    if (ignoreArgs.length) {
-      const skipped = sortedBookmarks.length - nonIgnored.length;
-      console.log(`🚫 --ignore active (${ignoreArgs.join(', ')}). Skipped ${skipped} bookmarks. Remaining pool: ${nonIgnored.length}`);
-    }
+if (ignoreArgs.length) {
+  const skipped = sortedBookmarks.length - nonIgnored.length;
+  console.log(`🚫 --ignore active (${ignoreArgs.join(', ')}). Skipped ${skipped} bookmarks. Remaining pool: ${nonIgnored.length}`);
+}
 
-    const withDates = nonIgnored.slice(batchIndex * BATCH_SIZE, (batchIndex + 1) * BATCH_SIZE);
-    console.log(`Processing batch ${batchIndex} → non-ignored bookmarks ${batchIndex * BATCH_SIZE + 1}–${(batchIndex + 1) * BATCH_SIZE} (${withDates.length} items)`);
+const withDates = nonIgnored.slice(batchIndex * BATCH_SIZE, (batchIndex + 1) * BATCH_SIZE);
+console.log(`Processing batch ${batchIndex} → non-ignored bookmarks ${batchIndex * BATCH_SIZE + 1}–${(batchIndex + 1) * BATCH_SIZE} (${withDates.length} items)`);
 
     let sharedBrowser = await firefox.launch({ headless: true });
 
