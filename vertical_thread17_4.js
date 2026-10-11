@@ -822,7 +822,7 @@ async function runYueGen(tags, lyrics, slug, duration, referenceAudio = null) {
 </div>\n`;
         }
 
-        await execFileAsync('bun', runnerArgs);
+    execSync(`bun run_yue.js ${runnerArgs.slice(1).map(a => `"${a}"`).join(' ')}`, { stdio: 'inherit' });
         const state = JSON.parse(await fs.readFile(stateFile, 'utf8'));
         const rawFlacPath = state.savedFilePath;
         const opusFilename = `yue2_${slug}_${Date.now()}.opus`;
@@ -850,6 +850,8 @@ async function runYueGen(tags, lyrics, slug, duration, referenceAudio = null) {
           abcScore: state.abcScore || '',
           abcFilename: state.abcFilename || '',
           midiFilename: state.midiFilename || '',
+          trioAbcFilename: state.trioAbcFilename || '',
+          trioAbcScore: state.trioAbcScore || '',
           markdown: `\n<p><audio class="soundtrack-audio" controls src="/images/${opusFilename}"></audio></p>\n`
         };
     } catch (e) { 
@@ -1350,14 +1352,31 @@ const activeRefAudio = refAudioSetting ? await resolveReferenceAudio(refAudioSet
 
 ### Compositional Score & Interactive Notation
 
-<div class="score-controls" style="margin-bottom: 1rem; display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+<div class="score-controls" style="margin-bottom: 0.75rem; display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
   ${audioRes.midiFilename ? `<a class="download-btn" href="/images/${audioRes.midiFilename}" download style="padding: 6px 14px; background: #24292e; color: #58a6ff; border: 1px solid #30363d; border-radius: 6px; text-decoration: none; font-size: 0.9em; font-weight: 500;">🎹 Download MIDI (.mid)</a>` : ''}
-  ${audioRes.abcFilename ? `<a class="download-btn" href="/images/${audioRes.abcFilename}" download style="padding: 6px 14px; background: #24292e; color: #58a6ff; border: 1px solid #30363d; border-radius: 6px; text-decoration: none; font-size: 0.9em; font-weight: 500;">🎼 Download ABC Score (.abc)</a>` : ''}
-  <span style="font-size: 0.8em; opacity: 0.65; margin-left: auto;">💡 Click anywhere on the score to scrub audio</span>
+  ${audioRes.abcFilename ? `<a class="download-btn" href="/images/${audioRes.abcFilename}" download style="padding: 6px 14px; background: #24292e; color: #58a6ff; border: 1px solid #30363d; border-radius: 6px; text-decoration: none; font-size: 0.9em; font-weight: 500;">🎼 Download Lead Score (.abc)</a>` : ''}
+  ${audioRes.trioAbcFilename ? `<a class="download-btn" href="/images/${audioRes.trioAbcFilename}" download style="padding: 6px 14px; background: #24292e; color: #58a6ff; border: 1px solid #30363d; border-radius: 6px; text-decoration: none; font-size: 0.9em; font-weight: 500;">📜 Download Trio Score (.abc)</a>` : ''}
+  <span style="font-size: 0.8em; opacity: 0.65; margin-left: auto;">💡 Click top score to scrub audio</span>
 </div>
 
-<!-- Scrollable Viewport with Dynamic Playhead Tracker Overlay -->
-<div class="score-viewport-frame" style="position: relative; max-height: 640px; overflow-y: auto; overflow-x: hidden; border: 1px solid #30363d; border-radius: 8px; background: #ffffff; scroll-behavior: smooth;">
+${audioRes.midiFilename ? `
+<!-- Standalone MIDI Synthesizer Player -->
+<div class="midi-playback-panel" style="margin-bottom: 1rem; padding: 10px 14px; background: #161b22; border: 1px solid #30363d; border-radius: 8px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+    <span style="font-size: 0.8em; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #8b949e;">
+      Chamber Trio Arrangement (Flute, Clarinet, Piano)
+    </span>
+    <span style="font-size: 0.75em; color: #58a6ff;">Web Audio SoundFont</span>
+  </div>
+  <midi-player
+    src="/images/${audioRes.midiFilename}"
+    sound-font="https://storage.googleapis.com/magentadata/js/soundfonts/sgm_plus"
+    style="width: 100%; display: block;">
+  </midi-player>
+</div>` : ''}
+
+<!-- Primary Score: Synchronized Viewport with Laser Playhead Overlay -->
+<div class="score-viewport-frame" style="position: relative; max-height: 580px; overflow-y: auto; overflow-x: hidden; border: 1px solid #30363d; border-radius: 8px; background: #ffffff; scroll-behavior: smooth;">
   <!-- Playhead Laser Indicator -->
   <div class="score-playhead-tracker" style="position: absolute; left: 0; right: 0; height: 3px; background: #e63946; box-shadow: 0 0 10px #e63946, 0 0 3px #ffffff; z-index: 100; pointer-events: none; display: none; transform: translateY(-50%);">
     <span style="position: absolute; right: 8px; top: -18px; font-size: 10px; font-weight: 700; color: #e63946; background: rgba(255,255,255,0.95); padding: 1px 5px; border-radius: 3px; border: 1px solid #e63946; text-transform: uppercase;">Playing</span>
@@ -1367,6 +1386,21 @@ const activeRefAudio = refAudioSetting ? await resolveReferenceAudio(refAudioSet
     <!-- Rendered by /score-renderer.js -->
   </div>
 </div>
+
+${audioRes.trioAbcScore ? `
+<!-- Option A: Display-Only Chamber Trio Score (Uncoupled from Laser Tracker) -->
+<details style="margin-top: 1.25rem; border: 1px solid #30363d; border-radius: 8px; background: #ffffff; overflow: hidden;">
+  <summary style="padding: 10px 16px; background: #161b22; color: #c9d1d9; cursor: pointer; font-weight: 600; font-size: 0.9em; user-select: none; display: flex; justify-content: space-between; align-items: center;">
+    <span>🎼 View Full Chamber Trio Score (Flute, Clarinet, Piano — 4 Staves)</span>
+    <span style="font-size: 0.8em; font-weight: normal; color: #8b949e;">Arrangement from MIDI (4:39)</span>
+  </summary>
+  <div style="max-height: 580px; overflow-y: auto; overflow-x: hidden; padding: 16px; background: #ffffff;">
+    <div class="abc-score-sheet" id="sheet-trio-${uniqueId}" data-abc="${encodeURIComponent(audioRes.trioAbcScore)}" style="background: #ffffff; color: #000000; width: 100%;">
+      <!-- Rendered by /score-renderer.js -->
+    </div>
+  </div>
+</details>
+` : ''}
 
 <details style="margin-top: 1rem;">
 <summary style="cursor: pointer; opacity: 0.8;">View Raw ABC Notation Plan</summary>

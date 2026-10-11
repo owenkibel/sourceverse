@@ -31,26 +31,22 @@ const CLASSICAL_VOICES = [
   }
 ];
 
-// Add at the top or helpers section of run_yue.js
 function isValidAbc(text) {
   if (typeof text !== 'string') return false;
   const trimmed = text.trim();
   if (trimmed.length < 20) return false;
-  // Standard ABC notation starts with X: and contains meter/key headers or measures
   return (/^X:\s*\d+/m.test(trimmed) || trimmed.includes('K:') || trimmed.includes('M:') || trimmed.includes('|'));
 }
 
 function sanitizeLyrics(lyrics) {
   if (!lyrics || !lyrics.trim()) return "[Instrumental]";
   let cleaned = lyrics.trim();
-  // Ensure YuE2 has structural tags for proper autoregressive alignment
   if (!cleaned.includes('[')) {
     cleaned = `[Verse]\n${cleaned}`;
   }
   return cleaned;
 }
 
-// Inside patchWorkflow(): Auto-tap the ABC generator into a built-in PreviewAny node
 function patchWorkflow(workflow, { style, lyrics, duration, seed, stagedRefAudio = null }) {
   let patchedStyle = false;
   let patchedLyrics = false;
@@ -78,7 +74,6 @@ function patchWorkflow(workflow, { style, lyrics, duration, seed, stagedRefAudio
     }
   }
 
-  // Inject ComfyUI core PreviewAny node to tap the ABC score string into history outputs
   if (abcGeneratorId) {
     workflow["999999"] = {
       inputs: {
@@ -116,7 +111,6 @@ async function main() {
 
     const seed = Math.floor(Math.random() * 1000000000);
 
-    // 1. Select Vocal Profile
     let selectedVoice = CLASSICAL_VOICES[1];
     const lowerTags = tags.toLowerCase();
     if (lowerTags.includes('baritone') || lowerTags.includes('bass')) {
@@ -130,7 +124,6 @@ async function main() {
     const compositeStyle = `${tags}, ${selectedVoice.stylePrompt}, masterfully mixed, 48kHz stereo, high fidelity`;
     const formattedLyrics = sanitizeLyrics(rawLyrics);
 
-    // 2. Choose Workflow File (Cover vs Text-to-Music)
     const isCover = Boolean(refAudioPath && fs.existsSync(refAudioPath));
     const workflowFile = isCover
       ? path.join(WORKFLOWS_DIR, 'yue2_cover_api.json')
@@ -142,7 +135,6 @@ async function main() {
 
     const baseWorkflow = JSON.parse(fs.readFileSync(workflowFile, 'utf8'));
 
-    // 3. Stage Reference Audio if present
     if (isCover) {
       conformedRefPath = path.join(os.tmpdir(), `yue_ref_${Date.now()}.flac`);
       console.log(`⚡ Conforming reference track to 48kHz stereo FLAC...`);
@@ -164,7 +156,6 @@ async function main() {
       }
     }
 
-    // 4. Inject runtime parameters
     const { workflow } = patchWorkflow(baseWorkflow, {
       style: compositeStyle,
       lyrics: formattedLyrics,
@@ -173,7 +164,6 @@ async function main() {
       stagedRefAudio: stagedFilename
     });
 
-    // 5. Submit to ComfyUI
     const payload = { client_id: "yue2_prod", prompt: workflow };
     const res = await fetch(`${COMFY_URL}/prompt`, {
       method: 'POST',
@@ -185,12 +175,11 @@ async function main() {
     const { prompt_id } = await res.json();
     console.log(`Job Queued: ${prompt_id} [Mode: ${isCover ? 'Cover' : 'Text-to-Music'}]`);
 
-    // 6. Poll for output audio
     let success = false;
     let outputInfo = {};
     const startTime = Date.now();
 
-    while (Date.now() - startTime < 600000) { // 10 minute timeout for autoregressive rollout
+    while (Date.now() - startTime < 600000) {
       await new Promise(r => setTimeout(r, 3000));
 
       const historyRes = await fetch(`${COMFY_URL}/history/${prompt_id}`);
@@ -200,25 +189,22 @@ async function main() {
         throw new Error("ComfyUI Node Error occurred during YuE2 generation.");
       }
 
-// In the polling loop of run_yue.js
       let foundAudio = null;
       let foundScore = null;
 
       const outputs = history[prompt_id]?.outputs || {};
       for (const nodeId in outputs) {
         const out = outputs[nodeId];
-        
-        // 1. Capture rendered FLAC
+
         if (out?.audio?.length > 0) {
           foundAudio = out.audio[0];
         }
 
-        // 2. Capture validated ABC notation only
         const candidates = out?.text || out?.string || [];
         for (const candidate of candidates) {
-          const str = String(candidate).trim();
-          if (isValidAbc(str)) {
-            foundScore = str;
+          const candidateStr = String(candidate).trim();
+          if (isValidAbc(candidateStr)) {
+            foundScore = candidateStr;
           }
         }
       }
@@ -233,46 +219,138 @@ async function main() {
 
         let abcFilename = null;
         let midiFilename = null;
+        let midiReadyAbc = null;
+        let trioAbcFilename = null;
+        let trioAbcScore = '';
 
         if (foundScore) {
           const baseSlug = foundAudio.filename.replace(/\.[^.]+$/, '');
           abcFilename = `${baseSlug}.abc`;
           midiFilename = `${baseSlug}.mid`;
+          trioAbcFilename = `${baseSlug}_trio.abc`;
 
           const rawAbcPath = path.join(OUTPUT_DIR, abcFilename);
           const rawMidiPath = path.join(OUTPUT_DIR, midiFilename);
+          const rawTrioAbcPath = path.join(OUTPUT_DIR, trioAbcFilename);
 
-          fs.writeFileSync(rawAbcPath, foundScore, 'utf8');
+          midiReadyAbc = foundScore;
 
-          try {
-            // Run abc2midi and output errors if conversion fails
-            execSync(`abc2midi "${rawAbcPath}" -o "${rawMidiPath}"`, { stdio: 'pipe' });
-            console.log(`🎹 Generated MIDI file: ${midiFilename}`);
-          } catch (midiErr) {
-            console.warn(`⚠️ abc2midi conversion failed: ${midiErr.message}`);
+          // Strip existing MIDI directives to avoid syntax collisions
+          midiReadyAbc = midiReadyAbc.replace(/%%MIDI[^\r\n]*/g, '').trim();
+
+          // Count measures in Voice 1 to determine total musical length
+          const v1Lines = midiReadyAbc.split('\n').filter(l => /^[ \t]*(\[?V:\s*1\b|[^V%A-Z:][^:]*\|)/.test(l));
+          let barCount = 0;
+          for (const line of v1Lines) {
+            const matches = line.match(/\|/g);
+            if (matches) barCount += matches.length;
           }
 
-          // Mirror directly to Astro's public directory
+          // Detect meter (default to 4/4 if unspecified)
+          const meterMatch = midiReadyAbc.match(/^[ \t]*M:\s*(\d+)\/(\d+)/m);
+          const beatsPerBar = meterMatch ? (parseInt(meterMatch[1], 10) * (4 / parseInt(meterMatch[2], 10))) : 4;
+          const totalBeats = Math.max(16, (barCount || 32) * beatsPerBar);
+
+          // Compute exact BPM needed to fit duration
+          let targetBpm = Math.round((totalBeats / duration) * 60);
+          if (targetBpm < 60) targetBpm = 60;
+          if (targetBpm > 180) targetBpm = 180;
+
+          // Woodwind duo directives
+          const globalHeaders = `%%MIDI gchord off\nQ: 1/4=${targetBpm}`;
+          const v1Block = 'V:1 name="Vocal" snm="Vocal"\n%%MIDI channel 1\n%%MIDI program 73';
+          const v2Block = 'V:2 name="Inst." snm="Inst."\n%%MIDI channel 2\n%%MIDI program 71';
+
+          if (/^[ \t]*V:\s*1\b[^\r\n]*/m.test(midiReadyAbc)) {
+            midiReadyAbc = midiReadyAbc.replace(/^[ \t]*V:\s*1\b[^\r\n]*/m, v1Block);
+          }
+          if (/^[ \t]*V:\s*2\b[^\r\n]*/m.test(midiReadyAbc)) {
+            midiReadyAbc = midiReadyAbc.replace(/^[ \t]*V:\s*2\b[^\r\n]*/m, v2Block);
+          }
+
+          if (!midiReadyAbc.includes('%%MIDI program 73')) {
+            if (/^[ \t]*K:[^\r\n]*/m.test(midiReadyAbc)) {
+              midiReadyAbc = midiReadyAbc.replace(/(^[ \t]*K:[^\r\n]*)/m, `$1\n${globalHeaders}\n${v1Block}\n${v2Block}`);
+            } else {
+              midiReadyAbc = `${globalHeaders}\n${v1Block}\n${v2Block}\n${midiReadyAbc}`;
+            }
+          } else {
+            midiReadyAbc = midiReadyAbc.replace(/(^[ \t]*K:[^\r\n]*)/m, `$1\n${globalHeaders}`);
+          }
+
+          fs.writeFileSync(rawAbcPath, midiReadyAbc, 'utf8');
+
+          // Step 1: Generate MIDI (swallow non-zero warning exits if .mid was written)
+          try {
+            execSync(`abc2midi "${rawAbcPath}" -o "${rawMidiPath}"`, { stdio: 'pipe' });
+          } catch (_) {}
+
+          if (fs.existsSync(rawMidiPath)) {
+            console.log(`🎹 Generated Wind Duo MIDI: ${midiFilename}`);
+
+// 5. Generate MIDI and decompile Trio ABC score
+          try {
+            execSync(`abc2midi "${rawAbcPath}" -o "${rawMidiPath}"`, { stdio: 'pipe' });
+          } catch (_) {}
+
+          if (fs.existsSync(rawMidiPath)) {
+            console.log(`🎹 Generated Wind Duo MIDI: ${midiFilename}`);
+
+            try {
+              execSync(`midi2abc "${rawMidiPath}" -o "${rawTrioAbcPath}"`, { stdio: 'pipe' });
+
+              if (fs.existsSync(rawTrioAbcPath)) {
+                let trioContent = fs.readFileSync(rawTrioAbcPath, 'utf8');
+
+                // Label each staff with instrument names, MIDI programs, and clefs
+                trioContent = trioContent
+                  .replace(/^T:\s*from images\/[^\r\n]*/m, 'T: Chamber Trio (Flute, Piano, Clarinet)')
+                  .replace(/(^[ \t]*V:\s*1\b)[^\r\n]*/m, '$1 clef=treble name="Flute (73)" snm="Fl."')
+                  .replace(/(^[ \t]*V:\s*2\b)[^\r\n]*/m, '$1 clef=bass name="Piano (0)" snm="Pno."')
+                  .replace(/(^[ \t]*V:\s*3\b)[^\r\n]*/m, '$1 clef=treble name="Clarinet (71)" snm="Cl."');
+
+                fs.writeFileSync(rawTrioAbcPath, trioContent, 'utf8');
+                trioAbcScore = trioContent;
+                console.log(`🎼 Generated Full Trio ABC Score with Staff Labels: ${trioAbcFilename}`);
+              }
+            } catch (m2aErr) {
+              console.warn(`⚠️ midi2abc decompile failed: ${m2aErr.message}`);
+            }
+          }
+          } else {
+            console.warn(`⚠️ abc2midi failed to create MIDI file: ${midiFilename}`);
+          }
+
+          // Mirror artifacts to Astro site/public/images
           const astroPublicDir = path.join(process.cwd(), 'site/public/images');
           if (fs.existsSync(astroPublicDir)) {
             try {
-              fs.copyFileSync(rawAbcPath, path.join(astroPublicDir, abcFilename));
+              if (fs.existsSync(rawAbcPath)) {
+                fs.copyFileSync(rawAbcPath, path.join(astroPublicDir, abcFilename));
+              }
               if (fs.existsSync(rawMidiPath)) {
                 fs.copyFileSync(rawMidiPath, path.join(astroPublicDir, midiFilename));
                 console.log(`📡 Mirrored MIDI to site/public/images/${midiFilename}`);
+              }
+              if (fs.existsSync(rawTrioAbcPath)) {
+                fs.copyFileSync(rawTrioAbcPath, path.join(astroPublicDir, trioAbcFilename));
+                console.log(`📡 Mirrored Trio ABC to site/public/images/${trioAbcFilename}`);
               }
             } catch (_) {}
           }
         }
 
-        outputInfo = { 
-          savedFilePath: savePath, 
-          filename: foundAudio.filename, 
+        outputInfo = {
+          savedFilePath: savePath,
+          filename: foundAudio.filename,
           vocalProfile: selectedVoice.name,
-          abcScore: foundScore || '',
+          abcScore: midiReadyAbc || foundScore || '',
           abcFilename: abcFilename,
-          midiFilename: (midiFilename && fs.existsSync(path.join(OUTPUT_DIR, midiFilename))) ? midiFilename : ''
+          midiFilename: (midiFilename && fs.existsSync(path.join(OUTPUT_DIR, midiFilename))) ? midiFilename : '',
+          trioAbcFilename: (trioAbcFilename && fs.existsSync(path.join(OUTPUT_DIR, trioAbcFilename))) ? trioAbcFilename : '',
+          trioAbcScore: trioAbcScore || ''
         };
+
         fs.writeFileSync(stateFilePath, JSON.stringify(outputInfo, null, 2));
         success = true;
         break;
@@ -281,7 +359,6 @@ async function main() {
     }
 
     if (!success) throw new Error("Timeout: YuE2 generation exceeded limit.");
-    fs.writeFileSync(stateFilePath, JSON.stringify(outputInfo, null, 2));
 
   } catch (e) {
     console.error(`\n❌ Run Failed: ${e.message}`);
