@@ -26,10 +26,10 @@
   // Set export FPS (30 for stability & lower CPU load; 60 for high-refresh smoothness)
   const EXPORT_FPS = 30;
 
-  const NOTE_MIN = 36;
-  const NOTE_MAX = 96;
-  const BINS_PER_SEMI = 8;
-  const N_BINS = (NOTE_MAX - NOTE_MIN) * BINS_PER_SEMI + 1;
+const NOTE_MIN = 24; // C1 (~32.7 Hz) — covers deep piano roots down to C1
+const NOTE_MAX = 96; // C7 (~2093 Hz) — covers high flute harmonics
+const BINS_PER_SEMI = 8;
+const N_BINS = (NOTE_MAX - NOTE_MIN) * BINS_PER_SEMI + 1; // 577 bins
   const FFT_SIZE = 4096;
   const HOP = 512;
   const PLAYHEAD = 0.22;
@@ -75,12 +75,14 @@
 .cd-speed input[type=range]{width:96px;accent-color:#d8d4cc;height:32px}
 .cd-speed-val{min-width:2.4em;font-variant-numeric:tabular-nums;letter-spacing:.06em}
 .cd-stage{display:none;position:relative;background:#050506;touch-action:none}
-.cd-player.cd-vert .cd-stage{display:block;height:520px}
-.cd-player.cd-horiz .cd-stage{display:block;height:300px}
-@media (max-width:640px){
-  .cd-player.cd-vert .cd-stage{height:360px}
-  .cd-player.cd-horiz .cd-stage{height:220px}
-  .cd-brand{display:none}
+
+.cd-player.cd-vert .cd-stage { display: block; height: 520px; }
+.cd-player.cd-horiz .cd-stage { display: block; height: 480px; } /* Increased from 300px */
+
+@media (max-width: 640px) {
+  .cd-player.cd-vert .cd-stage { height: 380px; }
+  .cd-player.cd-horiz .cd-stage { height: 340px; }
+  .cd-brand { display: none; }
 }
 .cd-stage canvas{display:block;width:100%;height:100%}
 .cd-player.cd-vert .cd-stage canvas{cursor:ns-resize;mask-image:linear-gradient(180deg,#000 0%,#000 88%,transparent 100%)}
@@ -365,6 +367,7 @@
     const half = layout === LAYOUT_HORIZ ? h / 2 : w / 2;
     const gap = 4;
     const usable = half - gap;
+    const labels = [24, 36, 48, 60, 72, 84, 96]; // C1 through C7 declared first
 
     // 1. Center Seam
     ctx.strokeStyle = "rgba(236, 236, 232, 0.14)";
@@ -397,6 +400,26 @@
     ctx.stroke();
     ctx.shadowBlur = 0;
 
+    // Faint octave grid lines
+    ctx.strokeStyle = "rgba(236, 236, 232, 0.06)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (const midi of labels) {
+      const t = (midi - NOTE_MIN) / (NOTE_MAX - NOTE_MIN);
+      if (layout === LAYOUT_HORIZ) {
+        const yL = usable * (1 - t);
+        const yR = half + gap + usable * t;
+        ctx.moveTo(0, yL); ctx.lineTo(w, yL);
+        ctx.moveTo(0, yR); ctx.lineTo(w, yR);
+      } else {
+        const xL = usable * (1 - t);
+        const xR = half + gap + usable * t;
+        ctx.moveTo(xL, 0); ctx.lineTo(xL, h);
+        ctx.moveTo(xR, 0); ctx.lineTo(xR, h);
+      }
+    }
+    ctx.stroke();
+
     // 3. Stereo Channel Badges
     ctx.font = "600 11px IBM Plex Sans, system-ui, sans-serif";
     ctx.textBaseline = "middle";
@@ -418,7 +441,6 @@
     // 4. Octave / Pitch Class Scale Markers
     ctx.font = "600 10px IBM Plex Sans, system-ui, sans-serif";
     ctx.fillStyle = "rgba(236, 236, 232, 0.4)";
-    const labels = [36, 48, 60, 72, 84, 96];
 
     if (layout === LAYOUT_HORIZ) {
       ctx.textAlign = "left";
@@ -664,7 +686,7 @@
     host.classList.add("cd-audio-host");
 
 // Production: Keeps readbacks fast and silences the DevTools warning
-const ctx2d = canvas.getContext("2d", { alpha: false, willReadFrequently: true });
+const ctx2d = canvas.getContext("2d", { alpha: false });
     
     const state = {
       player,
