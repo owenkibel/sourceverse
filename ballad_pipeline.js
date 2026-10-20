@@ -130,6 +130,14 @@ async function resolveReferenceAudio(refArgValue) {
 // =========================================================================
 // MARKDOWN PARSER FOR EPISTEMIC BALLADEER EXPORTS
 // =========================================================================
+const backfillMetaOnly = args.includes('--backfill-meta');
+
+function extractFmValue(fm, key, fallback = '') {
+  const regex = new RegExp(`^${key}:\\s*"?([^"\\n]+)"?`, 'm');
+  const m = fm.match(regex);
+  return m ? m[1].replace(/\\"/g, '"').trim() : fallback;
+}
+
 function parseBalladMarkdown(rawMd) {
   const fmMatch = rawMd.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
   if (!fmMatch) return null;
@@ -137,7 +145,6 @@ function parseBalladMarkdown(rawMd) {
   const frontMatterRaw = fmMatch[1];
   const body = fmMatch[2];
 
-  // Check if this is an Epistemic Balladeer file (and not an Archive Index)
   const isBallad =
     frontMatterRaw.includes('epistemic_strategy:') ||
     frontMatterRaw.includes('source: "balladeer"');
@@ -146,41 +153,42 @@ function parseBalladMarkdown(rawMd) {
 
   if (!isBallad || isIndex) return null;
 
-  const titleMatch = frontMatterRaw.match(/^title:\s*"(.*)"/m);
-  const title = titleMatch ? titleMatch[1].replace(/\\"/g, '"') : 'Epistemic Ballad';
+  const title = extractFmValue(frontMatterRaw, 'title', 'Epistemic Ballad');
+  const modelUsed = extractFmValue(frontMatterRaw, 'model', 'gemini-3.5-flash-lite');
+  const formUsed = extractFmValue(frontMatterRaw, 'form', 'FOURTEENER_12');
+  const strategyUsed = extractFmValue(frontMatterRaw, 'epistemic_strategy', 'AUTO');
+  const musicGenre = extractFmValue(frontMatterRaw, 'music_genre', 'Baroque Harpsichord & Lute');
+  const seedLine = extractFmValue(frontMatterRaw, 'seed_line', '');
+  const afterHours = /^after_hours:\s*true/m.test(frontMatterRaw);
 
-  // 1. Extract Poem Stanzas (between # TITLE and the first ---)
   let poemText = '';
   const poemSectionMatch = body.match(/^#\s+[^\n]+\n+([\s\S]*?)\n+---/m);
   if (poemSectionMatch) {
-    poemText = poemSectionMatch[1].trim();
+    poemText = poemSectionMatch[1].replace(/^>\s+.*$/gm, '').trim();
   }
 
-  // 2. Extract Style Tags
   let styleTags = 'Folk, Classical, Baroque chamber ballad, Bass-Baritone male vocals';
   const tagsMatch = body.match(/### Style & Instrumentation Tags\s+```(?:text)?\n([\s\S]*?)```/i);
-  if (tagsMatch && tagsMatch[1].trim()) {
-    styleTags = tagsMatch[1].trim();
-  }
+  if (tagsMatch && tagsMatch[1].trim()) styleTags = tagsMatch[1].trim();
 
-  // 3. Extract Structured Lyrics
   let structuredLyrics = poemText;
   const lyricsMatch = body.match(/### Structured Lyrics\s+```(?:text)?\n([\s\S]*?)```/i);
-  if (lyricsMatch && lyricsMatch[1].trim()) {
-    structuredLyrics = lyricsMatch[1].trim();
-  }
+  if (lyricsMatch && lyricsMatch[1].trim()) structuredLyrics = lyricsMatch[1].trim();
 
-  // 4. Extract Cover Art Prompt
   let coverArtPrompt = `Period broadside illustration for ${title}, theatrical lighting, detailed engraving`;
   const artMatch = body.match(/### Cover Art \/ Keyframe Prompt\s+```(?:text)?\n([\s\S]*?)```/i);
-  if (artMatch && artMatch[1].trim()) {
-    coverArtPrompt = artMatch[1].trim();
-  }
+  if (artMatch && artMatch[1].trim()) coverArtPrompt = artMatch[1].trim();
 
   return {
     frontMatterRaw,
     body,
     title,
+    modelUsed,
+    formUsed,
+    strategyUsed,
+    musicGenre,
+    seedLine,
+    afterHours,
     alreadyEnriched,
     poemText,
     styleTags,
@@ -485,7 +493,7 @@ async function main() {
     const parsed = parseBalladMarkdown(rawMd);
 
     if (!parsed) continue;
-    if (parsed.alreadyEnriched && !forceReprocess) {
+    if (parsed.alreadyEnriched && !forceReprocess && !backfillMetaOnly) {
       console.log(`⏭️  Skipping already-enriched ballad: ${path.basename(filePath)}`);
       continue;
     }
@@ -494,97 +502,131 @@ async function main() {
     const assignedVoice = VOICE_CYCLE[voiceIdx % VOICE_CYCLE.length];
     voiceIdx++;
 
-    console.log(`\n======================================================================`);
-    console.log(`🎭 [BALLAD PIPELINE] Enriching: ${parsed.title}`);
-    console.log(`   📂 File: ${path.relative(process.cwd(), filePath)}`);
-    console.log(`======================================================================`);
-
-    // 1. Generate Cover Art Image
-    const imgRes = await runImageGen(parsed.coverArtPrompt, slug);
-    if (!useGeminiImage) await freeComfyVRAM();
-
-    // 2. Optional LTX-Video Keyframe Animation
-    let vidRes = { success: false, filename: '', markdown: '' };
-    if (useVideo) {
-      vidRes = await runVideoGen(parsed.coverArtPrompt, imgRes.filename);
-      await freeComfyVRAM();
-    }
-
-    // 3. Spoken Ballad Recitation via Kokoro TTS
-    let ttsRes = { success: false, filename: '', markdown: '' };
-    if (!skipTTS && parsed.poemText) {
-      ttsRes = await runPoetryTTS(parsed.poemText);
-      await freeComfyVRAM();
-    }
-
-    // 4. Song Realization via ACE-Step 1.5 or YuE2
-    let audioRes = { success: false, filename: '', markdown: '', refAudioMarkdown: '' };
+    let imgRes = { success: false, filename: '', engine: 'Existing/Skipped', markdown: '' };
+    let vidRes = { success: false, filename: '', engine: 'Skipped', markdown: '' };
+    let ttsRes = { success: false, filename: '', engine: 'Existing/Skipped', markdown: '' };
+    let audioRes = { success: false, filename: '', engine: 'Existing/Skipped', markdown: '', refAudioMarkdown: '' };
     const safeTags = sanitizeTagsForAceStep(parsed.styleTags, assignedVoice);
-    if (!skipSong && parsed.structuredLyrics) {
-      const activeRef = await resolveReferenceAudio(refAudioSetting);
-      audioRes = await runSongWorker(
-        safeTags,
-        parsed.structuredLyrics,
-        slug,
-        generationDuration,
-        activeRef
-      );
-      await freeComfyVRAM();
+
+    if (!backfillMetaOnly) {
+      console.log(`\n======================================================================`);
+      console.log(`🎭 [BALLAD PIPELINE] Enriching: ${parsed.title} (${parsed.modelUsed})`);
+      console.log(`   📂 File: ${path.relative(process.cwd(), filePath)}`);
+      console.log(`======================================================================`);
+
+      imgRes = await runImageGen(parsed.coverArtPrompt, slug);
+      if (!useGeminiImage) await freeComfyVRAM();
+
+      if (useVideo) {
+        vidRes = await runVideoGen(parsed.coverArtPrompt, imgRes.filename);
+        await freeComfyVRAM();
+      }
+
+      if (!skipTTS && parsed.poemText) {
+        ttsRes = await runPoetryTTS(parsed.poemText);
+        await freeComfyVRAM();
+      }
+
+      if (!skipSong && parsed.structuredLyrics) {
+        const activeRef = await resolveReferenceAudio(refAudioSetting);
+        audioRes = await runSongWorker(
+          safeTags,
+          parsed.structuredLyrics,
+          slug,
+          generationDuration,
+          activeRef
+        );
+        await freeComfyVRAM();
+      }
     }
 
-    // 5. Update YAML Front Matter (add image, video, pubDate, media_enriched)
+    // Build Astro-compatible tags & author front matter
+    const tagList = [
+      "balladeer",
+      slugify(parsed.modelUsed),
+      slugify(parsed.formUsed),
+      slugify(parsed.musicGenre),
+      slugify(parsed.strategyUsed),
+      parsed.afterHours ? "after-hours" : "parlor-satire"
+    ].filter(Boolean);
+    const uniqueTags = [...new Set(tagList)];
+
     let updatedFm = parsed.frontMatterRaw
       .split('\n')
-      .filter(l => !/^(image|video|media_enriched):/.test(l.trim()));
+      .filter(l => !/^(author|domain|tags|media_enriched):/.test(l.trim()));
 
     if (!updatedFm.some(l => l.startsWith('pubDate:'))) {
       const dateMatch = parsed.frontMatterRaw.match(/^date:\s*"([^"]+)"/m);
       const isoDate = dateMatch ? dateMatch[1].split('T')[0] : new Date().toISOString().split('T')[0];
       updatedFm.push(`pubDate: "${isoDate}"`);
     }
-    if (imgRes.success) updatedFm.push(`image: "/images/${imgRes.filename}"`);
-    if (vidRes.success) updatedFm.push(`video: "/images/${vidRes.filename}"`);
+
+    updatedFm.push(`author: "Epistemic Balladeer (${parsed.modelUsed})"`);
+    updatedFm.push(`domain: "artistic"`);
+    updatedFm.push(`tags: [${uniqueTags.map(t => `"${t}"`).join(', ')}]`);
+
+    if (imgRes.success) {
+      updatedFm = updatedFm.filter(l => !l.trim().startsWith('image:'));
+      updatedFm.push(`image: "/images/${imgRes.filename}"`);
+    }
+    if (vidRes.success) {
+      updatedFm = updatedFm.filter(l => !l.trim().startsWith('video:'));
+      updatedFm.push(`video: "/images/${vidRes.filename}"`);
+    }
     updatedFm.push(`media_enriched: true`);
 
-    // 6. Inject Generated Media Blocks into the Markdown Body
     let updatedBody = parsed.body.trim();
 
-    // Ensure score-renderer.js and chroma-drift.js are loaded if YuE2 score exists
     const scriptsHeader = `<script src="/chroma-drift.js" type="module"></script>\n<script src="/score-renderer.js" type="module"></script>\n\n`;
     if (!updatedBody.includes('/score-renderer.js')) {
       updatedBody = scriptsHeader + updatedBody;
     }
 
-    // Insert Cover Art + Spoken TTS audio right after the ballad stanzas (before first ---)
-    const firstHrIdx = updatedBody.indexOf('\n---');
-    const heroAndTtsBlock = [
-      ttsRes.markdown ? `\n### Spoken Ballad Recitation (Kokoro TTS)\n${ttsRes.markdown}` : '',
-      imgRes.markdown ? `\n### Visual Anchor Representation (${imgRes.engine})\n${imgRes.markdown}` : '',
-      vidRes.markdown ? `\n### Kinetic Dynamic Video (${vidRes.engine})\n${vidRes.markdown}` : ''
-    ]
-      .filter(Boolean)
-      .join('\n');
-
-    if (firstHrIdx !== -1 && heroAndTtsBlock) {
-      updatedBody =
-        updatedBody.slice(0, firstHrIdx) +
-        '\n' +
-        heroAndTtsBlock +
-        '\n' +
-        updatedBody.slice(firstHrIdx);
+    // Inject visible Seed Premise & Model banner right below # TITLE if not already present
+    if (!updatedBody.includes('**Seed Premise:**') && parsed.seedLine) {
+      const banner = `\n> **Seed Premise:** *"${parsed.seedLine}"*  \n> **Model:** \`${parsed.modelUsed}\` • **Form:** \`${parsed.formUsed}\` • **Strategy:** \`${parsed.strategyUsed}\` • **Genre:** \`${parsed.musicGenre}\`\n`;
+      updatedBody = updatedBody.replace(/^(#\s+[^\n]+\n+)/m, `$1${banner}\n`);
     }
 
-    // Append Generated Musical Score at the bottom of the Song Generator Staging section
-    if (audioRes.success) {
-      const scoreEmbed = buildScoreEmbed(audioRes);
-      updatedBody += `\n\n---\n\n## Generated Musical Score (${audioRes.engine})\n${audioRes.markdown}\n${audioRes.refAudioMarkdown || ''}\n<blockquote><strong>Sanitized Worker Tags:</strong> <code>${safeTags}</code></blockquote>\n${scoreEmbed}\n`;
+    if (!backfillMetaOnly) {
+      const firstHrIdx = updatedBody.indexOf('\n---');
+      const heroAndTtsBlock = [
+        ttsRes.markdown ? `\n### Spoken Ballad Recitation (Kokoro TTS)\n${ttsRes.markdown}` : '',
+        imgRes.markdown ? `\n### Visual Anchor Representation (${imgRes.engine})\n${imgRes.markdown}` : '',
+        vidRes.markdown ? `\n### Kinetic Dynamic Video (${vidRes.engine})\n${vidRes.markdown}` : ''
+      ]
+        .filter(Boolean)
+        .join('\n');
+
+      if (firstHrIdx !== -1 && heroAndTtsBlock) {
+        updatedBody =
+          updatedBody.slice(0, firstHrIdx) +
+          '\n' +
+          heroAndTtsBlock +
+          '\n' +
+          updatedBody.slice(firstHrIdx);
+      }
+
+      if (audioRes.success) {
+        const scoreEmbed = buildScoreEmbed(audioRes);
+        updatedBody += `\n\n---\n\n## Generated Musical Score (${audioRes.engine})\n${audioRes.markdown}\n${audioRes.refAudioMarkdown || ''}\n<blockquote><strong>Sanitized Worker Tags:</strong> <code>${safeTags}</code></blockquote>\n${scoreEmbed}\n`;
+      }
+    }
+
+    // Append Pipeline & Debug Analytics footer (matching vertical_thread17_5.js) if not present
+    if (!updatedBody.includes('id="pipeline-and-debug-analytics"')) {
+      updatedBody += `\n\n---\n\n<h2 id="pipeline-and-debug-analytics">Pipeline & Debug Analytics</h2>\n\n` +
+        `<strong>Active Text Inference Core Platform:</strong> <code>${parsed.modelUsed}</code><br>\n` +
+        `<strong>Poetic Architecture & Strategy:</strong> <code>${parsed.formUsed} (${parsed.strategyUsed})</code><br>\n` +
+        `<strong>Musical Genre Profile:</strong> <code>${parsed.musicGenre}</code><br>\n` +
+        `<strong>Seed Premise:</strong> <code>${parsed.seedLine || 'N/A'}</code>\n`;
     }
 
     const finalMarkdown = `---\n${updatedFm.join('\n')}\n---\n\n${updatedBody}\n`;
     await fs.writeFile(filePath, finalMarkdown, 'utf8');
 
     enrichedCount++;
-    console.log(`✅ Updated in-place with embedded media: ${path.basename(filePath)}`);
+    console.log(`✅ Updated ${backfillMetaOnly ? 'metadata & telemetry' : 'media & telemetry'}: ${path.basename(filePath)}`);
   }
 
   console.log(`\n🎉 Ballad pipeline complete! Enriched ${enrichedCount} ballad post(s).`);
