@@ -35,6 +35,25 @@ const VOICE_CYCLE = [
   "Dramatic Soprano female vocals"
 ];
 
+const LIMERICK_GENRE_CYCLE = [
+  {
+    label: "Celtic Tavern Folk",
+    tags: "Celtic Folk, Irish Folk, Folk, lively fiddle, acoustic guitar, bodhran, pennywhistle, 118 bpm, witty tavern limerick"
+  },
+  {
+    label: "Baroque Harpsichord & Lute",
+    tags: "Classical, Folk, Baroque chamber song, harpsichord continuo, Renaissance lute, viola da gamba, 110 bpm, courtly wit"
+  },
+  {
+    label: "Electro-Swing Cabaret",
+    tags: "Electro-Swing, Electro-Jazz, theatrical harpsichord, upright contrabass, punchy brass, vintage swing groove, 122 bpm, playful cabaret"
+  },
+  {
+    label: "Americana String Band",
+    tags: "Americana, Bluegrass, Folk, brisk acoustic guitar, fiddle, upright bass, mandolin, 114 bpm, dry front-porch satire"
+  }
+];
+
 // =========================================================================
 // CLI FLAGS (Matches vertical_thread17_5.js conventions)
 // =========================================================================
@@ -57,9 +76,8 @@ const skipTTS = args.includes('--no-tts');
 const skipSong = args.includes('--no-song');
 const forceReprocess = args.includes('--force');
 
-let generationDuration = 128;
 const durArg = args.find(a => a.startsWith('--duration='));
-if (durArg) generationDuration = parseInt(durArg.split('=')[1], 10) || 128;
+const explicitDuration = durArg ? parseInt(durArg.split('=')[1], 10) : null;
 
 const dirArg = args.find(a => a.startsWith('--dir='));
 const targetScanDir = dirArg
@@ -128,7 +146,7 @@ async function resolveReferenceAudio(refArgValue) {
 }
 
 // =========================================================================
-// MARKDOWN PARSER FOR EPISTEMIC BALLADEER EXPORTS
+// MARKDOWN PARSER FOR EPISTEMIC BALLADEER & FIFTH-LINE-GEMINI EXPORTS
 // =========================================================================
 const backfillMetaOnly = args.includes('--backfill-meta');
 
@@ -138,48 +156,146 @@ function extractFmValue(fm, key, fallback = '') {
   return m ? m[1].replace(/\\"/g, '"').trim() : fallback;
 }
 
-function parseBalladMarkdown(rawMd) {
+function buildSingableLimerickLyrics(poemText, title) {
+  const lines = poemText
+    .split('\n')
+    .map(l => l.trim())
+    .filter(Boolean);
+
+  if (lines.length === 5) {
+    return [
+      `[Intro]`,
+      ``,
+      `[Verse 1]`,
+      lines.join('\n'),
+      ``,
+      `[Chorus]`,
+      lines[0],
+      lines[1],
+      lines[4],
+      ``,
+      `[Verse 2]`,
+      lines.join('\n'),
+      ``,
+      `[Outro]`,
+      lines[4]
+    ].join('\n');
+  }
+
+  return `[Intro]\n\n[Verse 1]\n${poemText}\n\n[Outro]`;
+}
+
+function parseBalladMarkdown(rawMd, filePath = '', genreCycleIdx = 0) {
   const fmMatch = rawMd.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
   if (!fmMatch) return null;
 
   const frontMatterRaw = fmMatch[1];
   const body = fmMatch[2];
+  const baseName = path.basename(filePath);
 
   const isBallad =
     frontMatterRaw.includes('epistemic_strategy:') ||
     frontMatterRaw.includes('source: "balladeer"');
-  const isIndex = frontMatterRaw.includes('form: "INDEX"');
-  const alreadyEnriched = frontMatterRaw.includes('media_enriched: true');
+  const isFifthLine =
+    frontMatterRaw.includes('source: "fifth-line"') ||
+    baseName.startsWith('verse-limerick-');
 
-  if (!isBallad || isIndex) return null;
+  const isIndex =
+    frontMatterRaw.includes('form: "INDEX"') ||
+    frontMatterRaw.includes('author: "Fifth Line Archive"') ||
+    baseName.startsWith('archive-index-');
 
-  const title = extractFmValue(frontMatterRaw, 'title', 'Epistemic Ballad');
+  if ((!isBallad && !isFifthLine) || isIndex) return null;
+
+  const alreadyEnriched =
+    frontMatterRaw.includes('media_enriched: true') ||
+    /^rendered:\s*true/m.test(frontMatterRaw) ||
+    /^status:\s*"rendered"/m.test(frontMatterRaw);
+
+  const title = extractFmValue(
+    frontMatterRaw,
+    'title',
+    isFifthLine ? 'Fifth Line Limerick' : 'Epistemic Ballad'
+  );
   const modelUsed = extractFmValue(frontMatterRaw, 'model', 'gemini-3.5-flash-lite');
-  const formUsed = extractFmValue(frontMatterRaw, 'form', 'FOURTEENER_12');
-  const strategyUsed = extractFmValue(frontMatterRaw, 'epistemic_strategy', 'AUTO');
-  const musicGenre = extractFmValue(frontMatterRaw, 'music_genre', 'Baroque Harpsichord & Lute');
-  const seedLine = extractFmValue(frontMatterRaw, 'seed_line', '');
-  const afterHours = /^after_hours:\s*true/m.test(frontMatterRaw);
+  const formUsed = extractFmValue(
+    frontMatterRaw,
+    'form',
+    isFifthLine ? 'ANAPESTIC_LIMERICK' : 'FOURTEENER_12'
+  );
+  const strategyUsed = extractFmValue(
+    frontMatterRaw,
+    'epistemic_strategy',
+    isFifthLine ? 'AABBA_PROSODY' : 'AUTO'
+  );
 
+  const limerickGenre = LIMERICK_GENRE_CYCLE[genreCycleIdx % LIMERICK_GENRE_CYCLE.length];
+  const musicGenre = extractFmValue(
+    frontMatterRaw,
+    'music_genre',
+    isFifthLine ? limerickGenre.label : 'Baroque Harpsichord & Lute'
+  );
+
+  const seedLine =
+    extractFmValue(frontMatterRaw, 'seed_line', '') ||
+    extractFmValue(frontMatterRaw, 'topic', '');
+  const punchline = extractFmValue(frontMatterRaw, 'punchline', '');
+  const afterHours =
+    /^after_hours:\s*true/m.test(frontMatterRaw) ||
+    /^afterHours:\s*true/m.test(frontMatterRaw);
+
+  // Extract Poem Text (supports both # Title ballads and headless fifth-line limericks)
   let poemText = '';
-  const poemSectionMatch = body.match(/^#\s+[^\n]+\n+([\s\S]*?)\n+---/m);
-  if (poemSectionMatch) {
-    poemText = poemSectionMatch[1].replace(/^>\s+.*$/gm, '').trim();
+  const beforeFirstHr = body.split(/\r?\n---\r?\n/)[0] || '';
+  poemText = beforeFirstHr
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/^#\s+.*$/gm, '')
+    .replace(/^>\s+.*$/gm, '')
+    .replace(/^\*Punchline:[\s\S]*?\*$/gm, '')
+    .trim();
+
+  // Extract Style Tags
+  let styleTags = isFifthLine
+    ? limerickGenre.tags
+    : 'Folk, Classical, Baroque chamber ballad';
+  const tagsMatch = body.match(/### Style & Instrumentation Tags\s+```(?:text)?\r?\n([\s\S]*?)```/i);
+  if (tagsMatch && tagsMatch[1].trim()) {
+    styleTags = tagsMatch[1].trim();
   }
 
-  let styleTags = 'Folk, Classical, Baroque chamber ballad, Bass-Baritone male vocals';
-  const tagsMatch = body.match(/### Style & Instrumentation Tags\s+```(?:text)?\n([\s\S]*?)```/i);
-  if (tagsMatch && tagsMatch[1].trim()) styleTags = tagsMatch[1].trim();
+  // Extract Structured Lyrics (or synthesize a Verse/Chorus structure for 5-line limericks)
+  let structuredLyrics = isFifthLine
+    ? buildSingableLimerickLyrics(poemText, title)
+    : poemText;
+  const lyricsMatch = body.match(/### Structured Lyrics\s+```(?:text)?\r?\n([\s\S]*?)```/i);
+  if (lyricsMatch && lyricsMatch[1].trim()) {
+    structuredLyrics = lyricsMatch[1].trim();
+  }
 
-  let structuredLyrics = poemText;
-  const lyricsMatch = body.match(/### Structured Lyrics\s+```(?:text)?\n([\s\S]*?)```/i);
-  if (lyricsMatch && lyricsMatch[1].trim()) structuredLyrics = lyricsMatch[1].trim();
+  // Extract Cover Art / Visual Scene Prompt (checks Balladeer block, Prompt 1:, and T2I Keyframe block)
+  let coverArtPrompt = `Period satirical broadside illustration for ${title}, crosshatch etching style, theatrical lighting, no text`;
+  const artMatch = body.match(/### Cover Art \/ Keyframe Prompt\s+```(?:text)?\r?\n([\s\S]*?)```/i);
+  const prompt1Match = body.match(/Prompt\s*1:\s*(.+)/i);
+  const keyframeMatch = body.match(/### Text-to-Image Keyframe\s+```(?:text)?\r?\n([\s\S]*?)```/i);
 
-  let coverArtPrompt = `Period broadside illustration for ${title}, theatrical lighting, detailed engraving`;
-  const artMatch = body.match(/### Cover Art \/ Keyframe Prompt\s+```(?:text)?\n([\s\S]*?)```/i);
-  if (artMatch && artMatch[1].trim()) coverArtPrompt = artMatch[1].trim();
+  if (artMatch && artMatch[1].trim()) {
+    coverArtPrompt = artMatch[1].trim();
+  } else if (prompt1Match && prompt1Match[1].trim()) {
+    coverArtPrompt = prompt1Match[1].replace(/^[*`"']+|[*`"']+$/g, '').trim();
+  } else if (keyframeMatch && keyframeMatch[1].trim()) {
+    coverArtPrompt = keyframeMatch[1].trim();
+  }
+
+  // Optional I2V Motion Prompt from fifth-line-gemini
+  let motionPrompt = coverArtPrompt;
+  const motionMatch = body.match(/### Image-to-Video Motion\s+```(?:text)?\r?\n([\s\S]*?)```/i);
+  if (motionMatch && motionMatch[1].trim()) {
+    motionPrompt = motionMatch[1].trim();
+  }
 
   return {
+    sourceType: isFifthLine ? 'fifth-line' : 'balladeer',
+    isFifthLine,
     frontMatterRaw,
     body,
     title,
@@ -188,37 +304,37 @@ function parseBalladMarkdown(rawMd) {
     strategyUsed,
     musicGenre,
     seedLine,
+    punchline,
     afterHours,
     alreadyEnriched,
     poemText,
     styleTags,
     structuredLyrics,
-    coverArtPrompt
+    coverArtPrompt,
+    motionPrompt
   };
 }
 
-function sanitizeTagsForAceStep(rawTags, fallbackVoice) {
-  const voiceMatch = rawTags.match(
-    /(bass-baritone|mezzo-soprano|lyric tenor|dramatic soprano|baritone|soprano|tenor)[^,]*/i
-  );
-  const voiceTag = voiceMatch ? voiceMatch[0].trim() : fallbackVoice;
-
-  const tokens = rawTags
+function sanitizeTagsForAceStep(rawTags, assignedVoice) {
+  const tokens = (rawTags || '')
+    .replace(/[\[\]()]/g, '')
     .split(',')
     .map(t => t.trim())
-    .filter(Boolean);
+    .filter(t => {
+      if (!t) return false;
+      // Strip any pre-baked baritone/vocal tags from the exported markdown
+      if (/baritone|tenor|soprano|mezzo|vocals|vocal|duet|male|female/i.test(t)) return false;
+      return true;
+    });
 
   const matchedAce = tokens.filter(t =>
     RAW_ACE_STYLES.some(s => s.toLowerCase() === t.toLowerCase())
   );
 
-  // Keep matched ACE-Step genres + descriptive instrumentation for YuE2/ACE-Step
   const baseGenres = matchedAce.length > 0 ? matchedAce.slice(0, 3) : ['Folk', 'Classical'];
-  const descriptive = tokens
-    .filter(t => !matchedAce.includes(t) && !/vocals/i.test(t))
-    .slice(0, 4);
+  const descriptive = tokens.filter(t => !matchedAce.includes(t)).slice(0, 4);
 
-  return [...baseGenres, ...descriptive, voiceTag].join(', ');
+  return [...baseGenres, ...descriptive, assignedVoice].join(', ');
 }
 
 // =========================================================================
@@ -254,7 +370,7 @@ async function runImageGen(prompt, slug) {
           success: true,
           filename,
           engine: 'Gemini Nano Banana 2 Lite',
-          markdown: `<p><img src="/images/${filename}" style="max-width:100%; border-radius:8px;" alt="Ballad Visual Anchor" /></p>`
+          markdown: `<p><img src="/images/${filename}" style="max-width:100%; border-radius:8px;" alt="Visual Anchor" /></p>`
         };
       }
     } catch (e) {
@@ -284,7 +400,7 @@ async function runImageGen(prompt, slug) {
         success: true,
         filename: finalFilename,
         engine: runnerScript.replace('run_', '').replace('.js', ''),
-        markdown: `<p><img src="/images/${finalFilename}" style="max-width:100%; border-radius:8px;" alt="Ballad Visual Anchor" /></p>`
+        markdown: `<p><img src="/images/${finalFilename}" style="max-width:100%; border-radius:8px;" alt="Visual Anchor" /></p>`
       };
     }
   } catch (e) {
@@ -300,7 +416,7 @@ async function runPoetryTTS(poemText) {
   const stateFile = path.join(os.tmpdir(), `ballad-tts-${Date.now()}.json`);
   const poemFile = 'temp_poem.txt';
   try {
-    console.log(`🎙️ [ComfyUI TTS] Synthesizing spoken ballad via run_kokoro_tts.js...`);
+    console.log(`🎙️ [ComfyUI TTS] Synthesizing spoken verse via run_kokoro_tts.js...`);
     await fs.writeFile(poemFile, poemText || 'Silence.', 'utf8');
     await execFileAsync('bun', ['run_kokoro_tts.js', '--state-file', stateFile, '--prompt-file', poemFile]);
     const state = JSON.parse(await fs.readFile(stateFile, 'utf8'));
@@ -485,22 +601,39 @@ async function main() {
   const mdFiles = await findMarkdownFiles(targetScanDir);
   console.log(`🔍 Scanned ${targetScanDir}: found ${mdFiles.length} total .md files.`);
 
+  const VOICE_STATE_FILE = path.join(process.cwd(), '.voice_state.json');
   let voiceIdx = 0;
+  try {
+    const vState = JSON.parse(await fs.readFile(VOICE_STATE_FILE, 'utf8'));
+    voiceIdx = (Number(vState.lastIndex) || 0) + 1;
+  } catch (_) {}
+
   let enrichedCount = 0;
 
   for (const filePath of mdFiles) {
     const rawMd = await fs.readFile(filePath, 'utf8');
-    const parsed = parseBalladMarkdown(rawMd);
+    const parsed = parseBalladMarkdown(rawMd, filePath, voiceIdx);
 
     if (!parsed) continue;
     if (parsed.alreadyEnriched && !forceReprocess && !backfillMetaOnly) {
-      console.log(`⏭️  Skipping already-enriched ballad: ${path.basename(filePath)}`);
+      console.log(`⏭️  Skipping already-enriched ${parsed.sourceType} post: ${path.basename(filePath)}`);
       continue;
     }
 
     const slug = slugify(parsed.title);
     const assignedVoice = VOICE_CYCLE[voiceIdx % VOICE_CYCLE.length];
+    await fs.writeFile(
+      VOICE_STATE_FILE,
+      JSON.stringify({ lastIndex: voiceIdx % VOICE_CYCLE.length }),
+      'utf8'
+    );
     voiceIdx++;
+
+    // Scale default song duration: 60s for 5-line Fifth Line limericks, 128s for full ballads
+    const activeDuration =
+      explicitDuration || (parsed.isFifthLine ? 60 : 128);
+
+    console.log(`🎙️ Stateful Voice Assigned for ${parsed.isFifthLine ? 'Limerick' : 'Ballad'}: [${assignedVoice}]`);
 
     let imgRes = { success: false, filename: '', engine: 'Existing/Skipped', markdown: '' };
     let vidRes = { success: false, filename: '', engine: 'Skipped', markdown: '' };
@@ -510,7 +643,7 @@ async function main() {
 
     if (!backfillMetaOnly) {
       console.log(`\n======================================================================`);
-      console.log(`🎭 [BALLAD PIPELINE] Enriching: ${parsed.title} (${parsed.modelUsed})`);
+      console.log(`🎭 [${parsed.isFifthLine ? 'FIFTH LINE' : 'BALLAD'} PIPELINE] Enriching: ${parsed.title} (${parsed.modelUsed})`);
       console.log(`   📂 File: ${path.relative(process.cwd(), filePath)}`);
       console.log(`======================================================================`);
 
@@ -518,7 +651,7 @@ async function main() {
       if (!useGeminiImage) await freeComfyVRAM();
 
       if (useVideo) {
-        vidRes = await runVideoGen(parsed.coverArtPrompt, imgRes.filename);
+        vidRes = await runVideoGen(parsed.motionPrompt || parsed.coverArtPrompt, imgRes.filename);
         await freeComfyVRAM();
       }
 
@@ -533,27 +666,36 @@ async function main() {
           safeTags,
           parsed.structuredLyrics,
           slug,
-          generationDuration,
+          activeDuration,
           activeRef
         );
         await freeComfyVRAM();
       }
     }
 
-    // Build Astro-compatible tags & author front matter
-    const tagList = [
-      "balladeer",
-      slugify(parsed.modelUsed),
-      slugify(parsed.formUsed),
-      slugify(parsed.musicGenre),
-      slugify(parsed.strategyUsed),
-      parsed.afterHours ? "after-hours" : "parlor-satire"
-    ].filter(Boolean);
-    const uniqueTags = [...new Set(tagList)];
+    // Build Astro-compatible tags & author front matter based on sourceType
+    const tagList = parsed.isFifthLine
+      ? [
+          "limerick",
+          "fifth-line",
+          "poetry",
+          slugify(parsed.modelUsed),
+          slugify(parsed.musicGenre),
+          parsed.afterHours ? "after-hours" : "parlor-satire"
+        ]
+      : [
+          "balladeer",
+          slugify(parsed.modelUsed),
+          slugify(parsed.formUsed),
+          slugify(parsed.musicGenre),
+          slugify(parsed.strategyUsed),
+          parsed.afterHours ? "after-hours" : "parlor-satire"
+        ];
+    const uniqueTags = [...new Set(tagList.filter(Boolean))];
 
     let updatedFm = parsed.frontMatterRaw
       .split('\n')
-      .filter(l => !/^(author|domain|tags|media_enriched):/.test(l.trim()));
+      .filter(l => !/^(author|domain|tags|media_enriched|rendered|status):/.test(l.trim()));
 
     if (!updatedFm.some(l => l.startsWith('pubDate:'))) {
       const dateMatch = parsed.frontMatterRaw.match(/^date:\s*"([^"]+)"/m);
@@ -561,7 +703,11 @@ async function main() {
       updatedFm.push(`pubDate: "${isoDate}"`);
     }
 
-    updatedFm.push(`author: "Epistemic Balladeer (${parsed.modelUsed})"`);
+    const authorLabel = parsed.isFifthLine
+      ? `Fifth Line (${parsed.modelUsed})`
+      : `Epistemic Balladeer (${parsed.modelUsed})`;
+
+    updatedFm.push(`author: "${authorLabel}"`);
     updatedFm.push(`domain: "artistic"`);
     updatedFm.push(`tags: [${uniqueTags.map(t => `"${t}"`).join(', ')}]`);
 
@@ -573,6 +719,8 @@ async function main() {
       updatedFm = updatedFm.filter(l => !l.trim().startsWith('video:'));
       updatedFm.push(`video: "/images/${vidRes.filename}"`);
     }
+    updatedFm.push(`rendered: true`);
+    updatedFm.push(`status: "rendered"`);
     updatedFm.push(`media_enriched: true`);
 
     let updatedBody = parsed.body.trim();
@@ -582,16 +730,17 @@ async function main() {
       updatedBody = scriptsHeader + updatedBody;
     }
 
-    // Inject visible Seed Premise & Model banner right below # TITLE if not already present
-    if (!updatedBody.includes('**Seed Premise:**') && parsed.seedLine) {
+    // Inject visible Seed Premise & Model banner right below # TITLE for Balladeer posts
+    if (!parsed.isFifthLine && !updatedBody.includes('**Seed Premise:**') && parsed.seedLine) {
       const banner = `\n> **Seed Premise:** *"${parsed.seedLine}"*  \n> **Model:** \`${parsed.modelUsed}\` • **Form:** \`${parsed.formUsed}\` • **Strategy:** \`${parsed.strategyUsed}\` • **Genre:** \`${parsed.musicGenre}\`\n`;
       updatedBody = updatedBody.replace(/^(#\s+[^\n]+\n+)/m, `$1${banner}\n`);
     }
 
     if (!backfillMetaOnly) {
       const firstHrIdx = updatedBody.indexOf('\n---');
+      const workLabel = parsed.isFifthLine ? 'Limerick' : 'Ballad';
       const heroAndTtsBlock = [
-        ttsRes.markdown ? `\n### Spoken Ballad Recitation (Kokoro TTS)\n${ttsRes.markdown}` : '',
+        ttsRes.markdown ? `\n### Spoken ${workLabel} Recitation (Kokoro TTS)\n${ttsRes.markdown}` : '',
         imgRes.markdown ? `\n### Visual Anchor Representation (${imgRes.engine})\n${imgRes.markdown}` : '',
         vidRes.markdown ? `\n### Kinetic Dynamic Video (${vidRes.engine})\n${vidRes.markdown}` : ''
       ]
@@ -605,6 +754,8 @@ async function main() {
           heroAndTtsBlock +
           '\n' +
           updatedBody.slice(firstHrIdx);
+      } else if (heroAndTtsBlock) {
+        updatedBody += `\n\n${heroAndTtsBlock}\n`;
       }
 
       if (audioRes.success) {
@@ -613,13 +764,13 @@ async function main() {
       }
     }
 
-    // Append Pipeline & Debug Analytics footer (matching vertical_thread17_5.js) if not present
+    // Append Pipeline & Debug Analytics footer if not present
     if (!updatedBody.includes('id="pipeline-and-debug-analytics"')) {
       updatedBody += `\n\n---\n\n<h2 id="pipeline-and-debug-analytics">Pipeline & Debug Analytics</h2>\n\n` +
         `<strong>Active Text Inference Core Platform:</strong> <code>${parsed.modelUsed}</code><br>\n` +
         `<strong>Poetic Architecture & Strategy:</strong> <code>${parsed.formUsed} (${parsed.strategyUsed})</code><br>\n` +
         `<strong>Musical Genre Profile:</strong> <code>${parsed.musicGenre}</code><br>\n` +
-        `<strong>Seed Premise:</strong> <code>${parsed.seedLine || 'N/A'}</code>\n`;
+        `<strong>Seed Premise / Topic:</strong> <code>${parsed.seedLine || 'N/A'}</code>\n`;
     }
 
     const finalMarkdown = `---\n${updatedFm.join('\n')}\n---\n\n${updatedBody}\n`;
@@ -629,7 +780,7 @@ async function main() {
     console.log(`✅ Updated ${backfillMetaOnly ? 'metadata & telemetry' : 'media & telemetry'}: ${path.basename(filePath)}`);
   }
 
-  console.log(`\n🎉 Ballad pipeline complete! Enriched ${enrichedCount} ballad post(s).`);
+  console.log(`\n🎉 Pipeline complete! Enriched ${enrichedCount} post(s).`);
 }
 
 main().catch(err => {

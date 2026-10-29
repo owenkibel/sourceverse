@@ -29,6 +29,8 @@ cumulative_course_model.json
 kitchen-site/
 kitchen-media/
 kitchen-*
+black*
+author*
 
 # Ignore all hidden files...
 .*

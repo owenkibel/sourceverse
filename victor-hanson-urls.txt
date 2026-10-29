@@ -1,0 +1,18 @@
+# Training URLs for Victor Hanson> (2026-10-26)
+# Filter: MUST MATCH: [victorhanson]
+# Delete or '#' comment out any unsuitable URL lines before running grow-verse-profile.js
+
+# [2026-10-26] The Same Old, Same Old European Runaround - Victor Davis Hanson
+https://victorhanson.com/the-same-old-same-old-european-runaround
+# [2026-10-21] The Deep Midterms - Victor Davis Hanson
+https://victorhanson.com/the-deep-midterms
+# [2026-10-06] Are We Becoming Gondor? - Victor Davis Hanson
+https://victorhanson.com/are-we-becoming-gondor
+# [2026-10-05] Genocide Hypocrites - Victor Davis Hanson
+https://victorhanson.com/genocide-hypocrites
+# [2026-09-19] Iran, the Midterms, and October Surprises - Victor Davis Hanson
+https://victorhanson.com/iran-the-midterms-and-october-surprises
+# [2026-09-16] The Fantasy House of Mark Carney - Victor Davis Hanson
+https://victorhanson.com/the-fantasy-house-of-mark-carney
+# [2026-09-05] Progressive Regression and the New Medievalism - Victor Davis Hanson
+https://victorhanson.com/progressive-regression-and-the-new-medievalism
