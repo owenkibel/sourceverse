@@ -279,7 +279,7 @@ function chunkTextSmart(text, maxChunkSize = 20000) {
 
 // --- Audio Transcription Pipeline via local Whisper ---
 
-async function extractAndAnalyzeAudio(url) {
+async function extractAndAnalyzeAudio(url, maxSeconds = 30) {
   if (url.includes('/playlist?list=') || url.includes('/view_playlist') || url.includes('/channel/')) {
     console.log(`  [Audio Pipeline] Skipping playlist container URL.`);
     return "";
@@ -287,28 +287,20 @@ async function extractAndAnalyzeAudio(url) {
 
   const videoID = getYouTubeVideoID(url) || url.replace(/https?:\/\/(www\.)?/, '').replace(/[^a-z0-9]/gi, '-').substring(0, 15);
   const runId = Date.now().toString(36);
-  const tempRawAudio = path.join(TEMP_DIR, `raw-${videoID}-${runId}`);
+  const tempRawAudio = path.join(TEMP_DIR, `raw-${videoID}-${runId}.%(ext)s`);
   const tempProcessedWav = path.join(TEMP_DIR, `proc-${videoID}-${runId}.wav`);
   let actualRawFile = null;
 
   try {
-    console.log(`  [Audio Pipeline] Verifying media asset stream availability...`);
-    try {
-      await execAsync(`yt-dlp --simulate --quiet --no-warnings --match-filter "vcodec != null || acodec != null" "${url}"`);
-    } catch (e) {
-      console.log(`  [Audio Pipeline] Bypassing: No valid audio or video tracks detected at target.`);
-      return "";
-    }
-
-    console.log(`  [Audio Pipeline] Extracting initial 30s section via range stream...`);
+    console.log(`  [Audio Pipeline] Extracting initial ${maxSeconds}s English audio stream...`);
     await execAsync(
-      `yt-dlp --download-sections "*00:00-00:30" -f "ba/b/bestaudio/best" -x --audio-format wav --no-playlist --quiet --no-warnings --extractor-args "youtube:player_client=web" --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" -o "${tempRawAudio}" "${url}"`,
-      { timeout: 45000 }
+      `yt-dlp --download-sections "*00:00-${maxSeconds}" -f "ba[language^=en]/ba[format_note*=original]/ba/b" -x --audio-format wav --no-playlist --quiet --no-warnings -o "${tempRawAudio}" "${url}"`,
+      { timeout: 120000 }
     );
-    
+
     const files = await fs.readdir(TEMP_DIR);
     actualRawFile = files.find(f => f.startsWith(`raw-${videoID}-${runId}`));
-    if (!actualRawFile) throw new Error("Range stream extraction failed to produce a temporary block.");
+    if (!actualRawFile) throw new Error("Range stream extraction failed to produce a temporary audio file.");
 
     console.log(`  [Audio Pipeline] Filtering noise and converting to 16kHz mono pcm_s16le for Whisper...`);
     await execAsync(
@@ -318,7 +310,7 @@ async function extractAndAnalyzeAudio(url) {
     console.log(`  [Audio Pipeline] Running Whisper CLI (ggml-large-v3-turbo)...`);
     const { stdout: transcript } = await execAsync(
       `"${WHISPER_BIN}" -m "${WHISPER_MODEL}" -f "${tempProcessedWav}" --no-timestamps --language en -nt 2>/dev/null`,
-      { timeout: 60000 }
+      { timeout: 180000 }
     );
 
     const cleanTranscript = (transcript || '').trim();
@@ -330,7 +322,8 @@ async function extractAndAnalyzeAudio(url) {
     return `\n\n[Local Whisper Transcript]:\n${cleanTranscript}`;
 
   } catch (err) {
-    console.warn(`  ⚠️ Local Whisper transcription bypassed: ${err.message}`);
+    const errDetail = (err.stderr || err.message || '').trim().split('\n').pop();
+    console.warn(`  ⚠️ Local Whisper transcription bypassed: ${errDetail}`);
     return "";
   } finally {
     if (actualRawFile) {
@@ -454,8 +447,34 @@ async function fetchWithPlaywright(url, browser, skipTruncate = false) {
         return null;
       }
 
-      await context.close();
-      return null;
+// General article extractor for non-X sites (e.g. Medium, National Post) when OGS is blocked
+   await page.waitForTimeout(1500);
+   const articleData = await page.evaluate(() => {
+     const title =
+       document.querySelector('h1')?.innerText?.trim() ||
+       document.querySelector('meta[property="og:title"]')?.content ||
+       document.title ||
+       '';
+     const root =
+       document.querySelector('article') ||
+       document.querySelector('main') ||
+       document.body;
+     const paras = Array.from(root.querySelectorAll('p, h2, h3, blockquote'))
+       .map(el => el.innerText.trim())
+       .filter(t => t.length > 25 && !/^Sign up|^Sign in|^Member-only story/i.test(t));
+     const img = document.querySelector('meta[property="og:image"]')?.content || null;
+     return { ogTitle: title, paragraphs: paras, ogImage: img };
+   });
+   await context.close();
+   if (articleData && articleData.paragraphs.length > 0) {
+     return {
+       ogTitle: articleData.ogTitle,
+       ogDescription: articleData.paragraphs.join('\n\n').trim(),
+       ogImage: articleData.ogImage
+     };
+   }
+   return null;
+   
     } catch (error) {
       attempts++;
       console.warn(`Playwright attempt ${attempts}/${maxAttempts} failed for ${url}: ${error.message}`);
@@ -474,13 +493,14 @@ async function extractYouTubeTranscript(url, skipTruncate = false) {
     return { transcript: '', cacheReused: false };
   }
 
+  const canonicalYtUrl = `https://www.youtube.com/watch?v=${videoID}`;
   const runId = Date.now().toString(36) + Math.random().toString(36).slice(2);
-  const vttPath = path.join(TEMP_DIR, `${videoID}-${runId}.en.vtt`);
+  const outPrefix = path.join(TEMP_DIR, `${videoID}-${runId}`);
 
   try {
     const files = await fs.readdir(TEMP_DIR);
     for (const file of files) {
-      if (file.startsWith(`${videoID}-`) && file.endsWith('.en.vtt')) {
+      if (file.startsWith(`${videoID}-`) && file.endsWith('.vtt')) {
         await fs.unlink(path.join(TEMP_DIR, file)).catch(() => {});
       }
     }
@@ -488,25 +508,44 @@ async function extractYouTubeTranscript(url, skipTruncate = false) {
 
   let transcript = '';
   let cacheReused = false;
+  let matchedVttFile = null;
 
-  try {
-    console.log(`  Running yt-dlp for transcript (ID: ${videoID})`);
-    await execAsync(`yt-dlp --write-auto-sub --skip-download --sub-lang en --sub-format vtt --no-playlist -o "${TEMP_DIR}/${videoID}-${runId}" "${url}"`, { timeout: YTDLP_TIMEOUT_MS, stdio: 'ignore' });
-    transcript = await fs.readFile(vttPath, 'utf8');
-  } catch (e) {
+  const ytdlpAttempts = [
+    `yt-dlp --ignore-errors --write-subs --write-auto-subs --skip-download --sub-langs "en-US,en-orig,en" --sub-format "vtt/best" --convert-subs vtt --no-playlist -o "${outPrefix}" "${canonicalYtUrl}"`,
+    `yt-dlp --ignore-errors --cookies-from-browser chrome:/home/owen/.config/google-chrome-unstable --write-subs --write-auto-subs --skip-download --sub-langs "en.*,en" --convert-subs vtt --no-playlist -o "${outPrefix}" "${canonicalYtUrl}"`
+  ];
+
+  for (let attempt = 0; attempt < ytdlpAttempts.length; attempt++) {
+    try {
+      console.log(
+        `  Running yt-dlp for transcript (ID: ${videoID}${attempt > 0 ? ', with browser cookies' : ''})`
+      );
+      await execAsync(ytdlpAttempts[attempt], { timeout: YTDLP_TIMEOUT_MS });
+    } catch (e) {
+      const stderrLine = (e.stderr || e.message || '').trim().split('\n').pop();
+      console.warn(`  ⚠️ yt-dlp attempt ${attempt + 1} note: ${stderrLine}`);
+    }
+
+    // Always check TEMP_DIR even if yt-dlp exited non-zero on a secondary track
     try {
       const files = await fs.readdir(TEMP_DIR);
-      const cachedFile = files.find(f => f.startsWith(videoID) && f.endsWith('.en.vtt'));
-      if (cachedFile) {
-        transcript = await fs.readFile(path.join(TEMP_DIR, cachedFile), 'utf8');
-        cacheReused = true;
+      matchedVttFile = files.find(
+        f => f.startsWith(`${videoID}-${runId}`) && f.endsWith('.vtt')
+      );
+      if (matchedVttFile) {
+        transcript = await fs.readFile(path.join(TEMP_DIR, matchedVttFile), 'utf8');
+        if (transcript && transcript.includes('WEBVTT')) break;
       }
-    } catch (e2) {}
+    } catch (e) {}
   }
 
-  await fs.unlink(vttPath).catch(() => {});
+  if (matchedVttFile) {
+    await fs.unlink(path.join(TEMP_DIR, matchedVttFile)).catch(() => {});
+  }
 
-  if (!transcript || !transcript.includes('WEBVTT')) return { transcript: '', cacheReused: false };
+  if (!transcript || !transcript.includes('WEBVTT')) {
+    return { transcript: '', cacheReused: false };
+  }
 
   const lines = transcript.split('\n');
   const transcriptLines = [];
@@ -515,20 +554,37 @@ async function extractYouTubeTranscript(url, skipTruncate = false) {
   for (let rawLine of lines) {
     let line = rawLine.trim();
     if (!line) continue;
-    if (line === 'WEBVTT' || line.startsWith('Kind:') || line.startsWith('Language:') || line.startsWith('Style:') || line.startsWith('NOTE') || line.includes('-->')) {
+    if (
+      line === 'WEBVTT' ||
+      line.startsWith('Kind:') ||
+      line.startsWith('Language:') ||
+      line.startsWith('Style:') ||
+      line.startsWith('NOTE') ||
+      line.includes('-->')
+    ) {
       inCue = line.includes('-->');
       continue;
     }
     if (inCue || transcriptLines.length > 0) {
-      line = line.replace(/<[^>]*>/g, '').replace(/&[a-z]+;/gi, ' ').trim();
-      if (line) transcriptLines.push(line);
+      line = line
+        .replace(/<[^>]*>/g, '')
+        .replace(/&nbsp;/gi, ' ')
+        .replace(/&amp;/gi, '&')
+        .replace(/&#39;/g, "'")
+        .replace(/&quot;/gi, '"')
+        .replace(/&[a-z]+;/gi, ' ')
+        .trim();
+      if (line && transcriptLines[transcriptLines.length - 1] !== line) {
+        transcriptLines.push(line);
+      }
     }
   }
 
   let cleanTranscript = transcriptLines.join(' ').replace(/\s+/g, ' ').trim();
 
   if (!skipTruncate && cleanTranscript.length > TRANSCRIPT_MAX_CHARS) {
-    cleanTranscript = cleanTranscript.substring(0, TRANSCRIPT_MAX_CHARS) + '\n\n[Transcript truncated]';
+    cleanTranscript =
+      cleanTranscript.substring(0, TRANSCRIPT_MAX_CHARS) + '\n\n[Transcript truncated]';
   }
   return { transcript: cleanTranscript, cacheReused };
 }
@@ -600,27 +656,76 @@ async function callGeminiVersifier(modelName, promptText) {
 async function runVersificationMode(url, targetModel, profileSlug = null, useCriticalLens = false) {
   console.log(`\n🚀 Entering Versification Mode for URL: ${url}`);
   console.log(`   Target Processing Engine: ${targetModel}`);
+ 
+  if (!/^https?:\/\//i.test(url)) {
+  url = `https://${url}`;
+}
   let sharedBrowser = await firefox.launch({ headless: true });
   let fullText = '';
   let title = 'Untitled Resource';
 
-  let targetFetchUrl = url
-  .replace(/^https?:\/\/[^/]+\.cdn\.ampproject\.org\/[vc]\/(s\/)?/i, 'https://')
+ let targetFetchUrl = url
+    .replace(/^https?:\/\/[^/]+\.cdn\.ampproject\.org\/[vc]\/(s\/)?/i, 'https://')
     .replace(/\.amp(\?.*|#.*)?$/i, '');
-  if (targetFetchUrl.includes('music.youtube.com/watch?v=')) {
-    const videoId = getYouTubeVideoID(targetFetchUrl);
-    if (videoId) targetFetchUrl = `https://www.youtube.com/watch?v=${videoId}`;
-  }
+
+// Unwrap Substack Reader URLs (e.g. https://substack.com/@helenpluckrose/p-222515607)
+  const substackIdMatch = targetFetchUrl.match(
+    /^https?:\/\/(?:www\.)?substack\.com\/(?:@[^/]+|home\/post)\/p-(\d+)/i
+  );
+  if (substackIdMatch) {
+    const postId = substackIdMatch[1];
+    try {
+      console.log(`  📡 Resolving Substack post ID ${postId} via Substack API...`);
+      const subRes = await fetch(`https://substack.com/api/v1/posts/by-id/${postId}`, {
+        headers: { 'User-Agent': 'Mozilla/5.0 Sourceverse-Substack-Resolver' },
+        signal: AbortSignal.timeout(12000)
+      });
+      if (subRes.ok) {
+        const subData = await subRes.json();
+        const postObj = subData.post || subData;
+        if (postObj.canonical_url) {
+          targetFetchUrl = postObj.canonical_url;
+          console.log(`  👉 Resolved canonical Substack URL: ${targetFetchUrl}`);
+        }
+        if (postObj.title) title = postObj.title;
+        if (postObj.body_html) {
+          const { convert } = await import('html-to-text');
+          fullText = convert(postObj.body_html, { wordwrap: false }).replace(/\s+/g, ' ').trim();
+        }
+      }
+    } catch (e) {
+      console.warn(`  ⚠️ Substack ID lookup note: ${e.message}`);
+    }
+  }    
 
   if (targetFetchUrl.includes('youtube.com') || targetFetchUrl.includes('youtu.be')) {
+    const videoId = getYouTubeVideoID(targetFetchUrl);
+    if (videoId) targetFetchUrl = `https://www.youtube.com/watch?v=${videoId}`;
+
     const transcriptResult = await extractYouTubeTranscript(targetFetchUrl, true);
     fullText = transcriptResult.transcript;
+
+    if (!fullText) {
+      console.log(`  ⚠️ No VTT subtitles found; falling back to local Whisper audio transcription...`);
+      fullText = await extractAndAnalyzeAudio(targetFetchUrl);
+    }
+
     try {
       const { result } = await ogs({ url: targetFetchUrl, timeout: 12000 });
       if (result?.ogTitle) title = result.ogTitle;
     } catch (e) {}
+
+    if (title === 'Untitled Resource') {
+      try {
+        const { stdout } = await execAsync(
+          `yt-dlp --skip-download --no-warnings --print "%(title)s" "${targetFetchUrl}"`,
+          { timeout: 15000 }
+        );
+        if (stdout && stdout.trim()) title = stdout.trim();
+      } catch (e) {}
+    }
   } else {
-    let ogsSuccess = false;
+let ogsSuccess = fullText.length > 200;
     if (isXUrl(targetFetchUrl)) {
       try {
         console.log('  fx/vx Twitter API extract...');
@@ -701,13 +806,14 @@ const lensDirective =
 - **Ironic & Rhetorical Posture:** ${authorProfile.stylisticInvariants?.ironicTemperature}
 - **Opening/Closing Cadence:** ${authorProfile.stylisticInvariants?.openingAndClosingMoves}
 - **Strict Anti-Patterns (Forbidden):** ${(authorProfile.antiPatterns || []).join(' | ')}${lensDirective}
-- Do not add intro summaries, conversational remarks, or markdown code fences. Output the raw text poem stanzas only.`
+- Do not add intro summaries, conversational remarks, or markdown code fences. Output the raw text poem stanzas (and the Visual Scene Prompts section when requested on the final chunk) only.`
       : `You are an elite traditional poet. Adapt this text segment into high-quality, deeply insightful, truthful, and humorous traditional rhymed and metrical verse.
 Guidelines:
 - Arrange layout into distinct, coherent stanzas.
 - Adhere strictly to traditional rhyme schemes (e.g. AABB or ABAB) and rhythm (e.g. flawless iambic pentameter or ballad meter). Avoid loose slant rhymes.
 - Infuse the verses with intellectual depth, facts derived exactly from the text, and clever humor.
-- Do not add intro summaries, conversational remarks, or markdown code fences. Output the raw text poem stanzas (and the Visual Scene Prompts section when requested on the final chunk) only.`;
+- Do not add intro summaries, conversational remarks, or markdown code fences. Output the raw text poem stanzas (and the Visual Scene Prompts section when requested on the final chunk) only.
+- Place every individual metrical line on its own separate vertical line (never join two lines on the same line with "|" or "/").`;
 
 let userSegment = `Text Segment:\n${chunks[i]}`;
 
@@ -736,7 +842,7 @@ let userSegment = `Text Segment:\n${chunks[i]}`;
         // Prevent Grok from getting stuck in a 90s syllable-counting scratchpad loop:
         const grokSystemPrompt = `${baseInstruction}\n\nEXECUTION DIRECTIVE: Compose the verse directly by natural acoustic rhythm and ear. Do NOT count syllables word-by-word, audit caesura indices, or draft multiple trial versions inside your internal reasoning scratchpad.`;
 
-        if (targetModel.startsWith('gemma')) {
+if (targetModel.startsWith('gemma')) {
           apiUrl = 'http://localhost:8080/v1/chat/completions';
           headers = { 'Content-Type': 'application/json' };
           bodyPayload = {
@@ -747,6 +853,7 @@ let userSegment = `Text Segment:\n${chunks[i]}`;
               { role: 'system', content: baseInstruction },
               { role: 'user', content: userSegment }
             ],
+            chat_template_kwargs: { enable_thinking: false },
             temperature: 0.65,
             max_tokens: 4096
           };
@@ -763,7 +870,6 @@ let userSegment = `Text Segment:\n${chunks[i]}`;
           };
         }
 
-    
         const response = await fetch(apiUrl, {
           method: 'POST',
           headers,
@@ -771,7 +877,11 @@ let userSegment = `Text Segment:\n${chunks[i]}`;
           body: JSON.stringify(bodyPayload),
         });
 
-        if (!response.ok) throw new Error(`API Status: ${response.status}`);
+        if (!response.ok) {
+          const errText = await response.text().catch(() => '');
+          throw new Error(`API Status: ${response.status} ${errText.slice(0, 200)}`);
+        }
+
         const apiData = await response.json();
         const message = apiData.choices[0].message;
         stanzas = (message.content || '').trim();
@@ -825,17 +935,16 @@ if (!activePoemBody.trim()) {
     visualPromptsSection = `\n\n---\n\n## Visual Scene Prompts\n\n${sceneSplit.slice(1).join('\n').trim()}`;
   }
 
-  activePoemBody = activePoemBody.split('\n').map(line => {
-    const trimmed = line.trim();
-    if (trimmed !== '') return line.trimEnd();
-    return line;
-  }).join('\n');
-
-  activePoemBody = activePoemBody.split('\n').map(line => {
-    const trimmed = line.trim();
-    if (trimmed !== '') return line.trimEnd();
-    return line;
-  }).join('\n');
+  // Split any inline pipe-separated couplets ("Line A | Line B") onto consecutive vertical lines
+  activePoemBody = activePoemBody
+    .replace(/[ \t]*\|[ \t]*/g, '\n')
+    .split('\n')
+    .map(line => {
+      const trimmed = line.trim();
+      if (trimmed !== '') return line.trimEnd();
+      return line;
+    })
+    .join('\n');
 
   const now = new Date();
   const timestamp = now.toISOString();

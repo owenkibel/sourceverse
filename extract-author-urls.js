@@ -11,6 +11,30 @@ function chromeDateToJsDate(chromeDateStr) {
   return new Date(Number(milliseconds - epochDifference));
 }
 
+function cleanDisplayTitle(rawName) {
+  return (rawName || '(Untitled)')
+    .replace(/^\(\d+\)\s*/, '') // Strip leading (1), (2) Substack/X notification badges
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function normalizeTitleKey(rawName) {
+  const cleaned = cleanDisplayTitle(rawName)
+    .toLowerCase()
+    .replace(/\s+[-|–—]\s+by\s+[^|-]+$/i, '') // Strip trailing "- by Conrad Black"
+    .replace(/\s+[|–—-]\s+fox news$/i, '')    // Strip trailing "| Fox News"
+    .replace(/[^a-z0-9]+/g, '');
+  return cleaned.length >= 6 ? cleaned : '';
+}
+
+function isSubstackFeedWrapper(u) {
+  return /^https?:\/\/(www\.)?substack\.com\/(home\/post\/|@)/i.test(u);
+}
+
+function isCanonicalSubstackPost(u) {
+  return /^https?:\/\/[^/]+\.substack\.com\/p\//i.test(u);
+}
+
 function collectBookmarks(node, allBookmarks, folderChain = '') {
   const currentFolder = node.name
     ? folderChain
@@ -20,7 +44,8 @@ function collectBookmarks(node, allBookmarks, folderChain = '') {
 
   if (node.url) {
     allBookmarks.push({
-      name: node.name || '(Untitled)',
+      name: cleanDisplayTitle(node.name),
+      rawName: node.name || '(Untitled)',
       url: cleanAndUnwrapUrl(node.url),
       date_added: node.date_added,
       folder: currentFolder
@@ -96,7 +121,6 @@ for (let i = 0; i < rawArgs.length; i++) {
   } else if (arg === '--overwrite' || arg === '--replace') {
     overwriteFile = true;
   } else if (!arg.startsWith('--')) {
-    // Allow space-separated tokens or negative tokens like -x.com
     arg.split(/\s+/).filter(Boolean).forEach(t => queryTokens.push(t));
   }
 }
@@ -104,21 +128,19 @@ for (let i = 0; i < rawArgs.length; i++) {
 async function main() {
   if (queryTokens.length === 0 && !explicitAuthorName) {
     console.log(`Usage (Chrome-style Logical AND search):
-  bun extract-author-urls.js turley fox --overwrite
-  bun extract-author-urls.js jonathan turley -x.com --overwrite
-  bun extract-author-urls.js "Jonathan Turley" --limit=12
+  bun extract-author-urls.js Conrad Black -x.com --author="Conrad Black" --overwrite
+  bun extract-author-urls.js turley fox --author="Jonathan Turley" --overwrite
 
 Options:
   -term           Exclude any bookmark matching 'term' (e.g., -x.com)
   --overwrite     Replace the output file instead of appending
   --author="Name" Explicit author label/filename slug (default: derived from query)
   --out=FILE      Custom output filename (default: <slug>-urls.txt)
-  --limit=N       Max recent bookmarks to slice (default: ${DEFAULT_LIMIT})
+  --limit=N       Max recent unique bookmarks to slice (default: ${DEFAULT_LIMIT})
   --raw           Write bare URLs only (omit '# [Date] Title' comments)`);
     process.exit(1);
   }
 
-  // If user only passed --author="Jonathan Turley", use those words as search tokens
   const activeTokens =
     queryTokens.length > 0
       ? queryTokens
@@ -152,14 +174,14 @@ Options:
     .map(bm => ({ ...bm, date: chromeDateToJsDate(bm.date_added) }))
     .sort((a, b) => b.date - a.date);
 
-  // Chrome Bookmark Organizer logic: ALL positive tokens must match, NO negative tokens may match
   const seenNormalizedUrls = new Set();
+  const seenTitlesMap = new Map(); // titleKey -> index in matchedBookmarks
   const matchedBookmarks = [];
 
   for (const bm of sortedBookmarks) {
     if (!bm.url || !bm.url.startsWith('http')) continue;
 
-    const haystack = `${bm.name} ${bm.url} ${bm.folder}`.toLowerCase();
+    const haystack = `${bm.rawName} ${bm.url} ${bm.folder}`.toLowerCase();
 
     const allPositiveMatch = mustMatchTokens.every(term => haystack.includes(term));
     if (!allPositiveMatch) continue;
@@ -167,12 +189,31 @@ Options:
     const anyNegativeMatch = mustExcludeTokens.some(term => haystack.includes(term));
     if (anyNegativeMatch) continue;
 
-    const norm = cleanAndUnwrapUrl(bm.url);
-    if (seenNormalizedUrls.has(norm)) continue;
-    seenNormalizedUrls.add(norm);
+    const normUrl = cleanAndUnwrapUrl(bm.url);
+    if (seenNormalizedUrls.has(normUrl)) continue;
 
-    matchedBookmarks.push(bm);
-    if (matchedBookmarks.length >= limit) break;
+    const titleKey = normalizeTitleKey(bm.name);
+
+    // Deduplicate by normalized bookmark.name:
+    if (titleKey && seenTitlesMap.has(titleKey)) {
+      const existingIdx = seenTitlesMap.get(titleKey);
+      const existingBm = matchedBookmarks[existingIdx];
+      // If the earlier match was a Substack feed wrapper (substack.com/home/post/...)
+      // and this older bookmark is the canonical *.substack.com/p/... URL, upgrade it!
+      if (isSubstackFeedWrapper(existingBm.url) && isCanonicalSubstackPost(normUrl)) {
+        existingBm.url = normUrl;
+        seenNormalizedUrls.add(normUrl);
+      }
+      continue;
+    }
+
+    if (matchedBookmarks.length >= limit) continue;
+
+    seenNormalizedUrls.add(normUrl);
+    if (titleKey) {
+      seenTitlesMap.set(titleKey, matchedBookmarks.length);
+    }
+    matchedBookmarks.push({ ...bm, url: normUrl });
   }
 
   if (matchedBookmarks.length === 0) {
@@ -185,7 +226,8 @@ Options:
   }
 
   let existingContent = '';
-  const existingNormalized = new Set();
+  const existingNormalizedUrls = new Set();
+  const existingTitleKeys = new Set();
 
   if (!overwriteFile) {
     try {
@@ -193,18 +235,29 @@ Options:
       existingContent
         .split('\n')
         .map(l => l.trim())
-        .filter(l => l && !l.startsWith('#'))
-        .forEach(u => existingNormalized.add(cleanAndUnwrapUrl(u)));
+        .filter(Boolean)
+        .forEach(line => {
+          if (line.startsWith('#')) {
+            const commentTitle = line.replace(/^#\s*\[\d{4}-\d{2}-\d{2}\]\s*/, '');
+            const tk = normalizeTitleKey(commentTitle);
+            if (tk) existingTitleKeys.add(tk);
+          } else {
+            existingNormalizedUrls.add(cleanAndUnwrapUrl(line));
+          }
+        });
     } catch (_) {}
   }
 
-  const newItems = matchedBookmarks.filter(
-    bm => !existingNormalized.has(cleanAndUnwrapUrl(bm.url))
-  );
+  const newItems = matchedBookmarks.filter(bm => {
+    const tk = normalizeTitleKey(bm.name);
+    if (existingNormalizedUrls.has(bm.url)) return false;
+    if (tk && existingTitleKeys.has(tk)) return false;
+    return true;
+  });
 
   if (newItems.length === 0) {
     console.log(
-      `ℹ️ Matched ${matchedBookmarks.length} bookmark(s), but all are already in ${path.basename(outputFilePath)} (use --overwrite to replace).`
+      `ℹ️ Matched ${matchedBookmarks.length} unique bookmark(s), but all are already in ${path.basename(outputFilePath)} (use --overwrite to replace).`
     );
     process.exit(0);
   }
@@ -228,11 +281,11 @@ Options:
     );
   }
 
-  console.log(`\n🔎 Matched ${matchedBookmarks.length} recent bookmark(s) (${filterDesc}):\n`);
+  console.log(`\n🔎 Matched ${matchedBookmarks.length} unique recent bookmark(s) (${filterDesc}):\n`);
 
   newItems.forEach((bm, idx) => {
     const dateStr = bm.date.toISOString().slice(0, 10);
-    const cleanTitle = bm.name.replace(/\s+/g, ' ').trim();
+    const cleanTitle = bm.name;
     console.log(`  ${idx + 1}. [${dateStr}] ${cleanTitle}\n     ${bm.url}`);
 
     if (!bareUrlsOnly) {
@@ -249,9 +302,9 @@ Options:
   }
 
   console.log(`\n======================================================================`);
-  console.log(`✅ ${overwriteFile ? 'Wrote' : 'Appended'} ${newItems.length} URL(s) to: ${outputFilePath}`);
+  console.log(`✅ ${overwriteFile ? 'Wrote' : 'Appended'} ${newItems.length} unique URL(s) to: ${outputFilePath}`);
   console.log(`👉 Train profile with:`);
-  console.log(`   bun grow-verse-profile.js --author="${explicitAuthorName || 'Jonathan Turley'}" --urls-file=${path.basename(outputFilePath)}`);
+  console.log(`   bun grow-verse-profile.js --author="${displayLabel}" --urls-file=${path.basename(outputFilePath)}`);
   console.log(`======================================================================\n`);
 }
 

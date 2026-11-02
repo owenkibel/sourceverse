@@ -229,7 +229,7 @@ ${VERSE_GENRE_TAXONOMY}
 ${genreConstraintDirective}
 
 ### RULES FOR ITERATIVE PROMPT GROWTH (READING #${iterationNum})
-1. **Separate Invariant Voice from Topical Content:** Do NOT hardcode the specific news topic of a single article into the general style rules. Extract *how* the author thinks, frames premises, qualifies claims, uses understatement/litotes, and lands observations.
+1. **Separate Invariant Voice from Topical & Biographical Content:** Do NOT hardcode specific anecdotes, resume titles, committees, or closing jokes from a single article (e.g., specific pets, panels, or advisory boards) as mandatory elements for every poem. Extract *how* the author thinks, frames premises, qualifies claims, and lands observations so the prompt works cleanly on any topic.
 2. **Preserve & Refine:** If an existing profile is provided (Readings 1..${iterationNum - 1}), keep its strongest insights, prune anything that proved too narrow, and sharpen the rhetorical specifications based on the new sample.
 3. **Elastic Acoustic Scansion (No Rigid Syllable-Counting Traps):** Frame metrical rules in terms of natural stress beats, acoustic swing, and stanzaic architecture rather than rigid integer syllable-policing. Explicitly allow classical prosodic substitutions (such as initial trochaic inversions or natural elisions on modern names/terms) so downstream verse models compose smoothly by ear without getting stuck in syllable-counting loops.
 4. **Strict Anti-Patterns:** Define what a verse adaptation of ${authorName} must NEVER do (e.g., never use bombastic exclamation marks, never pad lines with archaic "doth/thee/thou", never turn dry understatement into broad slapstick).
