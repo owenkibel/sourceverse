@@ -1035,15 +1035,16 @@ const lensDirective =
         ? `\n- **Cross-Pollination Critical Lens (ACTIVE):** Treat the following Text Segment as external raw material observed through ${authorProfile.authorName}'s critical lens. Preserve the text's factual claims and events, but filter, judge, and reframe its premises through ${authorProfile.authorName}'s signature understatement, skepticism, and ironic detachment rather than adopting the original writer's sympathies.`
         : '';
 
-    const baseInstruction = authorProfile
+const baseInstruction = authorProfile
       ? `${authorProfile.masterVersePrompt}
 
 ### MANDATORY PROSODIC SPECIFICATION (${authorProfile.verseGenreMatch?.formLabel})
 - **Target Form & Meter:** ${authorProfile.verseGenreMatch?.meterAndStanza}
 - **Ironic & Rhetorical Posture:** ${authorProfile.stylisticInvariants?.ironicTemperature}
 - **Opening/Closing Cadence:** ${authorProfile.stylisticInvariants?.openingAndClosingMoves}
-- **Strict Anti-Patterns (Forbidden):** ${(authorProfile.antiPatterns || []).join(' | ')}${lensDirective}
-- Do not add intro summaries, conversational remarks, or markdown code fences. Output the raw text poem stanzas (and the Visual Scene Prompts section when requested on the final chunk) only.`
+- **Strict Anti-Patterns (Forbidden):** ${(authorProfile.antiPatterns || []).join('; ')}${lensDirective}
+- Do not add intro summaries, conversational remarks, or markdown code fences. Output the raw text poem stanzas (and the Visual Scene Prompts section when requested on the final chunk) only.
+- Place every individual metrical line on its own separate vertical line (never join two lines on the same line with "|" or "/").`
       : `You are an elite traditional poet. Adapt this text segment into high-quality, deeply insightful, truthful, and humorous traditional rhymed and metrical verse.
 Guidelines:
 - Arrange layout into distinct, coherent stanzas.
