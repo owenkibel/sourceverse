@@ -110,8 +110,46 @@ function xStatusId(url) {
   return m ? m[1] : null;
 }
 
+function extractFxArticle(t) {
+  const art = t?.article;
+  if (!art) return null;
+
+  const title = String(art.title || '').trim();
+  let body = '';
+
+  if (typeof art.full_text === 'string' && art.full_text.trim().length > 0) {
+    body = art.full_text.trim();
+  } else if (Array.isArray(art.content?.blocks)) {
+    body = art.content.blocks
+      .map(b => {
+        const txt = String(b?.text || '').trim();
+        if (!txt) return '';
+        if (b.type === 'header-one') return `## ${txt}`;
+        if (b.type === 'header-two' || b.type === 'header-three') return `### ${txt}`;
+        if (b.type === 'blockquote') return `> ${txt}`;
+        return txt;
+      })
+      .filter(Boolean)
+      .join('\n\n');
+  } else if (art.preview_text) {
+    body = String(art.preview_text).trim();
+  }
+
+  const coverImage =
+    art.cover_media?.media_info?.original_img_url ||
+    art.cover_media?.media_url_https ||
+    null;
+
+  return body ? { title, body, coverImage } : null;
+}
+
 function tweetText(t) {
-  return String(t?.text || t?.full_text || '').trim();
+  const art = extractFxArticle(t);
+  const stdText = String(t?.text || t?.full_text || '').trim();
+  if (art && art.body.length > stdText.length) {
+    return art.title ? `${art.title}\n\n${art.body}` : art.body;
+  }
+  return stdText;
 }
 
 function tweetHandle(t) {
@@ -119,25 +157,110 @@ function tweetHandle(t) {
 }
 
 function packFxTweet(tweet, extraText = '', kind = 'x-fx') {
+  const art = extractFxArticle(tweet);
   const text = tweetText(tweet);
   if (!text) return null;
+
   const author = tweet.author?.name || tweet.user_name || tweet.authorName || '';
   const handle = tweet.author?.screen_name || tweet.user_screen_name || '';
   const quote = tweet.quote || tweet.quoted_tweet || tweet.quoted_status;
   const quoteText = quote
     ? `\n\nQuoted:\n${quote.author?.name || quote.user_name || ''} ${tweetText(quote)}`.trim()
     : '';
+
+  const defaultTitle = [author, handle && `@${handle}`].filter(Boolean).join(' ') || 'X post';
+
   return {
-    ogTitle: [author, handle && `@${handle}`].filter(Boolean).join(' ') || 'X post',
+    ogTitle: art?.title ? `${art.title} — ${defaultTitle}` : defaultTitle,
     ogDescription: [text + quoteText, extraText].filter(Boolean).join('\n\n'),
-    kind,
+    ogImage: art?.coverImage || null,
+    kind: art ? 'x-fx-article' : kind,
   };
+}
+
+function getParentStatusId(t) {
+  const raw =
+    t?.replyingToID ||
+    t?.replying_to_status ||
+    t?.replyingToStatus ||
+    t?.replying_to?.status ||
+    t?.replying_to?.id ||
+    t?.in_reply_to_status_id_str ||
+    t?.in_reply_to_status_id ||
+    '';
+  return String(raw).trim() || null;
+}
+
+async function fetchSingleFxTweet(id) {
+  let primaryTweet = null;
+
+  // 1. Fetch from FxTwitter (best for full X Articles & long-form text)
+  for (const ep of [
+    `https://api.fxtwitter.com/status/${id}`,
+    `https://api.fxtwitter.com/2/status/${id}`
+  ]) {
+    try {
+      const res = await fetch(ep, {
+        headers: { 'User-Agent': 'Mozilla/5.0 Sourceverse-fx' },
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!res.ok) continue;
+      const data = await res.json();
+      const t = data.tweet || data.status || data;
+      if (t && (tweetText(t) || extractFxArticle(t))) {
+        primaryTweet = t;
+        break;
+      }
+    } catch (_) {}
+  }
+
+  // 2. If FxTwitter omitted the parent reply pointer, query VxTwitter for replyingToID
+  if (!primaryTweet || !getParentStatusId(primaryTweet)) {
+    try {
+      const vxRes = await fetch(`https://api.vxtwitter.com/Twitter/status/${id}`, {
+        headers: { 'User-Agent': 'Mozilla/5.0 Sourceverse-vx' },
+        signal: AbortSignal.timeout(10000),
+      });
+      if (vxRes.ok) {
+        const vxData = await vxRes.json();
+        const vxTweet = vxData.tweet || vxData;
+        if (!primaryTweet && vxTweet && tweetText(vxTweet)) {
+          primaryTweet = vxTweet;
+        } else if (primaryTweet && vxTweet) {
+          const vxParent = getParentStatusId(vxTweet);
+          if (vxParent) primaryTweet.replyingToID = vxParent;
+        }
+      }
+    } catch (_) {}
+  }
+
+  // 3. Fallback to Twitter Syndication embed JSON for in_reply_to_status_id_str
+  if (primaryTweet && !getParentStatusId(primaryTweet)) {
+    try {
+      const synRes = await fetch(
+        `https://cdn.syndication.twimg.com/tweet-result?id=${id}&token=0`,
+        {
+          headers: { 'User-Agent': 'Mozilla/5.0 Sourceverse-syndication' },
+          signal: AbortSignal.timeout(8000),
+        }
+      );
+      if (synRes.ok) {
+        const synData = await synRes.json();
+        const synParent =
+          synData?.in_reply_to_status_id_str || synData?.parent?.id_str || null;
+        if (synParent) primaryTweet.in_reply_to_status_id_str = String(synParent);
+      }
+    } catch (_) {}
+  }
+
+  return primaryTweet;
 }
 
 async function fetchXViaFx(url) {
   const id = xStatusId(url);
   if (!id) return null;
 
+  // 1. Try FxTwitter v2 /2/thread/:id endpoint first
   try {
     const res = await fetch(`https://api.fxtwitter.com/2/thread/${id}`, {
       headers: { 'User-Agent': 'Mozilla/5.0 Sourceverse-fx-thread' },
@@ -165,25 +288,42 @@ async function fetchXViaFx(url) {
     console.warn(`  fx thread failed: ${err.message}`);
   }
 
-  const endpoints = [
-    `https://api.fxtwitter.com/status/${id}`,
-    `https://api.vxtwitter.com/Twitter/status/${id}`,
-  ];
-  for (const ep of endpoints) {
-    try {
-      const res = await fetch(ep, {
-        headers: { 'User-Agent': 'Mozilla/5.0 Sourceverse-fx' },
-        signal: AbortSignal.timeout(12000),
-      });
-      if (!res.ok) continue;
-      const data = await res.json();
-      const packed = packFxTweet(data.tweet || data, '', 'x-fx');
-      if (packed) return packed;
-    } catch (err) {
-      console.warn(`  fx/vx ${ep} failed: ${err.message}`);
+  // 2. Fetch the target tweet (and enrich its parent pointer via VxTwitter/Syndication)
+  const startTweet = await fetchSingleFxTweet(id);
+  if (!startTweet) return null;
+
+  const authorHandle = tweetHandle(startTweet);
+  const chain = [startTweet];
+  const seenIds = new Set([String(startTweet.id || startTweet.tweetID || id)]);
+
+  // 3. Walk UPWARD via replyingToID / replying_to_status (deterministic tail -> root)
+  let currentParentId = getParentStatusId(startTweet);
+  let depth = 0;
+  while (currentParentId && !seenIds.has(currentParentId) && depth < 15) {
+    console.log(`  ↪ Walking upward in X thread to parent status: ${currentParentId}`);
+    seenIds.add(currentParentId);
+    depth++;
+    const parentTweet = await fetchSingleFxTweet(currentParentId);
+    if (!parentTweet) break;
+    if (authorHandle && tweetHandle(parentTweet) && tweetHandle(parentTweet) !== authorHandle) {
+      break;
+    }
+    chain.unshift(parentTweet);
+    currentParentId = getParentStatusId(parentTweet);
+  }
+
+  if (chain.length > 1) {
+    const root = chain[0];
+    const body = chain.map(tweetText).filter(Boolean).join('\n\n');
+    const packed = packFxTweet(root, '', 'x-fx-thread');
+    if (packed) {
+      packed.ogDescription = body;
+      packed.threadCount = chain.length;
+      return packed;
     }
   }
-  return null;
+
+  return packFxTweet(startTweet, '', 'x-fx');
 }
 
 function getYouTubeVideoID(url) {
@@ -343,27 +483,22 @@ async function fetchWithPlaywright(url, browser, skipTruncate = false) {
     const page = await context.newPage();
     try {
       await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 25000 });
-      
-      if (url.includes('x.com') || url.includes('twitter.com')) {
-        await page.evaluate(async () => {
-          for (let i = 0; i < 6; i++) {
-            window.scrollBy(0, 1200);
-            await new Promise(r => setTimeout(r, 600));
-          }
-          document.querySelectorAll('button, div[role="button"]').forEach(btn => {
-            const t = (btn.innerText || '').toLowerCase();
-            if (t.includes('show more') || t.includes('show replies') || t.includes('view more')) {
-              try { btn.click(); } catch {}
-            }
-          });
-        });
-        await page.waitForTimeout(1500);
 
-        const data = await page.evaluate((targetUrl) => {
+     if (url.includes('x.com') || url.includes('twitter.com')) {
+        await page
+          .waitForSelector(
+            'article[data-testid="tweet"], [data-testid="twitterArticleRichTextView"], [data-testid="twitterArticleReadView"]',
+            { timeout: 12000 }
+          )
+          .catch(() => {});
+        await page.waitForTimeout(1000);
+
+        const data = await page.evaluate(async (targetUrl) => {
           const isTrending = /\/i\/trending\//.test(targetUrl);
           const articleTitleEl = document.querySelector('[data-testid="twitter-article-title"]');
-          const articleBodyEl = document.querySelector('[data-testid="twitterArticleRichTextView"]')
-                             || document.querySelector('[data-testid="twitterArticleReadView"]');
+          const articleBodyEl =
+            document.querySelector('[data-testid="twitterArticleRichTextView"]') ||
+            document.querySelector('[data-testid="twitterArticleReadView"]');
 
           if (articleBodyEl) {
             const title = (articleTitleEl?.innerText || document.title || '').trim();
@@ -377,21 +512,23 @@ async function fetchWithPlaywright(url, browser, skipTruncate = false) {
               ? paragraphs.join('\n\n')
               : articleBodyEl.innerText.trim();
 
-            const cover = document.querySelector('[data-testid="twitterArticleReadView"] [data-testid="tweetPhoto"] img')
-                       || document.querySelector('meta[property="og:image"]');
+            const cover =
+              document.querySelector('[data-testid="twitterArticleReadView"] [data-testid="tweetPhoto"] img') ||
+              document.querySelector('meta[property="og:image"]');
 
             return {
               ogTitle: title || 'X Article',
               paragraphs: [fullText],
+              threadCount: 1,
               ogImage: cover?.src || cover?.content || null,
               kind: 'article'
             };
           }
 
           if (isTrending) {
-            const summaryCandidates = Array.from(document.querySelectorAll(
-              'div[dir="auto"], [data-testid="tweetText"], article, h1, h2'
-            ))
+            const summaryCandidates = Array.from(
+              document.querySelectorAll('div[dir="auto"], [data-testid="tweetText"], article, h1, h2')
+            )
               .map(el => el.innerText.trim())
               .filter(t => t.length > 80 && !t.startsWith('Show') && !t.includes('·'));
 
@@ -404,77 +541,146 @@ async function fetchWithPlaywright(url, browser, skipTruncate = false) {
             return {
               ogTitle: (document.querySelector('h1, h2')?.innerText || document.title || 'X Trending').trim(),
               paragraphs: [mainSummary, ...relatedPosts],
+              threadCount: relatedPosts.length,
               ogImage: document.querySelector('meta[property="og:image"]')?.content || null,
               kind: 'trending'
             };
           }
 
-          const tweetElements = Array.from(document.querySelectorAll(
-            '[data-testid="tweetText"], article div[dir="auto"]'
-          ))
-            .map(el => el.innerText.trim())
-            .filter(t => t.length > 15);
+          const urlHandleMatch = targetUrl.match(/(?:x\.com|twitter\.com)\/([A-Za-z0-9_]+)\/status\//i);
+          let targetHandle = urlHandleMatch ? urlHandleMatch[1].toLowerCase() : null;
 
-          const structuralHeader = document.querySelector(
-            '[data-testid="sidebarColumn"] h2, h2 span, h1, [data-testid="User-Name"]'
-          )?.innerText || document.title || '';
+          const harvestedMap = new Map(); // statusId -> tweet text
+          let cleanHeader = document.title || 'X Post';
+          let firstImage = null;
 
-          const primary = tweetElements.slice(0, 8);
+          const harvestVisibleTweets = () => {
+            document.querySelectorAll('button, div[role="button"]').forEach(btn => {
+              const t = (btn.innerText || '').toLowerCase().trim();
+              if (t === 'show more' || t === 'read more') {
+                try { btn.click(); } catch {}
+              }
+            });
 
-          let images = Array.from(document.querySelectorAll(
-            'img[src^="https://pbs.twimg.com/media/"], img[alt*="image"]'
-          ))
-            .map(el => el.src)
-            .filter(src => src && src.includes('pbs.twimg.com') && !src.includes('profile'));
+            const articles = Array.from(document.querySelectorAll('article[data-testid="tweet"]'));
+            for (const art of articles) {
+              const userEl = art.querySelector('[data-testid="User-Name"]');
+              const userText = (userEl?.innerText || '').toLowerCase();
+
+              if (!targetHandle) {
+                const handleMatch = userText.match(/@([a-z0-9_]+)/i);
+                if (handleMatch) targetHandle = handleMatch[1].toLowerCase();
+              }
+
+              if (targetHandle && userText.includes(`@${targetHandle}`)) {
+                if (userEl && (!cleanHeader || cleanHeader === document.title)) {
+                  cleanHeader = userEl.innerText.split('\n').slice(0, 2).join(' ').trim();
+                }
+                const textEls = Array.from(art.querySelectorAll('[data-testid="tweetText"]'));
+                const mergedTweet = textEls.map(el => el.innerText.trim()).filter(Boolean).join('\n');
+                if (!mergedTweet) continue;
+
+                // Find the status ID link inside this tweet article
+                let statusId = null;
+                const links = Array.from(art.querySelectorAll('a[href*="/status/"]'));
+                for (const a of links) {
+                  const m = (a.getAttribute('href') || '').match(/\/status\/(\d+)/);
+                  if (m) {
+                    statusId = m[1];
+                    break;
+                  }
+                }
+                const key = statusId || `idx_${harvestedMap.size}_${mergedTweet.slice(0, 24)}`;
+                const existing = harvestedMap.get(key);
+                if (!existing || mergedTweet.length > existing.length) {
+                  harvestedMap.set(key, mergedTweet);
+                }
+
+                if (!firstImage) {
+                  const imgEl = art.querySelector('img[src^="https://pbs.twimg.com/media/"]');
+                  if (imgEl?.src) firstImage = imgEl.src;
+                }
+              }
+            }
+          };
+
+          // 1. Harvest at initial viewport (before virtual scroller unmounts top tweets)
+          harvestVisibleTweets();
+
+          // 2. Scroll to top (y = 0) in case X opened a reply tweet mid-page with parent above it
+          window.scrollTo(0, 0);
+          await new Promise(r => setTimeout(r, 700));
+          harvestVisibleTweets();
+
+          // 3. Step downward incrementally, harvesting at each step
+          for (let i = 0; i < 4; i++) {
+            window.scrollBy(0, 750);
+            await new Promise(r => setTimeout(r, 600));
+            harvestVisibleTweets();
+          }
+
+          // Sort harvested tweets chronologically by numeric status ID
+          const sortedEntries = [...harvestedMap.entries()].sort((a, b) => {
+            const isNumA = /^\d+$/.test(a[0]);
+            const isNumB = /^\d+$/.test(b[0]);
+            if (isNumA && isNumB) {
+              return BigInt(a[0]) < BigInt(b[0]) ? -1 : BigInt(a[0]) > BigInt(b[0]) ? 1 : 0;
+            }
+            return 0;
+          });
+
+          const orderedParagraphs = sortedEntries.map(e => e[1]);
 
           return {
-            ogTitle: structuralHeader.trim() || document.title,
-            paragraphs: primary,
-            ogImage: images[0] || document.querySelector('meta[property="og:image"]')?.content || null,
+            ogTitle: cleanHeader,
+            paragraphs: orderedParagraphs,
+            threadCount: orderedParagraphs.length,
+            ogImage: firstImage || document.querySelector('meta[property="og:image"]')?.content || null,
             kind: 'post'
           };
         }, url);
 
         await context.close();
-        if (data && data.paragraphs) {
+        if (data && data.paragraphs && data.paragraphs.length > 0) {
           const processedParas = skipTruncate ? data.paragraphs : data.paragraphs.slice(0, 80);
           return {
             ogTitle: data.ogTitle,
             ogDescription: processedParas.join('\n\n').trim(),
-            ogImage: data.ogImage
+            threadCount: data.threadCount || processedParas.length,
+            ogImage: data.ogImage,
+            kind: data.kind
           };
         }
         return null;
       }
 
-// General article extractor for non-X sites (e.g. Medium, National Post) when OGS is blocked
-   await page.waitForTimeout(1500);
-   const articleData = await page.evaluate(() => {
-     const title =
-       document.querySelector('h1')?.innerText?.trim() ||
-       document.querySelector('meta[property="og:title"]')?.content ||
-       document.title ||
-       '';
-     const root =
-       document.querySelector('article') ||
-       document.querySelector('main') ||
-       document.body;
-     const paras = Array.from(root.querySelectorAll('p, h2, h3, blockquote'))
-       .map(el => el.innerText.trim())
-       .filter(t => t.length > 25 && !/^Sign up|^Sign in|^Member-only story/i.test(t));
-     const img = document.querySelector('meta[property="og:image"]')?.content || null;
-     return { ogTitle: title, paragraphs: paras, ogImage: img };
-   });
-   await context.close();
-   if (articleData && articleData.paragraphs.length > 0) {
-     return {
-       ogTitle: articleData.ogTitle,
-       ogDescription: articleData.paragraphs.join('\n\n').trim(),
-       ogImage: articleData.ogImage
-     };
-   }
-   return null;
-   
+      // General article extractor for non-X sites (e.g. Medium, National Post) when OGS is blocked
+      await page.waitForTimeout(1500);
+      const articleData = await page.evaluate(() => {
+        const title =
+          document.querySelector('h1')?.innerText?.trim() ||
+          document.querySelector('meta[property="og:title"]')?.content ||
+          document.title ||
+          '';
+        const root =
+          document.querySelector('article') ||
+          document.querySelector('main') ||
+          document.body;
+        const paras = Array.from(root.querySelectorAll('p, h2, h3, blockquote'))
+          .map(el => el.innerText.trim())
+          .filter(t => t.length > 25 && !/^Sign up|^Sign in|^Member-only story/i.test(t));
+        const img = document.querySelector('meta[property="og:image"]')?.content || null;
+        return { ogTitle: title, paragraphs: paras, ogImage: img };
+      });
+      await context.close();
+      if (articleData && articleData.paragraphs.length > 0) {
+        return {
+          ogTitle: articleData.ogTitle,
+          ogDescription: articleData.paragraphs.join('\n\n').trim(),
+          ogImage: articleData.ogImage
+        };
+      }
+      return null;
     } catch (error) {
       attempts++;
       console.warn(`Playwright attempt ${attempts}/${maxAttempts} failed for ${url}: ${error.message}`);
@@ -660,9 +866,10 @@ async function runVersificationMode(url, targetModel, profileSlug = null, useCri
   if (!/^https?:\/\//i.test(url)) {
   url = `https://${url}`;
 }
-  let sharedBrowser = await firefox.launch({ headless: true });
+let sharedBrowser = await firefox.launch({ headless: true });
   let fullText = '';
   let title = 'Untitled Resource';
+  let scrapeMethod = 'Unknown';
 
  let targetFetchUrl = url
     .replace(/^https?:\/\/[^/]+\.cdn\.ampproject\.org\/[vc]\/(s\/)?/i, 'https://')
@@ -674,6 +881,7 @@ async function runVersificationMode(url, targetModel, profileSlug = null, useCri
   );
   if (substackIdMatch) {
     const postId = substackIdMatch[1];
+    scrapeMethod = `Substack API (post_id: ${postId})`;
     try {
       console.log(`  📡 Resolving Substack post ID ${postId} via Substack API...`);
       const subRes = await fetch(`https://substack.com/api/v1/posts/by-id/${postId}`, {
@@ -698,7 +906,7 @@ async function runVersificationMode(url, targetModel, profileSlug = null, useCri
     }
   }    
 
-  if (targetFetchUrl.includes('youtube.com') || targetFetchUrl.includes('youtu.be')) {
+ if (targetFetchUrl.includes('youtube.com') || targetFetchUrl.includes('youtu.be')) {
     const videoId = getYouTubeVideoID(targetFetchUrl);
     if (videoId) targetFetchUrl = `https://www.youtube.com/watch?v=${videoId}`;
 
@@ -707,8 +915,12 @@ async function runVersificationMode(url, targetModel, profileSlug = null, useCri
 
     if (!fullText) {
       console.log(`  ⚠️ No VTT subtitles found; falling back to local Whisper audio transcription...`);
-      fullText = await extractAndAnalyzeAudio(targetFetchUrl);
+      fullText = await extractAndAnalyzeAudio(targetFetchUrl, 600);
     }
+
+    scrapeMethod = fullText.includes('[Local Whisper Transcript]')
+      ? 'YouTube Audio -> Local Whisper'
+      : 'YouTube VTT Subtitles (yt-dlp)';
 
     try {
       const { result } = await ogs({ url: targetFetchUrl, timeout: 12000 });
@@ -725,7 +937,8 @@ async function runVersificationMode(url, targetModel, profileSlug = null, useCri
       } catch (e) {}
     }
   } else {
-let ogsSuccess = fullText.length > 200;
+    let ogsSuccess = fullText.length > 200;
+
     if (isXUrl(targetFetchUrl)) {
       try {
         console.log('  fx/vx Twitter API extract...');
@@ -733,13 +946,33 @@ let ogsSuccess = fullText.length > 200;
         if (fx?.ogDescription) {
           title = fx.ogTitle || title;
           fullText = fx.ogDescription;
-          ogsSuccess = fullText.length > 200;
+          scrapeMethod = `FxTwitter API (${fx.kind}${fx.threadCount ? `, ${fx.threadCount} posts` : ''})`;
+          ogsSuccess = fx.kind === 'x-fx-thread' || fx.kind === 'x-fx-article';
           console.log(`  fx/vx got ${fullText.length} chars (${fx.kind})`);
         }
       } catch (e) {
         console.warn(`  fx/vx failed: ${e.message}`);
       }
+
+      if (!ogsSuccess) {
+        console.log('  Checking X page DOM via Playwright for downward self-thread replies...');
+        const pwData = await fetchWithPlaywright(targetFetchUrl, sharedBrowser, true);
+        if (
+          pwData?.ogDescription &&
+          (pwData.threadCount > 1 || pwData.kind === 'article' || !fullText) &&
+          pwData.ogDescription.length > fullText.length
+        ) {
+          title = pwData.ogTitle || title;
+          fullText = pwData.ogDescription;
+          scrapeMethod = `Playwright X Thread DOM (${pwData.threadCount || 1} posts)`;
+          ogsSuccess = true;
+          console.log(`  Playwright expanded X thread to ${fullText.length} chars (${pwData.threadCount} posts).`);
+        } else if (fullText.length > 0) {
+          ogsSuccess = true; // Keep fx single-post text if no downward self-thread existed
+        }
+      }
     }
+
     if (!ogsSuccess) {
       try {
         const { result, html } = await ogs({ url: targetFetchUrl, timeout: 12000 });
@@ -747,19 +980,23 @@ let ogsSuccess = fullText.length > 200;
         if (html) {
           const cleanHtml = extractMainArticleText(html);
           const sanitizeHtml = (await import('sanitize-html')).default;
-          const sanitizedHtml = sanitizeHtml(cleanHtml, { allowedTags: ['main', 'article', 'p', 'h1', 'h2', 'h3', 'section'] });
+          const sanitizedHtml = sanitizeHtml(cleanHtml, { allowedTags: ['main', 'article', 'p', 'h1', 'h2', 'h3', 'section', 'blockquote'] });
           const { convert } = await import('html-to-text');
           fullText = convert(sanitizedHtml, { wordwrap: false }).replace(/\s+/g, ' ').trim();
-          if (fullText.length > 200) ogsSuccess = true;
+          if (fullText.length > 200) {
+            ogsSuccess = true;
+            scrapeMethod = 'OGS + HTML Article Parser';
+          }
         }
       } catch (e) {}
     }
 
     if (!ogsSuccess) {
       const pwData = await fetchWithPlaywright(targetFetchUrl, sharedBrowser, true);
-      if (pwData) {
+      if (pwData?.ogDescription) {
         title = pwData.ogTitle || title;
         fullText = pwData.ogDescription || '';
+        scrapeMethod = 'Playwright Full DOM Extractor';
       }
     }
   }
@@ -995,7 +1232,31 @@ const profileBanner = authorProfile
  ? `> **Prosodic Alter-Ego:** *${authorProfile.authorName}* (Profile Iteration #${authorProfile.readingsCount})  \n> **Matched Form:** \`${authorProfile.verseGenreMatch?.formLabel}\` — *${authorProfile.verseGenreMatch?.meterAndStanza}*  \n> **Inference Engine:** \`${engineLabel}\` • **Source:** [${targetFetchUrl}](${targetFetchUrl})\n\n`
  : `[${JSON.stringify(targetFetchUrl)}](${JSON.stringify(targetFetchUrl)})\n\n`;
 
-const finalMarkdownOutput = `${frontMatter}\n\n${profileBanner}${activePoemBody}${visualPromptsSection}`;
+ 
+
+const wordCount = fullText.trim().split(/\s+/).filter(Boolean).length;
+  const safeRawText = fullText.replace(/```/g, "'''").trim();
+
+  const debugSourceSection = [
+    "",
+    "",
+    "---",
+    "",
+    `<details class="scrape-debug-drawer" style="margin-top: 1.25rem; border: 1px solid rgba(128,128,128,0.3); border-radius: 8px; padding: 0.6rem 1rem;">`,
+    `<summary style="cursor: pointer; font-size: 0.85rem; font-family: monospace; opacity: 0.8;">🔎 Pipeline & Extracted Source Text (${scrapeMethod} • ${wordCount} words • ${fullText.length} chars • ${chunks.length} chunk${chunks.length === 1 ? '' : 's'})</summary>`,
+    "",
+    `- **Source URL:** ${targetFetchUrl}`,
+    `- **Extraction Method:** \`${scrapeMethod}\``,
+    `- **Extracted Payload:** ${wordCount} words (${fullText.length} characters across ${chunks.length} context block${chunks.length === 1 ? '' : 's'})`,
+    `- **Versification Engine:** \`${engineLabel}\`${authorProfile ? ` • **Profile:** \`${authorProfile.authorSlug}\` (Reading #${authorProfile.readingsCount})` : ''}`,
+    "",
+    "```text",
+    safeRawText,
+    "```",
+    "</details>"
+  ].join('\n');
+
+  const finalMarkdownOutput = `${frontMatter}\n\n${profileBanner}${activePoemBody}${debugSourceSection}${visualPromptsSection}`;
   const urlSlug = url.replace(/https?:\/\/(www\.)?/, '').replace(/[^a-z0-9]/gi, '-').toLowerCase().substring(0, 25);
   const prefixSlug = authorProfile ? `verse-${authorProfile.authorSlug}` : `verse`;
   const fileTarget = path.join(OUTPUT_DIR, `${prefixSlug}-${urlSlug}-${safeTimestamp}.md`);

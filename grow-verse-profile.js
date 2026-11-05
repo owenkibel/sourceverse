@@ -38,12 +38,134 @@ function xStatusId(url) {
   return m ? m[1] : null;
 }
 
+function extractFxArticle(t) {
+  const art = t?.article;
+  if (!art) return null;
+
+  const title = String(art.title || '').trim();
+  let body = '';
+
+  if (typeof art.full_text === 'string' && art.full_text.trim().length > 0) {
+    body = art.full_text.trim();
+  } else if (Array.isArray(art.content?.blocks)) {
+    body = art.content.blocks
+      .map(b => String(b?.text || '').trim())
+      .filter(Boolean)
+      .join('\n\n');
+  } else if (art.preview_text) {
+    body = String(art.preview_text).trim();
+  }
+
+  return body ? { title, body } : null;
+}
+
 function tweetText(t) {
-  return String(t?.text || t?.full_text || '').trim();
+  const art = extractFxArticle(t);
+  const stdText = String(t?.text || t?.full_text || '').trim();
+  if (art && art.body.length > stdText.length) {
+    return art.title ? `${art.title}\n\n${art.body}` : art.body;
+  }
+  return stdText;
 }
 
 function tweetHandle(t) {
   return String(t?.author?.screen_name || t?.user_screen_name || t?.authorName || '').toLowerCase();
+}
+
+function packFxTweet(tweet, extraText = '', kind = 'x-fx-single') {
+  const art = extractFxArticle(tweet);
+  const text = tweetText(tweet);
+  if (!text) return null;
+
+  const author = tweet.author?.name || tweet.user_name || tweet.authorName || '';
+  const handle = tweet.author?.screen_name || tweet.user_screen_name || '';
+  const quote = tweet.quote || tweet.quoted_tweet || tweet.quoted_status;
+  const quoteText = quote
+    ? `\n\nQuoted:\n${quote.author?.name || quote.user_name || ''} ${tweetText(quote)}`.trim()
+    : '';
+
+  const defaultTitle = [author, handle && `@${handle}`].filter(Boolean).join(' ') || 'X Post';
+
+  return {
+    title: art?.title ? `${art.title} — ${defaultTitle}` : defaultTitle,
+    text: [text + quoteText, extraText].filter(Boolean).join('\n\n'),
+    kind: art ? 'x-fx-article' : kind,
+  };
+}
+
+function getParentStatusId(t) {
+  const raw =
+    t?.replyingToID ||
+    t?.replying_to_status ||
+    t?.replyingToStatus ||
+    t?.replying_to?.status ||
+    t?.replying_to?.id ||
+    t?.in_reply_to_status_id_str ||
+    t?.in_reply_to_status_id ||
+    '';
+  return String(raw).trim() || null;
+}
+
+async function fetchSingleFxTweet(id) {
+  let primaryTweet = null;
+
+  for (const ep of [
+    `https://api.fxtwitter.com/status/${id}`,
+    `https://api.fxtwitter.com/2/status/${id}`
+  ]) {
+    try {
+      const res = await fetch(ep, {
+        headers: { 'User-Agent': 'Mozilla/5.0 Sourceverse-fx' },
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!res.ok) continue;
+      const data = await res.json();
+      const t = data.tweet || data.status || data;
+      if (t && (tweetText(t) || extractFxArticle(t))) {
+        primaryTweet = t;
+        break;
+      }
+    } catch (_) {}
+  }
+
+  if (!primaryTweet || !getParentStatusId(primaryTweet)) {
+    try {
+      const vxRes = await fetch(`https://api.vxtwitter.com/Twitter/status/${id}`, {
+        headers: { 'User-Agent': 'Mozilla/5.0 Sourceverse-vx' },
+        signal: AbortSignal.timeout(10000),
+      });
+      if (vxRes.ok) {
+        const vxData = await vxRes.json();
+        const vxTweet = vxData.tweet || vxData;
+        if (!primaryTweet && vxTweet && tweetText(vxTweet)) {
+          primaryTweet = vxTweet;
+        } else if (primaryTweet && vxTweet) {
+          const vxParent = getParentStatusId(vxTweet);
+          if (vxParent) primaryTweet.replyingToID = vxParent;
+        }
+      }
+    } catch (_) {}
+  }
+
+  if (primaryTweet && !getParentStatusId(primaryTweet)) {
+    try {
+      const synRes = await fetch(
+        `https://cdn.syndication.twimg.com/tweet-result?id=${id}&token=0`,
+        {
+          headers: { 'User-Agent': 'Mozilla/5.0 Sourceverse-syndication' },
+          signal: AbortSignal.timeout(8000),
+        }
+      );
+      if (synRes.ok) {
+        const synData = await synRes.json();
+        const synParent =
+          synData?.in_reply_to_status_id_str || synData?.parent?.id_str || null;
+        if (synParent) primaryTweet.in_reply_to_status_id_str = String(synParent);
+      }
+    } catch (_) {}
+  }
+
+  return primaryTweet;
 }
 
 async function fetchXViaFx(url) {
@@ -61,40 +183,56 @@ async function fetchXViaFx(url) {
       if (parts.length > 1) {
         const root = parts[0];
         const handle = tweetHandle(root);
-        const same = parts.filter(p => !handle || tweetHandle(p) === handle);
+        const same = parts.filter((p) => !handle || tweetHandle(p) === handle);
         const body = same.map(tweetText).filter(Boolean).join('\n\n');
-        if (body.length > 100) {
-          return {
-            title: `${root.author?.name || handle} (@${handle})`,
-            text: body
-          };
+        if (body.length > tweetText(root).length) {
+          const packed = packFxTweet(root, '', 'x-fx-thread');
+          if (packed) {
+            packed.text = body;
+            packed.threadCount = same.length;
+            return packed;
+          }
         }
       }
     }
-  } catch (_) {}
-
-  for (const ep of [
-    `https://api.fxtwitter.com/status/${id}`,
-    `https://api.vxtwitter.com/Twitter/status/${id}`
-  ]) {
-    try {
-      const res = await fetch(ep, {
-        headers: { 'User-Agent': 'Mozilla/5.0 Sourceverse-fx' },
-        signal: AbortSignal.timeout(12000),
-      });
-      if (!res.ok) continue;
-      const data = await res.json();
-      const t = data.tweet || data;
-      const text = tweetText(t);
-      if (text) {
-        return {
-          title: t.author?.name || 'X Post',
-          text
-        };
-      }
-    } catch (_) {}
+  } catch (err) {
+    console.warn(`  fx thread failed: ${err.message}`);
   }
-  return null;
+
+  const startTweet = await fetchSingleFxTweet(id);
+  if (!startTweet) return null;
+
+  const authorHandle = tweetHandle(startTweet);
+  const chain = [startTweet];
+  const seenIds = new Set([String(startTweet.id || startTweet.tweetID || id)]);
+
+  let currentParentId = getParentStatusId(startTweet);
+  let depth = 0;
+  while (currentParentId && !seenIds.has(currentParentId) && depth < 15) {
+    console.log(`   ↪ Walking upward in X thread to parent status: ${currentParentId}`);
+    seenIds.add(currentParentId);
+    depth++;
+    const parentTweet = await fetchSingleFxTweet(currentParentId);
+    if (!parentTweet) break;
+    if (authorHandle && tweetHandle(parentTweet) && tweetHandle(parentTweet) !== authorHandle) {
+      break;
+    }
+    chain.unshift(parentTweet);
+    currentParentId = getParentStatusId(parentTweet);
+  }
+
+  if (chain.length > 1) {
+    const root = chain[0];
+    const body = chain.map(tweetText).filter(Boolean).join('\n\n');
+    const packed = packFxTweet(root, '', 'x-fx-thread');
+    if (packed) {
+      packed.text = body;
+      packed.threadCount = chain.length;
+      return packed;
+    }
+  }
+
+  return packFxTweet(startTweet, '', 'x-fx-single');
 }
 
 function extractMainArticleText(html) {
@@ -119,30 +257,37 @@ async function scrapeColumnText(rawUrl) {
     .replace(/\.amp(\?.*|#.*)?$/i, '');
   console.log(`\n🔎 Extracting column text from: ${url}`);
 
+  let fxFallback = null;
   if (isXUrl(url)) {
     const fx = await fetchXViaFx(url);
-    if (fx?.text && fx.text.length > 220) {
-      console.log(`   ✅ Extracted ${fx.text.length} chars via fxtwitter API.`);
-      return fx;
+    if (fx?.text) {
+      // If fx already got an unrolled thread, an X Article, or a long 1000+ char post, return immediately
+      if (fx.kind === 'x-fx-thread' || fx.kind === 'x-fx-article' || fx.text.length > 1000) {
+        console.log(`   ✅ Extracted ${fx.text.length} chars via fxtwitter API (${fx.kind}).`);
+        return fx;
+      }
+      fxFallback = fx;
     }
   }
 
-  try {
-    const { result, html } = await ogs({ url, timeout: 12000 });
-    if (html && !isXUrl(url)) {
-      const cleanHtml = extractMainArticleText(html);
-      const sanitizeHtml = (await import('sanitize-html')).default;
-      const sanitized = sanitizeHtml(cleanHtml, {
-        allowedTags: ['main', 'article', 'p', 'h1', 'h2', 'h3', 'section', 'blockquote']
-      });
-      const { convert } = await import('html-to-text');
-      const text = convert(sanitized, { wordwrap: false }).replace(/\s+/g, ' ').trim();
-      if (text.length > 250) {
-        console.log(`   ✅ Extracted ${text.length} chars via OGS/HTML parser.`);
-        return { title: result?.ogTitle || 'Column', text };
+  if (!isXUrl(url)) {
+    try {
+      const { result, html } = await ogs({ url, timeout: 12000 });
+      if (html) {
+        const cleanHtml = extractMainArticleText(html);
+        const sanitizeHtml = (await import('sanitize-html')).default;
+        const sanitized = sanitizeHtml(cleanHtml, {
+          allowedTags: ['main', 'article', 'p', 'h1', 'h2', 'h3', 'section', 'blockquote']
+        });
+        const { convert } = await import('html-to-text');
+        const text = convert(sanitized, { wordwrap: false }).replace(/\s+/g, ' ').trim();
+        if (text.length > 250) {
+          console.log(`   ✅ Extracted ${text.length} chars via OGS/HTML parser.`);
+          return { title: result?.ogTitle || 'Column', text };
+        }
       }
-    }
-  } catch (_) {}
+    } catch (_) {}
+  }
 
   console.log(`   🌐 Launching headless Firefox fallback for full DOM extraction...`);
   const browser = await firefox.launch({ headless: true });
@@ -152,16 +297,46 @@ async function scrapeColumnText(rawUrl) {
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 25000 });
 
     if (isXUrl(url)) {
+      await page
+        .waitForSelector('article[data-testid="tweet"], [data-testid="twitterArticleRichTextView"]', { timeout: 12000 })
+        .catch(() => {});
       await page.evaluate(async () => {
-        for (let i = 0; i < 6; i++) {
-          window.scrollBy(0, 1200);
-          await new Promise(r => setTimeout(r, 500));
+        for (let i = 0; i < 5; i++) {
+          window.scrollBy(0, 1000);
+          await new Promise(r => setTimeout(r, 600));
         }
       });
       await page.waitForTimeout(1200);
     }
 
-    const extracted = await page.evaluate(() => {
+    const extracted = await page.evaluate((targetUrl) => {
+      const urlHandleMatch = targetUrl.match(/(?:x\.com|twitter\.com)\/([A-Za-z0-9_]+)\/status\//i);
+      let targetHandle = urlHandleMatch ? urlHandleMatch[1].toLowerCase() : null;
+
+      const tweetArticles = Array.from(document.querySelectorAll('article[data-testid="tweet"]'));
+      if (tweetArticles.length > 0) {
+        const authorTweets = [];
+        for (const art of tweetArticles) {
+          const userText = (art.querySelector('[data-testid="User-Name"]')?.innerText || '').toLowerCase();
+          if (!targetHandle) {
+            const m = userText.match(/@([a-z0-9_]+)/i);
+            if (m) targetHandle = m[1].toLowerCase();
+          }
+          if (targetHandle && userText.includes(`@${targetHandle}`)) {
+            const txt = Array.from(art.querySelectorAll('[data-testid="tweetText"]'))
+              .map(el => el.innerText.trim())
+              .filter(Boolean)
+              .join('\n');
+            if (txt && !authorTweets.includes(txt)) authorTweets.push(txt);
+          } else if (authorTweets.length > 0) {
+            break;
+          }
+        }
+        if (authorTweets.length > 0) {
+          return { title: document.title || 'X Thread', text: authorTweets.join('\n\n') };
+        }
+      }
+
       const articleBody =
         document.querySelector('[data-testid="twitterArticleRichTextView"]') ||
         document.querySelector('[data-testid="twitterArticleReadView"]') ||
@@ -169,9 +344,7 @@ async function scrapeColumnText(rawUrl) {
         document.querySelector('main');
 
       const blocks = Array.from(
-        (articleBody || document.body).querySelectorAll(
-          'p, [data-block="true"], [data-testid="tweetText"], blockquote'
-        )
+        (articleBody || document.body).querySelectorAll('p, [data-block="true"], blockquote')
       )
         .map(el => el.innerText.trim())
         .filter(t => t.length > 20);
@@ -180,17 +353,19 @@ async function scrapeColumnText(rawUrl) {
         title: document.title || 'Extracted Column',
         text: blocks.join('\n\n')
       };
-    });
+    }, url);
 
     await context.close();
+    if (fxFallback && (!extracted.text || fxFallback.text.length >= extracted.text.length)) {
+      console.log(`   ✅ Kept fxtwitter single post (${fxFallback.text.length} chars).`);
+      return fxFallback;
+    }
     console.log(`   ✅ Extracted ${extracted.text.length} chars via Playwright.`);
     return extracted;
   } finally {
     await browser.close();
   }
 }
-
-// --- Iterative Prompt Growth Engine ---
 
 // --- Iterative Prompt Growth Engine ---
 

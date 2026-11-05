@@ -2,7 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import ogs from 'open-graph-scraper';
 
-const DEFAULT_LIMIT = 10;
+const DEFAULT_LIMIT = 7;
 const DEFAULT_MIN_WORDS = 200;
 
 const slugify = (t) =>
@@ -20,10 +20,12 @@ let limit = DEFAULT_LIMIT;
 let minWords = DEFAULT_MIN_WORDS;
 let customOutFile = null;
 let explicitAuthorName = null;
+let searchFilter = '';
 let overwriteFile = false;
 let verifyCharLength = false;
 let includePaid = false;
 let includeAudio = false;
+let anyAuthor = false;
 const positional = [];
 
 for (let i = 0; i < rawArgs.length; i++) {
@@ -36,6 +38,8 @@ for (let i = 0; i < rawArgs.length; i++) {
     customOutFile = arg.split('=').slice(1).join('=').trim();
   } else if (arg.startsWith('--author=')) {
     explicitAuthorName = arg.split('=').slice(1).join('=').trim();
+  } else if (arg.startsWith('--search=')) {
+    searchFilter = arg.split('=').slice(1).join('=').trim();
   } else if (arg === '--overwrite' || arg === '--replace') {
     overwriteFile = true;
   } else if (arg === '--probe-chars') {
@@ -44,6 +48,8 @@ for (let i = 0; i < rawArgs.length; i++) {
     includePaid = true;
   } else if (arg === '--include-audio') {
     includeAudio = true;
+  } else if (arg === '--any-author') {
+    anyAuthor = true;
   } else if (!arg.startsWith('--')) {
     positional.push(arg);
   }
@@ -69,6 +75,27 @@ function resolveSubstackHost(input) {
   }
 
   return clean.replace(/\/.*$/, '');
+}
+
+function matchesTargetAuthor(post, targetAuthor) {
+  if (!targetAuthor || anyAuthor) return true;
+  const bylines = post.publishedBylines || [];
+  if (bylines.length === 0) return true;
+
+  const targetLower = targetAuthor.toLowerCase().trim();
+  const targetSlug = slugify(targetAuthor).replace(/-/g, '');
+
+  return bylines.some((b) => {
+    const name = (b.name || '').toLowerCase().trim();
+    const handle = (b.handle || '').toLowerCase().trim();
+    const nameSlug = slugify(name).replace(/-/g, '');
+    return (
+      name.includes(targetLower) ||
+      targetLower.includes(name) ||
+      handle === targetSlug ||
+      nameSlug === targetSlug
+    );
+  });
 }
 
 async function probeArticleCharLength(url) {
@@ -99,10 +126,16 @@ async function fetchSubstackArchive(initialHost, maxItems, minWordCount) {
 
   let activeHost = initialHost;
   let offset = 0;
-  const pageSize = 15;
+  // Substack /api/v1/archive supports up to limit=50 per request
+  const pageSize = 50;
+  const maxOffset = explicitAuthorName ? 800 : 200;
+  let skippedPaidForAuthor = 0;
 
-  while (collected.length < maxItems && offset < 90) {
-    const apiUrl = `https://${activeHost}/api/v1/archive?sort=new&search=&offset=${offset}&limit=${pageSize}&_t=${Date.now()}`;
+  // Use explicit --search= if provided
+  const encodedSearch = encodeURIComponent(searchFilter);
+
+  while (collected.length < maxItems && offset < maxOffset) {
+    const apiUrl = `https://${activeHost}/api/v1/archive?sort=new&search=${encodedSearch}&offset=${offset}&limit=${pageSize}&_t=${Date.now()}`;
     const res = await fetch(apiUrl, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) Sourceverse-Substack-Fetcher',
@@ -128,8 +161,6 @@ async function fetchSubstackArchive(initialHost, maxItems, minWordCount) {
         post.canonical_url ||
         (post.slug ? `https://${activeHost}/p/${post.slug}` : null);
 
-      // If publication uses a custom domain (e.g., www.hpluckrose.com), switch activeHost to it
-      // so subsequent requests hit the live custom domain directly instead of a cached alias:
       if (canonicalUrl && offset === 0) {
         try {
           const parsedHost = new URL(canonicalUrl).hostname;
@@ -143,18 +174,26 @@ async function fetchSubstackArchive(initialHost, maxItems, minWordCount) {
         continue;
       }
 
-      const rawTitle = (post.title || 'Untitled').trim();
-      const audience = post.audience || 'everyone';
-
-      // 1. Skip paywalled posts by default (since unauthenticated scraping only gets the teaser)
-      if (!includePaid && audience === 'only_paid') {
+      // Filter by author byline on multi-author publications (e.g. www.thefp.com, www.public.news)
+      if (!matchesTargetAuthor(post, explicitAuthorName)) {
         continue;
       }
 
-      // 2. Skip "(Audio)" voiceover editions by default
+      const rawTitle = (post.title || 'Untitled').trim();
+      const audience = post.audience || 'everyone';
+
+      // 1. Skip paywalled posts by default
+      if (!includePaid && audience === 'only_paid') {
+        skippedPaidForAuthor++;
+        continue;
+      }
+
+      // 2. Skip "(Audio)" or podcast/video-only editions by default
       if (
         !includeAudio &&
-        (/^\s*\(audio\)/i.test(rawTitle) || /\/audio-?/i.test(canonicalUrl))
+        (post.type === 'podcast' ||
+          /^\s*\(audio\)/i.test(rawTitle) ||
+          /\/audio-?/i.test(canonicalUrl))
       ) {
         continue;
       }
@@ -169,13 +208,11 @@ async function fetchSubstackArchive(initialHost, maxItems, minWordCount) {
         charLength = await probeArticleCharLength(canonicalUrl);
       }
 
-      // Strip "(Audio)" prefix before checking title uniqueness
       const baseTitleClean = rawTitle
         .replace(/^\s*\(audio\)\s*/i, '')
         .toLowerCase()
         .replace(/[^a-z0-9]/g, '');
 
-      // If we already have the text version of an "(Audio)" post, skip the duplicate
       if (/^\s*\(audio\)/i.test(rawTitle) && seenNormalizedTitles.has(baseTitleClean)) {
         continue;
       }
@@ -190,8 +227,9 @@ async function fetchSubstackArchive(initialHost, maxItems, minWordCount) {
       seenNormalizedTitles.add(baseTitleClean);
       seenTitleAndLength.add(lengthFingerprint);
 
+      const bylineNames = (post.publishedBylines || []).map(b => b.name).filter(Boolean);
       const authorFromPost =
-        post.publishedBylines?.[0]?.name || explicitAuthorName || activeHost.split('.')[0];
+        bylineNames.join(', ') || explicitAuthorName || activeHost.split('.')[0];
 
       collected.push({
         id: postId,
@@ -209,6 +247,14 @@ async function fetchSubstackArchive(initialHost, maxItems, minWordCount) {
     offset += posts.length;
   }
 
+  if (skippedPaidForAuthor > 0) {
+    console.log(
+      `ℹ️ Skipped ${skippedPaidForAuthor} paywalled ('only_paid') post(s) by ${
+        explicitAuthorName || 'this author'
+      } (pass --include-paid to include them).`
+    );
+  }
+
   return collected;
 }
 
@@ -216,14 +262,18 @@ async function main() {
   const targetInput = positional.join(' ').trim();
   if (!targetInput && !explicitAuthorName) {
     console.log(`Usage:
+  bun fetch-substack-urls.js www.thefp.com --author="Bari Weiss" --overwrite
+  bun fetch-substack-urls.js www.thefp.com --author="Nellie Bowles" --overwrite
   bun fetch-substack-urls.js helenpluckrose --author="Helen Pluckrose" --overwrite
-  bun fetch-substack-urls.js conradblack --author="Conrad Black" --overwrite
 
 Options:
+  --author="Name"   Filter multi-author publications by byline & set output slug
+  --search="Term"   Optional Substack server-side archive search filter (e.g. --search="TGIF")
+  --any-author      Disable strict byline filtering even when --author is set
   --limit=N         Number of recent public columns to fetch (default: ${DEFAULT_LIMIT})
   --min-words=N     Skip short notes/teasers under N words (default: ${DEFAULT_MIN_WORDS})
   --include-paid    Include paywalled ('only_paid') posts (skipped by default)
-  --include-audio   Include '(Audio)' voiceover duplicate posts (skipped by default)
+  --include-audio   Include '(Audio)' or podcast posts (skipped by default)
   --probe-chars     Fetch each page to log exact extracted HTML character length
   --overwrite       Replace the output file instead of appending`);
     process.exit(1);
@@ -231,7 +281,9 @@ Options:
 
   const host = resolveSubstackHost(targetInput || explicitAuthorName);
   console.log(
-    `\n📡 Querying Substack archive API at: https://${host}/api/v1/archive (skipping paywalled & audio duplicates)...`
+    `\n📡 Querying Substack archive API at: https://${host}/api/v1/archive${
+      explicitAuthorName ? ` [Byline Filter: "${explicitAuthorName}"]` : ''
+    }${searchFilter ? ` [Search: "${searchFilter}"]` : ''}...`
   );
 
   const posts = await fetchSubstackArchive(host, limit, minWords);
@@ -284,12 +336,13 @@ Options:
     );
   }
 
-  console.log(`\n🔎 Retrieved ${newPosts.length} unique public column(s) for ${resolvedAuthor}:\n`);
+  console.log(`\n🔎 Retrieved ${newPosts.length} unique column(s) for ${resolvedAuthor}:\n`);
 
   newPosts.forEach((p, idx) => {
     const subLabel = p.subtitle ? ` — ${p.subtitle}` : '';
     const metrics = [
       `id:${p.id}`,
+      `by:${p.authorName}`,
       p.wordCount ? `${p.wordCount}w` : null,
       p.charLength ? `${p.charLength} chars` : null,
       p.audience !== 'everyone' ? p.audience : 'public'
