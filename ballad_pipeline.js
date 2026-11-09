@@ -516,17 +516,19 @@ async function runSongWorker(tags, lyrics, slug, duration, referenceAudio) {
 </div>\n`;
     }
 
-    // spawnSync passes multi-line lyrics safely without shell quote breaking
+// spawnSync passes multi-line lyrics safely without shell quote breaking
     spawnSync('bun', runnerArgs, { stdio: 'inherit' });
 
-    const state = JSON.parse(await fs.readFile(stateFile, 'utf8'));
+const state = JSON.parse(await fs.readFile(stateFile, 'utf8'));
     const rawFlacPath = state.savedFilePath;
-    const opusFilename = `${prefix}_${slug}_${Date.now()}.opus`;
+    const actualDur = state.duration || duration;
+    const modeStamp = referenceAudio ? '' : 'text_to_music_';
+    const opusFilename = `${prefix}_${modeStamp}${slug}_${Date.now()}.opus`;
     const opusPath = path.join(IMAGES_DIR, opusFilename);
 
     await execFileAsync('ffmpeg', [
       '-y', '-i', rawFlacPath,
-      '-af', `afade=t=out:st=${Math.max(0, duration - 5)}:d=5`,
+      '-af', `afade=t=out:st=${Math.max(0, actualDur - 5)}:d=5`,
       '-c:a', 'libopus', '-b:a', '128k', opusPath
     ]);
     mirrorToAstroPublic(opusPath, opusFilename);
@@ -629,9 +631,11 @@ async function main() {
     );
     voiceIdx++;
 
-    // Scale default song duration: 60s for 5-line Fifth Line limericks, 128s for full ballads
+// Scale default song duration: 60s for 5-line Fifth Line limericks,
+    // 165s for unconditioned text-to-music ballads, 128s fallback for cover mode
+    const defaultBalladDuration = !refAudioSetting ? 165 : 128;
     const activeDuration =
-      explicitDuration || (parsed.isFifthLine ? 60 : 128);
+      explicitDuration || (parsed.isFifthLine ? 60 : defaultBalladDuration);
 
     console.log(`🎙️ Stateful Voice Assigned for ${parsed.isFifthLine ? 'Limerick' : 'Ballad'}: [${assignedVoice}]`);
 

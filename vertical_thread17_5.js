@@ -779,10 +779,11 @@ async function runAceStepGen(tags, lyrics, slug, duration, referenceAudio = null
 </div>\n`;
         }
 
-        await execFileAsync('bun', runnerArgs);
+await execFileAsync('bun', runnerArgs);
         const state = JSON.parse(await fs.readFile(stateFile, 'utf8'));
         const rawFlacPath = state.savedFilePath;
-        const opusFilename = `acestep_${slug}_${Date.now()}.opus`;
+        const modeStamp = referenceAudio ? '' : 'text_to_music_';
+        const opusFilename = `acestep_${modeStamp}${slug}_${Date.now()}.opus`;
         const opusPath = path.join(IMAGES_DIR, opusFilename);
 
         await execFileAsync('ffmpeg', ['-y', '-i', rawFlacPath, '-af', `afade=t=out:st=${Math.max(0, duration - 5)}:d=5`, '-c:a', 'libopus', '-b:a', '128k', opusPath]);
@@ -829,16 +830,18 @@ async function runYueGen(tags, lyrics, slug, duration, referenceAudio = null) {
 </div>\n`;
         }
 
-    execSync(`bun run_yue.js ${runnerArgs.slice(1).map(a => `"${a}"`).join(' ')}`, { stdio: 'inherit' });
-        const state = JSON.parse(await fs.readFile(stateFile, 'utf8'));
+execSync(`bun run_yue.js ${runnerArgs.slice(1).map(a => `"${a}"`).join(' ')}`, { stdio: 'inherit' });
+const state = JSON.parse(await fs.readFile(stateFile, 'utf8'));
         const rawFlacPath = state.savedFilePath;
-        const opusFilename = `yue2_${slug}_${Date.now()}.opus`;
+        const actualDur = state.duration || duration;
+        const modeStamp = referenceAudio ? '' : 'text_to_music_';
+        const opusFilename = `yue2_${modeStamp}${slug}_${Date.now()}.opus`;
         const opusPath = path.join(IMAGES_DIR, opusFilename);
 
         // Mirror Opus to Astro site/public/images
         await execFileAsync('ffmpeg', [
           '-y', '-i', rawFlacPath, 
-          '-af', `afade=t=out:st=${Math.max(0, duration - 5)}:d=5`, 
+          '-af', `afade=t=out:st=${Math.max(0, actualDur - 5)}:d=5`, 
           '-c:a', 'libopus', '-b:a', '128k', opusPath
         ]);
         const astroPublicDir = path.join(process.cwd(), 'site/public/images');
@@ -1338,7 +1341,10 @@ async function main() {
     await freeComfyVRAM();
 
 const activeRefAudio = refAudioSetting ? await resolveReferenceAudio(refAudioSetting) : null;
-    const finalDuration = parseInt(parsed.musicDuration, 10) || generationDuration;
+    const parsedDuration = parseInt(parsed.musicDuration, 10) || generationDuration;
+    const finalDuration = (!activeRefAudio && !durArg && parsedDuration < 165)
+      ? 165
+      : parsedDuration;
 
     let audioRes;
     if (useGeminiAudio) {

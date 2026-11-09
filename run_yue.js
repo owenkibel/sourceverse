@@ -8,6 +8,10 @@ const COMFY_URL = "http://127.0.0.1:8188";
 const OUTPUT_DIR = "./images";
 const WORKFLOWS_DIR = "./workflows";
 
+// Safe extended ceiling for 16GB VRAM when running unconditioned text-to-music:
+const DEFAULT_TEXT_TO_MUSIC_DURATION = 165;
+const MAX_SAFE_VRAM_DURATION = 175;
+
 const CLASSICAL_VOICES = [
   {
     name: "Bass-Baritone",
@@ -47,6 +51,20 @@ function sanitizeLyrics(lyrics) {
   return cleaned;
 }
 
+function probeAudioDurationSec(filePath, fallbackSec) {
+  try {
+    const out = execSync(
+      `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${filePath}"`,
+      { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }
+    ).trim();
+    const parsed = Math.round(parseFloat(out));
+    if (parsed && parsed > 10) {
+      return Math.min(parsed, MAX_SAFE_VRAM_DURATION);
+    }
+  } catch (_) {}
+  return fallbackSec;
+}
+
 function patchWorkflow(workflow, { style, lyrics, duration, seed, stagedRefAudio = null }) {
   let patchedStyle = false;
   let patchedLyrics = false;
@@ -65,6 +83,9 @@ function patchWorkflow(workflow, { style, lyrics, duration, seed, stagedRefAudio
     if ('style' in node.inputs) { node.inputs.style = style; patchedStyle = true; }
     if ('lyrics' in node.inputs) { node.inputs.lyrics = lyrics; patchedLyrics = true; }
     if ('max_duration' in node.inputs) node.inputs.max_duration = duration;
+    if ('duration' in node.inputs && typeof node.inputs.duration === 'number') {
+      node.inputs.duration = duration;
+    }
 
     if (stagedRefAudio && (node.class_type === 'LoadAudio' || 'audio' in node.inputs)) {
       if (typeof node.inputs.audio === 'string') {
@@ -104,7 +125,7 @@ async function main() {
     const rawLyrics = lyricsIndex !== -1 ? args[lyricsIndex + 1] : "";
 
     const durationIndex = args.findIndex(a => a === '--duration');
-    const duration = durationIndex !== -1 ? parseInt(args[durationIndex + 1], 10) : 128;
+    const requestedDuration = durationIndex !== -1 ? parseInt(args[durationIndex + 1], 10) : 128;
 
     const refAudioIndex = args.findIndex(a => a === '--ref-audio');
     const refAudioPath = refAudioIndex !== -1 ? args[refAudioIndex + 1] : null;
@@ -133,12 +154,23 @@ async function main() {
       throw new Error(`Required ComfyUI API template not found: ${workflowFile}. Please export it from ComfyUI first.`);
     }
 
+    // For unconditioned Text-to-Music at the default 128s, push to 165s so full ballads don't clip;
+    // For Cover mode, match the exact length of the reference audio track (up to 175s):
+    let effectiveDuration = requestedDuration;
+if (!isCover && requestedDuration >= 90 && requestedDuration < DEFAULT_TEXT_TO_MUSIC_DURATION) {
+      effectiveDuration = DEFAULT_TEXT_TO_MUSIC_DURATION;
+      console.log(`⏱️ [Text-to-Music] Extending target duration from ${requestedDuration}s -> ${effectiveDuration}s for full lyric completion.`);
+        } else if (isCover) {
+      effectiveDuration = probeAudioDurationSec(refAudioPath, requestedDuration);
+      console.log(`⏱️ [Cover Mode] Locking duration to reference track length: ${effectiveDuration}s`);
+    }
+
     const baseWorkflow = JSON.parse(fs.readFileSync(workflowFile, 'utf8'));
 
     if (isCover) {
       conformedRefPath = path.join(os.tmpdir(), `yue_ref_${Date.now()}.flac`);
-      console.log(`⚡ Conforming reference track to 48kHz stereo FLAC...`);
-      execSync(`ffmpeg -y -i "${refAudioPath}" -ar 48000 -ac 2 -t ${duration} "${conformedRefPath}"`, { stdio: 'ignore' });
+      console.log(`⚡ Conforming reference track to 48kHz stereo FLAC (${effectiveDuration}s)...`);
+      execSync(`ffmpeg -y -i "${refAudioPath}" -ar 48000 -ac 2 -t ${effectiveDuration} "${conformedRefPath}"`, { stdio: 'ignore' });
 
       console.log(`📡 Staging reference audio into ComfyUI...`);
       const fileBuffer = fs.readFileSync(conformedRefPath);
@@ -159,7 +191,7 @@ async function main() {
     const { workflow } = patchWorkflow(baseWorkflow, {
       style: compositeStyle,
       lyrics: formattedLyrics,
-      duration: duration,
+      duration: effectiveDuration,
       seed: seed,
       stagedRefAudio: stagedFilename
     });
@@ -173,7 +205,7 @@ async function main() {
 
     if (!res.ok) throw new Error(`ComfyUI Error: ${await res.text()}`);
     const { prompt_id } = await res.json();
-    console.log(`Job Queued: ${prompt_id} [Mode: ${isCover ? 'Cover' : 'Text-to-Music'}]`);
+    console.log(`Job Queued: ${prompt_id} [Mode: ${isCover ? 'Cover' : 'Text-to-Music'} | Max Duration: ${effectiveDuration}s]`);
 
     let success = false;
     let outputInfo = {};
@@ -217,6 +249,8 @@ async function main() {
         const buffer = await dlRes.arrayBuffer();
         fs.writeFileSync(savePath, Buffer.from(buffer));
 
+        const actualGeneratedDuration = probeAudioDurationSec(savePath, effectiveDuration);
+
         let abcFilename = null;
         let midiFilename = null;
         let midiReadyAbc = null;
@@ -233,12 +267,8 @@ async function main() {
           const rawMidiPath = path.join(OUTPUT_DIR, midiFilename);
           const rawTrioAbcPath = path.join(OUTPUT_DIR, trioAbcFilename);
 
-          midiReadyAbc = foundScore;
+          midiReadyAbc = foundScore.replace(/%%MIDI[^\r\n]*/g, '').trim();
 
-          // Strip existing MIDI directives to avoid syntax collisions
-          midiReadyAbc = midiReadyAbc.replace(/%%MIDI[^\r\n]*/g, '').trim();
-
-          // Count measures in Voice 1 to determine total musical length
           const v1Lines = midiReadyAbc.split('\n').filter(l => /^[ \t]*(\[?V:\s*1\b|[^V%A-Z:][^:]*\|)/.test(l));
           let barCount = 0;
           for (const line of v1Lines) {
@@ -246,17 +276,14 @@ async function main() {
             if (matches) barCount += matches.length;
           }
 
-          // Detect meter (default to 4/4 if unspecified)
           const meterMatch = midiReadyAbc.match(/^[ \t]*M:\s*(\d+)\/(\d+)/m);
           const beatsPerBar = meterMatch ? (parseInt(meterMatch[1], 10) * (4 / parseInt(meterMatch[2], 10))) : 4;
           const totalBeats = Math.max(16, (barCount || 32) * beatsPerBar);
 
-          // Compute exact BPM needed to fit duration
-          let targetBpm = Math.round((totalBeats / duration) * 60);
+          let targetBpm = Math.round((totalBeats / actualGeneratedDuration) * 60);
           if (targetBpm < 60) targetBpm = 60;
           if (targetBpm > 180) targetBpm = 180;
 
-          // Woodwind duo directives
           const globalHeaders = `%%MIDI gchord off\nQ: 1/4=${targetBpm}`;
           const v1Block = 'V:1 name="Vocal" snm="Vocal"\n%%MIDI channel 1\n%%MIDI program 73';
           const v2Block = 'V:2 name="Inst." snm="Inst."\n%%MIDI channel 2\n%%MIDI program 71';
@@ -280,15 +307,6 @@ async function main() {
 
           fs.writeFileSync(rawAbcPath, midiReadyAbc, 'utf8');
 
-          // Step 1: Generate MIDI (swallow non-zero warning exits if .mid was written)
-          try {
-            execSync(`abc2midi "${rawAbcPath}" -o "${rawMidiPath}"`, { stdio: 'pipe' });
-          } catch (_) {}
-
-          if (fs.existsSync(rawMidiPath)) {
-            console.log(`🎹 Generated Wind Duo MIDI: ${midiFilename}`);
-
-// 5. Generate MIDI and decompile Trio ABC score
           try {
             execSync(`abc2midi "${rawAbcPath}" -o "${rawMidiPath}"`, { stdio: 'pipe' });
           } catch (_) {}
@@ -302,7 +320,6 @@ async function main() {
               if (fs.existsSync(rawTrioAbcPath)) {
                 let trioContent = fs.readFileSync(rawTrioAbcPath, 'utf8');
 
-                // Label each staff with instrument names, MIDI programs, and clefs
                 trioContent = trioContent
                   .replace(/^T:\s*from images\/[^\r\n]*/m, 'T: Chamber Trio (Flute, Piano, Clarinet)')
                   .replace(/(^[ \t]*V:\s*1\b)[^\r\n]*/m, '$1 clef=treble name="Flute (73)" snm="Fl."')
@@ -316,12 +333,10 @@ async function main() {
             } catch (m2aErr) {
               console.warn(`⚠️ midi2abc decompile failed: ${m2aErr.message}`);
             }
-          }
           } else {
             console.warn(`⚠️ abc2midi failed to create MIDI file: ${midiFilename}`);
           }
 
-          // Mirror artifacts to Astro site/public/images
           const astroPublicDir = path.join(process.cwd(), 'site/public/images');
           if (fs.existsSync(astroPublicDir)) {
             try {
@@ -343,6 +358,7 @@ async function main() {
         outputInfo = {
           savedFilePath: savePath,
           filename: foundAudio.filename,
+          duration: actualGeneratedDuration,
           vocalProfile: selectedVoice.name,
           abcScore: midiReadyAbc || foundScore || '',
           abcFilename: abcFilename,
