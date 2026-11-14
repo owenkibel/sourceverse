@@ -293,6 +293,10 @@ function parseBalladMarkdown(rawMd, filePath = '', genreCycleIdx = 0) {
     motionPrompt = motionMatch[1].trim();
   }
 
+const hasImageEmbed = /### Visual Anchor Representation/i.test(body);
+  const hasTtsEmbed = /### Spoken (?:Ballad|Limerick) Recitation/i.test(body);
+  const hasSongEmbed = /## Generated Musical Score/i.test(body);
+
   return {
     sourceType: isFifthLine ? 'fifth-line' : 'balladeer',
     isFifthLine,
@@ -307,6 +311,9 @@ function parseBalladMarkdown(rawMd, filePath = '', genreCycleIdx = 0) {
     punchline,
     afterHours,
     alreadyEnriched,
+    hasImageEmbed,
+    hasTtsEmbed,
+    hasSongEmbed,
     poemText,
     styleTags,
     structuredLyrics,
@@ -323,7 +330,7 @@ function sanitizeTagsForAceStep(rawTags, assignedVoice) {
     .filter(t => {
       if (!t) return false;
       // Strip any pre-baked baritone/vocal tags from the exported markdown
-      if (/baritone|tenor|soprano|mezzo|vocals|vocal|duet|male|female/i.test(t)) return false;
+  if (/baritone|tenor|soprano|mezzo|vocals|vocal|duet|male|female|instrumental/i.test(t)) return false;
       return true;
     });
 
@@ -617,7 +624,9 @@ async function main() {
     const parsed = parseBalladMarkdown(rawMd, filePath, voiceIdx);
 
     if (!parsed) continue;
-    if (parsed.alreadyEnriched && !forceReprocess && !backfillMetaOnly) {
+   const missingRequestedSong = !skipSong && Boolean(parsed.structuredLyrics) && !parsed.hasSongEmbed;
+
+    if (parsed.alreadyEnriched && !missingRequestedSong && !forceReprocess && !backfillMetaOnly) {
       console.log(`⏭️  Skipping already-enriched ${parsed.sourceType} post: ${path.basename(filePath)}`);
       continue;
     }
@@ -645,26 +654,32 @@ async function main() {
     let audioRes = { success: false, filename: '', engine: 'Existing/Skipped', markdown: '', refAudioMarkdown: '' };
     const safeTags = sanitizeTagsForAceStep(parsed.styleTags, assignedVoice);
 
-    if (!backfillMetaOnly) {
+   if (!backfillMetaOnly) {
       console.log(`\n======================================================================`);
       console.log(`🎭 [${parsed.isFifthLine ? 'FIFTH LINE' : 'BALLAD'} PIPELINE] Enriching: ${parsed.title} (${parsed.modelUsed})`);
       console.log(`   📂 File: ${path.relative(process.cwd(), filePath)}`);
       console.log(`======================================================================`);
 
-      imgRes = await runImageGen(parsed.coverArtPrompt, slug);
-      if (!useGeminiImage) await freeComfyVRAM();
+      if (!parsed.hasImageEmbed || forceReprocess) {
+        imgRes = await runImageGen(parsed.coverArtPrompt, slug);
+        if (!useGeminiImage) await freeComfyVRAM();
+      } else {
+        console.log(`⏭️  Image already embedded in ${path.basename(filePath)}, skipping Krea...`);
+      }
 
       if (useVideo) {
         vidRes = await runVideoGen(parsed.motionPrompt || parsed.coverArtPrompt, imgRes.filename);
         await freeComfyVRAM();
       }
 
-      if (!skipTTS && parsed.poemText) {
+      if (!skipTTS && parsed.poemText && (!parsed.hasTtsEmbed || forceReprocess)) {
         ttsRes = await runPoetryTTS(parsed.poemText);
         await freeComfyVRAM();
+      } else if (parsed.hasTtsEmbed) {
+        console.log(`⏭️  Kokoro TTS already embedded in ${path.basename(filePath)}, skipping TTS...`);
       }
 
-      if (!skipSong && parsed.structuredLyrics) {
+      if (!skipSong && parsed.structuredLyrics && (!parsed.hasSongEmbed || forceReprocess)) {
         const activeRef = await resolveReferenceAudio(refAudioSetting);
         audioRes = await runSongWorker(
           safeTags,
@@ -762,7 +777,13 @@ async function main() {
         updatedBody += `\n\n${heroAndTtsBlock}\n`;
       }
 
-      if (audioRes.success) {
+if (audioRes.success) {
+        // Remove any previous Generated Musical Score and Analytics footer before inserting the new one
+        updatedBody = updatedBody
+          .replace(/\n*---\n+## Generated Musical Score[\s\S]*$/i, '')
+          .replace(/\n*---\n+<h2 id="pipeline-and-debug-analytics">[\s\S]*$/i, '')
+          .trimEnd();
+
         const scoreEmbed = buildScoreEmbed(audioRes);
         updatedBody += `\n\n---\n\n## Generated Musical Score (${audioRes.engine})\n${audioRes.markdown}\n${audioRes.refAudioMarkdown || ''}\n<blockquote><strong>Sanitized Worker Tags:</strong> <code>${safeTags}</code></blockquote>\n${scoreEmbed}\n`;
       }

@@ -1293,7 +1293,7 @@ async function main() {
       .map(t => t.trim())
       .filter(t => {
         if (!t) return false;
-        if (/baritone|tenor|soprano|mezzo|vocals|male|female/i.test(t)) return false;
+     if (/baritone|tenor|soprano|mezzo|vocals|vocal|duet|male|female|instrumental/i.test(t)) return false;
         return RAW_ACE_STYLES.some(style => style.toLowerCase() === t.toLowerCase());
       });
 

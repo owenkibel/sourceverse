@@ -16,22 +16,26 @@ const CLASSICAL_VOICES = [
   {
     name: "Bass-Baritone",
     gender: "male",
-    stylePrompt: "warm resonant bass-baritone male vocals, rich theatrical presence, natural dynamic acoustic space"
+    pitchRatio: 0.6674, // -7 semitones (perfect 5th down into baritone register)
+    stylePrompt: "deep resonant bass-baritone male vocals, low male lead singer, clear sung lyrics, rich theatrical presence"
   },
   {
     name: "Mezzo-Soprano",
     gender: "female",
-    stylePrompt: "warm dark operatic mezzo-soprano vocal, rich early music tone, pristine un-processed clarity"
+    pitchRatio: 0.8909, // -2 semitones (warm alto/contralto register)
+    stylePrompt: "warm dark contralto and mezzo female vocals, low alto female singer, clear sung lyrics, rich early music tone"
   },
   {
     name: "Lyric Tenor",
     gender: "male",
-    stylePrompt: "bright soaring classical lyric tenor voice, elegant articulation, clean baroque performance"
+    pitchRatio: 0.7937, // -4 semitones (major 3rd down into male tenor register)
+    stylePrompt: "bright lyric tenor male vocals, clear male lead singer, clear sung lyrics, elegant classical articulation"
   },
   {
     name: "Dramatic Soprano",
     gender: "female",
-    stylePrompt: "powerful soaring operatic dramatic soprano vocal, classical chamber performance, clear crystalline tone"
+    pitchRatio: 1.0,    // 0 semitones (original soprano register)
+    stylePrompt: "soaring dramatic soprano female vocals, clear sung lyrics, classical chamber performance, crystalline tone"
   }
 ];
 
@@ -42,11 +46,35 @@ function isValidAbc(text) {
   return (/^X:\s*\d+/m.test(trimmed) || trimmed.includes('K:') || trimmed.includes('M:') || trimmed.includes('|'));
 }
 
-function sanitizeLyrics(lyrics) {
+function sanitizeLyrics(lyrics, isCover = false) {
   if (!lyrics || !lyrics.trim()) return "[Instrumental]";
-  let cleaned = lyrics.trim();
+  let cleaned = lyrics
+    .replace(/\\n/g, '\n')
+    .replace(
+      /\s*(\[(?:Intro|Verse[^\]]*|Chorus[^\]]*|Bridge[^\]]*|Outro[^\]]*|Instrumental[^\]]*|Hook[^\]]*)\])\s*/gi,
+      '\n\n$1\n'
+    )
+    .replace(/[ \t]*[|/][ \t]*/g, '\n')
+    .split('\n')
+    .map(line => {
+      const t = line.trim();
+      if (!t || t.startsWith('[')) return t;
+      if (t.length > 90) {
+        return t
+          .replace(/([.;!?—])\s+(?=[A-Z"'])/g, '$1\n')
+          .replace(/,\s+(?=[A-Z])/g, ',\n');
+      }
+      return t;
+    })
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+
+  if (isCover) {
+    cleaned = cleaned.replace(/^\s*\[(intro|instrumental)[^\]]*\]\s*/i, '').trim();
+  }
   if (!cleaned.includes('[')) {
-    cleaned = `[Verse]\n${cleaned}`;
+    cleaned = `[Verse 1]\n${cleaned}`;
   }
   return cleaned;
 }
@@ -130,6 +158,7 @@ async function main() {
     const refAudioIndex = args.findIndex(a => a === '--ref-audio');
     const refAudioPath = refAudioIndex !== -1 ? args[refAudioIndex + 1] : null;
 
+    const isCover = Boolean(refAudioPath && fs.existsSync(refAudioPath));
     const seed = Math.floor(Math.random() * 1000000000);
 
     let selectedVoice = CLASSICAL_VOICES[1];
@@ -142,10 +171,10 @@ async function main() {
       selectedVoice = CLASSICAL_VOICES[2];
     }
 
+// Keep ${tags} first as in the original script, followed by the distinct voice prompt:
     const compositeStyle = `${tags}, ${selectedVoice.stylePrompt}, masterfully mixed, 48kHz stereo, high fidelity`;
-    const formattedLyrics = sanitizeLyrics(rawLyrics);
+    const formattedLyrics = sanitizeLyrics(rawLyrics, isCover);
 
-    const isCover = Boolean(refAudioPath && fs.existsSync(refAudioPath));
     const workflowFile = isCover
       ? path.join(WORKFLOWS_DIR, 'yue2_cover_api.json')
       : path.join(WORKFLOWS_DIR, 'yue2_text_to_music_api.json');
@@ -154,23 +183,30 @@ async function main() {
       throw new Error(`Required ComfyUI API template not found: ${workflowFile}. Please export it from ComfyUI first.`);
     }
 
-    // For unconditioned Text-to-Music at the default 128s, push to 165s so full ballads don't clip;
-    // For Cover mode, match the exact length of the reference audio track (up to 175s):
     let effectiveDuration = requestedDuration;
-if (!isCover && requestedDuration >= 90 && requestedDuration < DEFAULT_TEXT_TO_MUSIC_DURATION) {
+    if (!isCover && requestedDuration >= 90 && requestedDuration < DEFAULT_TEXT_TO_MUSIC_DURATION) {
       effectiveDuration = DEFAULT_TEXT_TO_MUSIC_DURATION;
       console.log(`⏱️ [Text-to-Music] Extending target duration from ${requestedDuration}s -> ${effectiveDuration}s for full lyric completion.`);
-        } else if (isCover) {
+    } else if (isCover) {
       effectiveDuration = probeAudioDurationSec(refAudioPath, requestedDuration);
       console.log(`⏱️ [Cover Mode] Locking duration to reference track length: ${effectiveDuration}s`);
     }
 
     const baseWorkflow = JSON.parse(fs.readFileSync(workflowFile, 'utf8'));
 
-    if (isCover) {
+if (isCover) {
       conformedRefPath = path.join(os.tmpdir(), `yue_ref_${Date.now()}.flac`);
-      console.log(`⚡ Conforming reference track to 48kHz stereo FLAC (${effectiveDuration}s)...`);
-      execSync(`ffmpeg -y -i "${refAudioPath}" -ar 48000 -ac 2 -t ${effectiveDuration} "${conformedRefPath}"`, { stdio: 'ignore' });
+      const silenceStrip = 'silenceremove=start_periods=1:start_duration=0.05:start_threshold=-42dB';
+      const fadeStart = Math.max(5, effectiveDuration - 4.5);
+      // Fade to complete zero 2s before effectiveDuration and pad to exact length
+      // so SheetSage2 never hits a truncated note at 164.98s-165.00s:
+      const filterChain = `${silenceStrip},afade=t=out:st=${fadeStart}:d=2.5,apad=pad_dur=3,atrim=0:${effectiveDuration}`;
+
+      console.log(`⚡ Conforming reference track for [${selectedVoice.name}] (${effectiveDuration}s with clean 2s tail silence)...`);
+      execSync(
+        `ffmpeg -y -i "${refAudioPath}" -af "${filterChain}" -ar 48000 -ac 2 -t ${effectiveDuration} "${conformedRefPath}"`,
+        { stdio: 'ignore' }
+      );
 
       console.log(`📡 Staging reference audio into ComfyUI...`);
       const fileBuffer = fs.readFileSync(conformedRefPath);
