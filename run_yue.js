@@ -8,33 +8,29 @@ const COMFY_URL = "http://127.0.0.1:8188";
 const OUTPUT_DIR = "./images";
 const WORKFLOWS_DIR = "./workflows";
 
-// Safe extended ceiling for 16GB VRAM when running unconditioned text-to-music:
 const DEFAULT_TEXT_TO_MUSIC_DURATION = 165;
 const MAX_SAFE_VRAM_DURATION = 175;
+const DEFAULT_YUE_CFG_SCALE = 1.8; // Boosted from 1.0 so YuE2GenerateMusic adheres to lyrics & vocal style
 
 const CLASSICAL_VOICES = [
   {
     name: "Bass-Baritone",
     gender: "male",
-    pitchRatio: 0.6674, // -7 semitones (perfect 5th down into baritone register)
     stylePrompt: "deep resonant bass-baritone male vocals, low male lead singer, clear sung lyrics, rich theatrical presence"
   },
   {
     name: "Mezzo-Soprano",
     gender: "female",
-    pitchRatio: 0.8909, // -2 semitones (warm alto/contralto register)
     stylePrompt: "warm dark contralto and mezzo female vocals, low alto female singer, clear sung lyrics, rich early music tone"
   },
   {
     name: "Lyric Tenor",
     gender: "male",
-    pitchRatio: 0.7937, // -4 semitones (major 3rd down into male tenor register)
     stylePrompt: "bright lyric tenor male vocals, clear male lead singer, clear sung lyrics, elegant classical articulation"
   },
   {
     name: "Dramatic Soprano",
     gender: "female",
-    pitchRatio: 1.0,    // 0 semitones (original soprano register)
     stylePrompt: "soaring dramatic soprano female vocals, clear sung lyrics, classical chamber performance, crystalline tone"
   }
 ];
@@ -71,6 +67,7 @@ function sanitizeLyrics(lyrics, isCover = false) {
     .trim();
 
   if (isCover) {
+    // Strip leading [Intro] in Cover mode so vocals begin immediately at t=0 with Kokoro
     cleaned = cleaned.replace(/^\s*\[(intro|instrumental)[^\]]*\]\s*/i, '').trim();
   }
   if (!cleaned.includes('[')) {
@@ -86,14 +83,17 @@ function probeAudioDurationSec(filePath, fallbackSec) {
       { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }
     ).trim();
     const parsed = Math.round(parseFloat(out));
-    if (parsed && parsed > 10) {
+    if (parsed && parsed > 2) {
       return Math.min(parsed, MAX_SAFE_VRAM_DURATION);
     }
   } catch (_) {}
   return fallbackSec;
 }
 
-function patchWorkflow(workflow, { style, lyrics, duration, seed, stagedRefAudio = null }) {
+function patchWorkflow(
+  workflow,
+  { style, lyrics, duration, seed, stagedRefAudio = null, cfgScale = DEFAULT_YUE_CFG_SCALE, samplerCfg = null }
+) {
   let patchedStyle = false;
   let patchedLyrics = false;
   let patchedAudio = false;
@@ -113,6 +113,18 @@ function patchWorkflow(workflow, { style, lyrics, duration, seed, stagedRefAudio
     if ('max_duration' in node.inputs) node.inputs.max_duration = duration;
     if ('duration' in node.inputs && typeof node.inputs.duration === 'number') {
       node.inputs.duration = duration;
+    }
+
+    // Node 33:25 (YuE2GenerateMusic): controls Stage-1 semantic lyric & vocal style adherence
+    if (node.class_type === 'YuE2GenerateMusic' && 'cfg_scale' in node.inputs) {
+      node.inputs.cfg_scale = cfgScale;
+      console.log(`🎛️  Set YuE2GenerateMusic.cfg_scale = ${cfgScale}`);
+    }
+
+    // Node 33:8 (KSampler): keep Stage-2 acoustic diffusion cfg at workflow default (1.0) unless explicitly overridden
+    if (node.class_type === 'KSampler' && samplerCfg !== null && 'cfg' in node.inputs) {
+      node.inputs.cfg = samplerCfg;
+      console.log(`🎛️  Set KSampler.cfg = ${samplerCfg}`);
     }
 
     if (stagedRefAudio && (node.class_type === 'LoadAudio' || 'audio' in node.inputs)) {
@@ -143,22 +155,28 @@ async function main() {
     console.log("--- Starting YuE2 3B Generation ---");
     const args = process.argv.slice(2);
 
-    const stateFileIndex = args.findIndex(a => a === '--state-file');
-    const stateFilePath = stateFileIndex !== -1 ? args[stateFileIndex + 1] : 'yue_state.json';
+    const getArg = (flag) => {
+      const idx = args.findIndex(a => a === flag);
+      return idx !== -1 ? args[idx + 1] : null;
+    };
 
-    const tagsIndex = args.findIndex(a => a === '--tags');
-    const tags = tagsIndex !== -1 ? args[tagsIndex + 1] : "Folk, Americana";
+    const stateFilePath = getArg('--state-file') || 'yue_state.json';
+    const tags = getArg('--tags') || "Folk, Americana";
+    const rawLyrics = getArg('--lyrics') || "";
+    const requestedDuration = parseInt(getArg('--duration') || '128', 10);
+    const refAudioPath = getArg('--ref-audio');
+    const ttsAudioPath = getArg('--tts-audio');
+    const ttsMode = (getArg('--tts-mode') || 'loop').toLowerCase(); // 'loop' | 'once'
 
-    const lyricsIndex = args.findIndex(a => a === '--lyrics');
-    const rawLyrics = lyricsIndex !== -1 ? args[lyricsIndex + 1] : "";
+    const cfgArg = getArg('--cfg');
+    const samplerCfgArg = getArg('--sampler-cfg');
+    const cfgScale = cfgArg !== null ? parseFloat(cfgArg) : DEFAULT_YUE_CFG_SCALE;
+    const samplerCfg = samplerCfgArg !== null ? parseFloat(samplerCfgArg) : null;
 
-    const durationIndex = args.findIndex(a => a === '--duration');
-    const requestedDuration = durationIndex !== -1 ? parseInt(args[durationIndex + 1], 10) : 128;
+    const hasInstRef = Boolean(refAudioPath && fs.existsSync(refAudioPath));
+    const hasTtsGuide = Boolean(ttsAudioPath && fs.existsSync(ttsAudioPath));
+    const isCover = hasInstRef || hasTtsGuide;
 
-    const refAudioIndex = args.findIndex(a => a === '--ref-audio');
-    const refAudioPath = refAudioIndex !== -1 ? args[refAudioIndex + 1] : null;
-
-    const isCover = Boolean(refAudioPath && fs.existsSync(refAudioPath));
     const seed = Math.floor(Math.random() * 1000000000);
 
     let selectedVoice = CLASSICAL_VOICES[1];
@@ -171,7 +189,6 @@ async function main() {
       selectedVoice = CLASSICAL_VOICES[2];
     }
 
-// Keep ${tags} first as in the original script, followed by the distinct voice prompt:
     const compositeStyle = `${tags}, ${selectedVoice.stylePrompt}, masterfully mixed, 48kHz stereo, high fidelity`;
     const formattedLyrics = sanitizeLyrics(rawLyrics, isCover);
 
@@ -187,26 +204,56 @@ async function main() {
     if (!isCover && requestedDuration >= 90 && requestedDuration < DEFAULT_TEXT_TO_MUSIC_DURATION) {
       effectiveDuration = DEFAULT_TEXT_TO_MUSIC_DURATION;
       console.log(`⏱️ [Text-to-Music] Extending target duration from ${requestedDuration}s -> ${effectiveDuration}s for full lyric completion.`);
-    } else if (isCover) {
-      effectiveDuration = probeAudioDurationSec(refAudioPath, requestedDuration);
+    } else if (hasInstRef) {
+      effectiveDuration = probeAudioDurationSec(refAudioPath, DEFAULT_TEXT_TO_MUSIC_DURATION);
       console.log(`⏱️ [Cover Mode] Locking duration to reference track length: ${effectiveDuration}s`);
+    } else if (hasTtsGuide) {
+      effectiveDuration = Math.max(requestedDuration, DEFAULT_TEXT_TO_MUSIC_DURATION);
+      console.log(`⏱️ [Pure Kokoro Cover Mode] Setting duration to ${effectiveDuration}s (mode: ${ttsMode})`);
     }
 
     const baseWorkflow = JSON.parse(fs.readFileSync(workflowFile, 'utf8'));
 
-if (isCover) {
+    if (isCover) {
       conformedRefPath = path.join(os.tmpdir(), `yue_ref_${Date.now()}.flac`);
       const silenceStrip = 'silenceremove=start_periods=1:start_duration=0.05:start_threshold=-42dB';
       const fadeStart = Math.max(5, effectiveDuration - 4.5);
-      // Fade to complete zero 2s before effectiveDuration and pad to exact length
-      // so SheetSage2 never hits a truncated note at 164.98s-165.00s:
-      const filterChain = `${silenceStrip},afade=t=out:st=${fadeStart}:d=2.5,apad=pad_dur=3,atrim=0:${effectiveDuration}`;
 
-      console.log(`⚡ Conforming reference track for [${selectedVoice.name}] (${effectiveDuration}s with clean 2s tail silence)...`);
-      execSync(
-        `ffmpeg -y -i "${refAudioPath}" -af "${filterChain}" -ar 48000 -ac 2 -t ${effectiveDuration} "${conformedRefPath}"`,
-        { stdio: 'ignore' }
-      );
+      if (hasTtsGuide && !hasInstRef) {
+        // CASE 1: Pure Kokoro speech at t=0s (no instrumental reference file; YuE2 generates the Baroque organ/music from style prompt)
+        const ttsFilter = ttsMode === 'once'
+          ? `[0:a]${silenceStrip},acompressor=threshold=-18dB:ratio=3:attack=5:release=60:makeup=4dB,apad=pad_dur=${effectiveDuration},atrim=0:${effectiveDuration}`
+          : `[0:a]${silenceStrip},acompressor=threshold=-18dB:ratio=3:attack=5:release=60:makeup=4dB,apad=pad_dur=1.5,aloop=loop=-1:size=2e+09,afade=t=out:st=${fadeStart}:d=2.5,apad=pad_dur=3,atrim=0:${effectiveDuration}`;
+
+        console.log(`🎙️ Staging PURE Kokoro speech from t=0s (${ttsMode === 'once' ? 'single pass + music remainder' : 'looped across full duration'})...`);
+        execSync(
+          `ffmpeg -y -i "${ttsAudioPath}" -filter_complex "${ttsFilter}" -ar 48000 -ac 2 -t ${effectiveDuration} "${conformedRefPath}"`,
+          { stdio: 'ignore' }
+        );
+      } else if (hasTtsGuide && hasInstRef) {
+        // CASE 2: Kokoro speech starting at t=0s in synchrony with Organ Chorale (speech foregrounded so SheetSage2 tracks vocal rhythm)
+        const filterGraph = ttsMode === 'once'
+          ? `[0:a]${silenceStrip},volume=0.58[inst];` +
+            `[1:a]${silenceStrip},acompressor=threshold=-18dB:ratio=3:attack=5:release=60:makeup=4dB,volume=1.25[voc];` +
+            `[inst][voc]amix=inputs=2:duration=first:normalize=0,afade=t=out:st=${fadeStart}:d=2.5,apad=pad_dur=3,atrim=0:${effectiveDuration}`
+          : `[0:a]${silenceStrip},volume=0.58[inst];` +
+            `[1:a]${silenceStrip},acompressor=threshold=-18dB:ratio=3:attack=5:release=60:makeup=4dB,volume=1.25,apad=pad_dur=1.5,aloop=loop=-1:size=2e+09[voc];` +
+            `[inst][voc]amix=inputs=2:duration=first:normalize=0,afade=t=out:st=${fadeStart}:d=2.5,apad=pad_dur=3,atrim=0:${effectiveDuration}`;
+
+        console.log(`🎙️ Blending Kokoro speech from t=0s (${ttsMode}) in synchrony with Organ Chorale...`);
+        execSync(
+          `ffmpeg -y -i "${refAudioPath}" -i "${ttsAudioPath}" -filter_complex "${filterGraph}" -ar 48000 -ac 2 -t ${effectiveDuration} "${conformedRefPath}"`,
+          { stdio: 'ignore' }
+        );
+      } else {
+        // CASE 3: Instrumental reference only
+        const filterChain = `${silenceStrip},afade=t=out:st=${fadeStart}:d=2.5,apad=pad_dur=3,atrim=0:${effectiveDuration}`;
+        console.log(`⚡ Conforming reference track for [${selectedVoice.name}] (${effectiveDuration}s)...`);
+        execSync(
+          `ffmpeg -y -i "${refAudioPath}" -af "${filterChain}" -ar 48000 -ac 2 -t ${effectiveDuration} "${conformedRefPath}"`,
+          { stdio: 'ignore' }
+        );
+      }
 
       console.log(`📡 Staging reference audio into ComfyUI...`);
       const fileBuffer = fs.readFileSync(conformedRefPath);
@@ -229,7 +276,9 @@ if (isCover) {
       lyrics: formattedLyrics,
       duration: effectiveDuration,
       seed: seed,
-      stagedRefAudio: stagedFilename
+      stagedRefAudio: stagedFilename,
+      cfgScale,
+      samplerCfg
     });
 
     const payload = { client_id: "yue2_prod", prompt: workflow };

@@ -89,6 +89,8 @@ const refAudioSetting = rawRefArg
   ? (rawRefArg.includes('=') ? rawRefArg.split('=').slice(1).join('=').trim() : 'pool')
   : null;
 
+const useKokoroCover = args.includes('--kokoro-cover');  
+
 const slugify = (t) =>
   (t || 'ballad')
     .toString()
@@ -293,9 +295,14 @@ function parseBalladMarkdown(rawMd, filePath = '', genreCycleIdx = 0) {
     motionPrompt = motionMatch[1].trim();
   }
 
-const hasImageEmbed = /### Visual Anchor Representation/i.test(body);
+  const hasImageEmbed = /### Visual Anchor Representation/i.test(body);
   const hasTtsEmbed = /### Spoken (?:Ballad|Limerick) Recitation/i.test(body);
   const hasSongEmbed = /## Generated Musical Score/i.test(body);
+
+  const existingTtsMatch = body.match(
+    /### Spoken (?:Ballad|Limerick) Recitation[\s\S]*?<audio[^>]+src="\/images\/([^"]+\.opus)"/i
+  );
+  const existingTtsFilename = existingTtsMatch ? existingTtsMatch[1] : '';
 
   return {
     sourceType: isFifthLine ? 'fifth-line' : 'balladeer',
@@ -314,6 +321,7 @@ const hasImageEmbed = /### Visual Anchor Representation/i.test(body);
     hasImageEmbed,
     hasTtsEmbed,
     hasSongEmbed,
+    existingTtsFilename,
     poemText,
     styleTags,
     structuredLyrics,
@@ -330,7 +338,7 @@ function sanitizeTagsForAceStep(rawTags, assignedVoice) {
     .filter(t => {
       if (!t) return false;
       // Strip any pre-baked baritone/vocal tags from the exported markdown
-  if (/baritone|tenor|soprano|mezzo|vocals|vocal|duet|male|female|instrumental/i.test(t)) return false;
+      if (/baritone|tenor|soprano|mezzo|vocals|vocal|duet|male|female|instrumental/i.test(t)) return false;
       return true;
     });
 
@@ -491,7 +499,7 @@ async function runVideoGen(videoPrompt, anchorImageName) {
   }
 }
 
-async function runSongWorker(tags, lyrics, slug, duration, referenceAudio) {
+async function runSongWorker(tags, lyrics, slug, duration, referenceAudio, ttsAudioPath = null) {
   const stateFile = path.join(os.tmpdir(), `ballad-song-${Date.now()}.json`);
   const scriptName = useYue ? 'run_yue.js' : 'run_acestep.js';
   const prefix = useYue ? 'yue2' : 'acestep';
@@ -506,8 +514,9 @@ async function runSongWorker(tags, lyrics, slug, duration, referenceAudio) {
       '--duration', duration.toString()
     ];
 
-    let refAudioName = null;
+let refAudioName = null;
     let refAudioMarkdown = '';
+    const hasTtsGuide = Boolean(useYue && ttsAudioPath && existsSync(ttsAudioPath));
 
     if (referenceAudio) {
       runnerArgs.push('--ref-audio', referenceAudio);
@@ -523,13 +532,20 @@ async function runSongWorker(tags, lyrics, slug, duration, referenceAudio) {
 </div>\n`;
     }
 
-// spawnSync passes multi-line lyrics safely without shell quote breaking
+    if (hasTtsGuide) {
+      runnerArgs.push('--tts-audio', ttsAudioPath);
+      if (!referenceAudio) {
+        refAudioName = `${path.basename(ttsAudioPath)} (Pure Kokoro Cadence Guide)`;
+      }
+    }
+
+    // spawnSync passes multi-line lyrics safely without shell quote breaking
     spawnSync('bun', runnerArgs, { stdio: 'inherit' });
 
-const state = JSON.parse(await fs.readFile(stateFile, 'utf8'));
+    const state = JSON.parse(await fs.readFile(stateFile, 'utf8'));
     const rawFlacPath = state.savedFilePath;
     const actualDur = state.duration || duration;
-    const modeStamp = referenceAudio ? '' : 'text_to_music_';
+    const modeStamp = (referenceAudio || hasTtsGuide) ? '' : 'text_to_music_';
     const opusFilename = `${prefix}_${modeStamp}${slug}_${Date.now()}.opus`;
     const opusPath = path.join(IMAGES_DIR, opusFilename);
 
@@ -624,7 +640,7 @@ async function main() {
     const parsed = parseBalladMarkdown(rawMd, filePath, voiceIdx);
 
     if (!parsed) continue;
-   const missingRequestedSong = !skipSong && Boolean(parsed.structuredLyrics) && !parsed.hasSongEmbed;
+    const missingRequestedSong = !skipSong && Boolean(parsed.structuredLyrics) && !parsed.hasSongEmbed;
 
     if (parsed.alreadyEnriched && !missingRequestedSong && !forceReprocess && !backfillMetaOnly) {
       console.log(`⏭️  Skipping already-enriched ${parsed.sourceType} post: ${path.basename(filePath)}`);
@@ -640,9 +656,9 @@ async function main() {
     );
     voiceIdx++;
 
-// Scale default song duration: 60s for 5-line Fifth Line limericks,
+    // Scale default song duration: 60s for 5-line Fifth Line limericks,
     // 165s for unconditioned text-to-music ballads, 128s fallback for cover mode
-    const defaultBalladDuration = !refAudioSetting ? 165 : 128;
+const defaultBalladDuration = (!refAudioSetting && !useKokoroCover) ? 165 : 128;
     const activeDuration =
       explicitDuration || (parsed.isFifthLine ? 60 : defaultBalladDuration);
 
@@ -654,7 +670,7 @@ async function main() {
     let audioRes = { success: false, filename: '', engine: 'Existing/Skipped', markdown: '', refAudioMarkdown: '' };
     const safeTags = sanitizeTagsForAceStep(parsed.styleTags, assignedVoice);
 
-   if (!backfillMetaOnly) {
+    if (!backfillMetaOnly) {
       console.log(`\n======================================================================`);
       console.log(`🎭 [${parsed.isFifthLine ? 'FIFTH LINE' : 'BALLAD'} PIPELINE] Enriching: ${parsed.title} (${parsed.modelUsed})`);
       console.log(`   📂 File: ${path.relative(process.cwd(), filePath)}`);
@@ -681,12 +697,15 @@ async function main() {
 
       if (!skipSong && parsed.structuredLyrics && (!parsed.hasSongEmbed || forceReprocess)) {
         const activeRef = await resolveReferenceAudio(refAudioSetting);
+        const ttsFile = ttsRes.filename || parsed.existingTtsFilename;
+        const activeTtsPath = ttsFile ? path.join(IMAGES_DIR, ttsFile) : null;
         audioRes = await runSongWorker(
           safeTags,
           parsed.structuredLyrics,
           slug,
           activeDuration,
-          activeRef
+          activeRef,
+          activeTtsPath
         );
         await freeComfyVRAM();
       }
@@ -777,7 +796,7 @@ async function main() {
         updatedBody += `\n\n${heroAndTtsBlock}\n`;
       }
 
-if (audioRes.success) {
+      if (audioRes.success) {
         // Remove any previous Generated Musical Score and Analytics footer before inserting the new one
         updatedBody = updatedBody
           .replace(/\n*---\n+## Generated Musical Score[\s\S]*$/i, '')
