@@ -185,14 +185,15 @@ async function main() {
       finalFilePath
     ]);
 
-    for (const f of generatedFiles) {
-      fs.unlinkSync(f);
-    }
-
-    const outputInfo = { savedFilePath: finalFilePath, filename: finalFilename };
-    fs.writeFileSync(stateFilePath, JSON.stringify(outputInfo, null, 2));
-
-    console.log(`✅ Success! Final alternating track ready.`);
+// Keep individual stanza files on disk until the song worker finishes with them
+        const outputInfo = {
+            savedFilePath: finalFilePath,
+            filename: finalFilename,
+            stanzaFiles: generatedFiles
+        };
+        fs.writeFileSync(stateFilePath, JSON.stringify(outputInfo, null, 2));
+        
+        console.log(`✅ Success! Final alternating track + ${generatedFiles.length} stanza files ready.`);
 
   } catch (e) {
     console.error(`\n❌ Run Failed: ${e.message}`);

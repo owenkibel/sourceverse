@@ -164,18 +164,34 @@ async function main() {
     const tags = getArg('--tags') || "Folk, Americana";
     const rawLyrics = getArg('--lyrics') || "";
     const requestedDuration = parseInt(getArg('--duration') || '128', 10);
-    const refAudioPath = getArg('--ref-audio');
-    const ttsAudioPath = getArg('--tts-audio');
-    const ttsMode = (getArg('--tts-mode') || 'loop').toLowerCase(); // 'loop' | 'once'
 
-    const cfgArg = getArg('--cfg');
-    const samplerCfgArg = getArg('--sampler-cfg');
-    const cfgScale = cfgArg !== null ? parseFloat(cfgArg) : DEFAULT_YUE_CFG_SCALE;
-    const samplerCfg = samplerCfgArg !== null ? parseFloat(samplerCfgArg) : null;
+const refAudioPath = getArg('--ref-audio');
+ const ttsAudioPath = getArg('--tts-audio');
+ const stanzaFilesArg = getArg('--stanza-files');
 
-    const hasInstRef = Boolean(refAudioPath && fs.existsSync(refAudioPath));
-    const hasTtsGuide = Boolean(ttsAudioPath && fs.existsSync(ttsAudioPath));
-    const isCover = hasInstRef || hasTtsGuide;
+ let stanzaPaths = [];
+ if (stanzaFilesArg) {
+   try {
+     const parsed = JSON.parse(stanzaFilesArg);
+     if (Array.isArray(parsed)) stanzaPaths = parsed.filter(p => p && fs.existsSync(p));
+   } catch (_) {
+     stanzaPaths = stanzaFilesArg.split(',').map(s => s.trim()).filter(p => p && fs.existsSync(p));
+   }
+ }
+
+ const ttsMode = (getArg('--tts-mode') || 'loop').toLowerCase(); // 'loop' | 'once'
+
+ const speechFirst = args.includes('--speech-first');
+
+ const cfgArg = getArg('--cfg');
+ const samplerCfgArg = getArg('--sampler-cfg');
+ const cfgScale = cfgArg !== null ? parseFloat(cfgArg) : DEFAULT_YUE_CFG_SCALE;
+ const samplerCfg = samplerCfgArg !== null ? parseFloat(samplerCfgArg) : null;
+
+ const hasInstRef = Boolean(refAudioPath && fs.existsSync(refAudioPath));
+ const hasTtsGuide = Boolean(ttsAudioPath && fs.existsSync(ttsAudioPath));
+ const hasStanzas = Boolean(hasInstRef && stanzaPaths.length > 0);
+ const isCover = hasInstRef || hasTtsGuide;
 
     const seed = Math.floor(Math.random() * 1000000000);
 
@@ -213,41 +229,87 @@ async function main() {
     }
 
     const baseWorkflow = JSON.parse(fs.readFileSync(workflowFile, 'utf8'));
+    
 
-    if (isCover) {
+if (isCover) {
       conformedRefPath = path.join(os.tmpdir(), `yue_ref_${Date.now()}.flac`);
-      const silenceStrip = 'silenceremove=start_periods=1:start_duration=0.05:start_threshold=-42dB';
+      // Strips leading silence AND any internal dead-air pauses (>0.35s below -45dB) from the Bach reference track:
+      const bachCleanFilter =
+        'silenceremove=start_periods=1:start_duration=0.05:start_threshold=-42dB:stop_periods=-1:stop_duration=0.35:stop_threshold=-45dB';
+      // Only strips leading silence on Kokoro speech so natural spoken cadence is untouched:
+      const ttsSilenceStrip =
+        'silenceremove=start_periods=1:start_duration=0.05:start_threshold=-42dB';
       const fadeStart = Math.max(5, effectiveDuration - 4.5);
 
-      if (hasTtsGuide && !hasInstRef) {
-        // CASE 1: Pure Kokoro speech at t=0s (no instrumental reference file; YuE2 generates the Baroque organ/music from style prompt)
-        const ttsFilter = ttsMode === 'once'
-          ? `[0:a]${silenceStrip},acompressor=threshold=-18dB:ratio=3:attack=5:release=60:makeup=4dB,apad=pad_dur=${effectiveDuration},atrim=0:${effectiveDuration}`
-          : `[0:a]${silenceStrip},acompressor=threshold=-18dB:ratio=3:attack=5:release=60:makeup=4dB,apad=pad_dur=1.5,aloop=loop=-1:size=2e+09,afade=t=out:st=${fadeStart}:d=2.5,apad=pad_dur=3,atrim=0:${effectiveDuration}`;
+     if (hasStanzas) {
+        // Measure exact duration of each individual Kokoro stanza file
+        const stanzas = stanzaPaths.map(p => {
+          const out = execSync(
+            `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${p}"`,
+            { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }
+          ).trim();
+          return { path: p, dur: Math.max(0.5, parseFloat(out) || 4.0) };
+        });
 
-        console.log(`🎙️ Staging PURE Kokoro speech from t=0s (${ttsMode === 'once' ? 'single pass + music remainder' : 'looped across full duration'})...`);
+        const N = stanzas.length;
+        const totalSpeechDur = stanzas.reduce((acc, s) => acc + s.dur, 0);
+        // Leave 2.5s clean tail silence at the end for SheetSage2.
+        // If --speech-first is active, start Stanza 1 at 0.00s and divide remaining Bach into N gaps;
+        // otherwise start with Bach and divide into (N + 1) gaps.
+        const usableDur = Math.max(totalSpeechDur + 4.0, effectiveDuration - 2.5);
+        const gapDivisor = Math.max(1, speechFirst ? N : (N + 1));
+        const bachGap = Math.max(1.5, (usableDur - totalSpeechDur) / gapDivisor);
+
+        let cursor = speechFirst ? 0.0 : bachGap;
+        const windows = [];
+        for (const st of stanzas) {
+          if (cursor + st.dur > effectiveDuration - 2.5) break;
+          windows.push({ path: st.path, start: cursor, end: cursor + st.dur, dur: st.dur });
+          cursor += st.dur + bachGap;
+        }
+
+        console.log(
+          `🎚️  Interleaving ${windows.length} full-volume Kokoro stanzas over Bach (${speechFirst ? 'Speech-First @ 0.00s' : 'Bach-First'}, ${bachGap.toFixed(1)}s Bach intervals, zero overlap):`
+        );
+        windows.forEach((w, idx) => {
+          console.log(`   • Stanza ${idx + 1}: ${w.start.toFixed(2)}s – ${w.end.toFixed(2)}s (${w.dur.toFixed(2)}s) @ 100% volume`);
+        });
+
+        // Build FFmpeg filter_complex:
+        // 1. Input [0:a] is Bach at 100% volume, gated to 0.0 during every [start, end] stanza window (with 30ms click-free ramps)
+        // 2. Inputs [1:a]..[K:a] are each individual Kokoro stanza at 100% volume delayed to its exact start timestamp
+        const inputs = [`-i "${refAudioPath}"`, ...windows.map(w => `-i "${w.path}"`)].join(' ');
+        const muteExprs = windows.map(w => `between(t,${w.start.toFixed(3)},${w.end.toFixed(3)})`).join('+');
+
+let fg = `[0:a]${bachCleanFilter},apad=whole_dur=${effectiveDuration},volume=0:enable='${muteExprs}':eval=frame[bach_gated];`;
+        const mixLabels = ['[bach_gated]'];
+
+        windows.forEach((w, idx) => {
+          const inIdx = idx + 1;
+          const delayMs = Math.round(w.start * 1000);
+          const fadeOutSt = Math.max(0, w.dur - 0.03).toFixed(3);
+          fg += `[${inIdx}:a]afade=t=in:st=0:d=0.03,afade=t=out:st=${fadeOutSt}:d=0.03,adelay=${delayMs}|${delayMs}[st${idx}];`;
+          mixLabels.push(`[st${idx}]`);
+        });
+
+        fg += `${mixLabels.join('')}amix=inputs=${mixLabels.length}:duration=first:normalize=0,afade=t=out:st=${fadeStart}:d=2.5,apad=pad_dur=3,atrim=0:${effectiveDuration}`;
+
+        execSync(
+          `ffmpeg -y ${inputs} -filter_complex "${fg}" -ar 48000 -ac 2 -t ${effectiveDuration} "${conformedRefPath}"`,
+          { stdio: 'ignore' }
+        );
+     } else if (hasTtsGuide && !hasInstRef) {
+        const ttsFilter = ttsMode === 'once'
+          ? `[0:a]${ttsSilenceStrip},apad=pad_dur=${effectiveDuration},atrim=0:${effectiveDuration}`
+          : `[0:a]${ttsSilenceStrip},apad=pad_dur=1.5,aloop=loop=-1:size=2e+09,afade=t=out:st=${fadeStart}:d=2.5,apad=pad_dur=3,atrim=0:${effectiveDuration}`;
+
+        console.log(`🎙️ Staging PURE Kokoro speech from t=0s (${ttsMode})...`);
         execSync(
           `ffmpeg -y -i "${ttsAudioPath}" -filter_complex "${ttsFilter}" -ar 48000 -ac 2 -t ${effectiveDuration} "${conformedRefPath}"`,
           { stdio: 'ignore' }
         );
-      } else if (hasTtsGuide && hasInstRef) {
-        // CASE 2: Kokoro speech starting at t=0s in synchrony with Organ Chorale (speech foregrounded so SheetSage2 tracks vocal rhythm)
-        const filterGraph = ttsMode === 'once'
-          ? `[0:a]${silenceStrip},volume=0.58[inst];` +
-            `[1:a]${silenceStrip},acompressor=threshold=-18dB:ratio=3:attack=5:release=60:makeup=4dB,volume=1.25[voc];` +
-            `[inst][voc]amix=inputs=2:duration=first:normalize=0,afade=t=out:st=${fadeStart}:d=2.5,apad=pad_dur=3,atrim=0:${effectiveDuration}`
-          : `[0:a]${silenceStrip},volume=0.58[inst];` +
-            `[1:a]${silenceStrip},acompressor=threshold=-18dB:ratio=3:attack=5:release=60:makeup=4dB,volume=1.25,apad=pad_dur=1.5,aloop=loop=-1:size=2e+09[voc];` +
-            `[inst][voc]amix=inputs=2:duration=first:normalize=0,afade=t=out:st=${fadeStart}:d=2.5,apad=pad_dur=3,atrim=0:${effectiveDuration}`;
-
-        console.log(`🎙️ Blending Kokoro speech from t=0s (${ttsMode}) in synchrony with Organ Chorale...`);
-        execSync(
-          `ffmpeg -y -i "${refAudioPath}" -i "${ttsAudioPath}" -filter_complex "${filterGraph}" -ar 48000 -ac 2 -t ${effectiveDuration} "${conformedRefPath}"`,
-          { stdio: 'ignore' }
-        );
       } else {
-        // CASE 3: Instrumental reference only
-        const filterChain = `${silenceStrip},afade=t=out:st=${fadeStart}:d=2.5,apad=pad_dur=3,atrim=0:${effectiveDuration}`;
+        const filterChain = `${bachCleanFilter},afade=t=out:st=${fadeStart}:d=2.5,apad=pad_dur=3,atrim=0:${effectiveDuration}`;
         console.log(`⚡ Conforming reference track for [${selectedVoice.name}] (${effectiveDuration}s)...`);
         execSync(
           `ffmpeg -y -i "${refAudioPath}" -af "${filterChain}" -ar 48000 -ac 2 -t ${effectiveDuration} "${conformedRefPath}"`,

@@ -89,7 +89,8 @@ const refAudioSetting = rawRefArg
   ? (rawRefArg.includes('=') ? rawRefArg.split('=').slice(1).join('=').trim() : 'pool')
   : null;
 
-const useKokoroCover = args.includes('--kokoro-cover');  
+const useKokoroCover = args.includes('--kokoro-cover');
+const speechFirst = args.includes('--speech-first');  
 
 const slugify = (t) =>
   (t || 'ballad')
@@ -456,12 +457,13 @@ async function runPoetryTTS(poemText) {
     mirrorToAstroPublic(finalOpusPath, finalOpusFilename);
     await safeUnlink(rawFlacPath);
 
-    return {
-      success: true,
-      filename: finalOpusFilename,
-      engine: 'Kokoro TTS',
-      markdown: `\n<p><audio controls src="/images/${finalOpusFilename}"></audio></p>\n`
-    };
+   return {
+   success: true,
+   filename: finalOpusFilename,
+   stanzaFiles: state.stanzaFiles || [],
+   engine: 'Kokoro TTS',
+   markdown: `\n<p><audio controls src="/images/${finalOpusFilename}"></audio></p>\n`
+ };
   } catch (e) {
     console.error(`❌ TTS synthesis failed: ${e.message}`);
     return { success: false, markdown: '' };
@@ -499,7 +501,7 @@ async function runVideoGen(videoPrompt, anchorImageName) {
   }
 }
 
-async function runSongWorker(tags, lyrics, slug, duration, referenceAudio, ttsAudioPath = null) {
+async function runSongWorker(tags, lyrics, slug, duration, referenceAudio, ttsAudioPath = null, stanzaFiles = []) {
   const stateFile = path.join(os.tmpdir(), `ballad-song-${Date.now()}.json`);
   const scriptName = useYue ? 'run_yue.js' : 'run_acestep.js';
   const prefix = useYue ? 'yue2' : 'acestep';
@@ -514,9 +516,10 @@ async function runSongWorker(tags, lyrics, slug, duration, referenceAudio, ttsAu
       '--duration', duration.toString()
     ];
 
-let refAudioName = null;
+    let refAudioName = null;
     let refAudioMarkdown = '';
     const hasTtsGuide = Boolean(useYue && ttsAudioPath && existsSync(ttsAudioPath));
+    const validStanzas = (stanzaFiles || []).filter(p => p && existsSync(p));
 
     if (referenceAudio) {
       runnerArgs.push('--ref-audio', referenceAudio);
@@ -532,13 +535,18 @@ let refAudioName = null;
 </div>\n`;
     }
 
-    if (hasTtsGuide) {
-      runnerArgs.push('--tts-audio', ttsAudioPath);
-      if (!referenceAudio) {
-        refAudioName = `${path.basename(ttsAudioPath)} (Pure Kokoro Cadence Guide)`;
-      }
-    }
-
+   if (useYue && validStanzas.length > 0) {
+   runnerArgs.push('--stanza-files', JSON.stringify(validStanzas));
+   if (speechFirst) {
+     runnerArgs.push('--speech-first');
+   }
+ } else if (hasTtsGuide) {
+   runnerArgs.push('--tts-audio', ttsAudioPath);
+   if (!referenceAudio) {
+     refAudioName = `${path.basename(ttsAudioPath)} (Pure Kokoro Cadence Guide)`;
+   }
+ }
+ 
     // spawnSync passes multi-line lyrics safely without shell quote breaking
     spawnSync('bun', runnerArgs, { stdio: 'inherit' });
 
@@ -695,20 +703,26 @@ const defaultBalladDuration = (!refAudioSetting && !useKokoroCover) ? 165 : 128;
         console.log(`⏭️  Kokoro TTS already embedded in ${path.basename(filePath)}, skipping TTS...`);
       }
 
-      if (!skipSong && parsed.structuredLyrics && (!parsed.hasSongEmbed || forceReprocess)) {
-        const activeRef = await resolveReferenceAudio(refAudioSetting);
-        const ttsFile = ttsRes.filename || parsed.existingTtsFilename;
-        const activeTtsPath = ttsFile ? path.join(IMAGES_DIR, ttsFile) : null;
-        audioRes = await runSongWorker(
-          safeTags,
-          parsed.structuredLyrics,
-          slug,
-          activeDuration,
-          activeRef,
-          activeTtsPath
-        );
-        await freeComfyVRAM();
-      }
+if (!skipSong && parsed.structuredLyrics && (!parsed.hasSongEmbed || forceReprocess)) {
+     const activeRef = await resolveReferenceAudio(refAudioSetting);
+     const ttsFile = ttsRes.filename || parsed.existingTtsFilename;
+     const activeTtsPath = ttsFile ? path.join(IMAGES_DIR, ttsFile) : null;
+     audioRes = await runSongWorker(
+       safeTags,
+       parsed.structuredLyrics,
+       slug,
+       activeDuration,
+       activeRef,
+       activeTtsPath,
+       ttsRes.stanzaFiles
+     );
+     await freeComfyVRAM();
+   }
+
+   // Clean up temporary individual Kokoro stanza files after song generation
+   for (const stPath of (ttsRes.stanzaFiles || [])) {
+     await safeUnlink(stPath);
+   }
     }
 
     // Build Astro-compatible tags & author front matter based on sourceType
