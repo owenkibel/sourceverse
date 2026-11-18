@@ -1,10 +1,10 @@
 const path = require('path');
 const fs = require('fs/promises');
 const os = require('os');
-const { execFile, execSync } = require('child_process');
+const { execFile, execSync, spawnSync } = require('child_process');
 const util = require('util');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-const { writeFileSync } = require('fs');
+const { writeFileSync, existsSync, copyFileSync } = require('fs');
 const execFileAsync = util.promisify(execFile);
 
 const MAX_CANONICAL_HYPOTHESES = 2;
@@ -145,6 +145,8 @@ const rawRefArg = args.find(a => /^--?ref-audio(=|$)/i.test(a));
 const refAudioSetting = rawRefArg 
   ? (rawRefArg.includes('=') ? rawRefArg.split('=').slice(1).join('=').trim() : 'pool')
   : null;
+const useKokoroCover = args.includes('--kokoro-cover');
+const speechFirst = args.includes('--speech-first');  
 
 let actualModelUsed = "";
 let generationDuration = 128; 
@@ -733,17 +735,25 @@ async function runPoetryTTS(poemText) {
             '-filter_complex', filterGraph, '-map', '[final_audio]', 
             '-c:a', 'libopus', '-b:a', '128k', finalOpusPath
         ]);
+
+        const astroPublicDir = path.join(process.cwd(), 'site/public/images');
+        if (existsSync(astroPublicDir)) {
+          try {
+            require('fs').copyFileSync(finalOpusPath, path.join(astroPublicDir, finalOpusFilename));
+          } catch (_) {}
+        }
         
         await safeUnlink(rawFlacPath);
         return { 
           success: true, 
-          filename: finalOpusFilename, 
+          filename: finalOpusFilename,
+          stanzaFiles: state.stanzaFiles || [],
           engine: 'Kokoro', 
           markdown: `\n<p><audio controls src="/images/${finalOpusFilename}"></audio></p>\n` 
         };
     } catch (e) { 
       console.error(`TTS synthesis failed: ${e.message}`); 
-      return { success: false, markdown: '' }; 
+      return { success: false, filename: '', stanzaFiles: [], markdown: '' }; 
     } finally { 
       await safeUnlink(stateFile); 
       await safeUnlink(poemFile); 
@@ -805,7 +815,7 @@ await execFileAsync('bun', runnerArgs);
     }
 }
 
-async function runYueGen(tags, lyrics, slug, duration, referenceAudio = null) {
+async function runYueGen(tags, lyrics, slug, duration, referenceAudio = null, ttsAudioPath = null, stanzaFiles = []) {
     const stateFile = path.join(os.tmpdir(), `yue-state-${Date.now()}.json`);
     try {
         let runnerArgs = [
@@ -818,43 +828,64 @@ async function runYueGen(tags, lyrics, slug, duration, referenceAudio = null) {
         
         let refAudioName = null;
         let refAudioMarkdown = '';
+        const hasTtsGuide = Boolean(ttsAudioPath && existsSync(ttsAudioPath));
+        const validStanzas = (stanzaFiles || []).filter(p => p && existsSync(p));
+        const astroPublicDir = path.join(process.cwd(), 'site/public/images');
 
         if (referenceAudio) {
           runnerArgs.push('--ref-audio', referenceAudio);
           refAudioName = path.basename(referenceAudio);
           const destRefPath = path.join(IMAGES_DIR, refAudioName);
-          try { await fs.copyFile(referenceAudio, destRefPath); } catch (_) {}
+          try {
+            await fs.copyFile(referenceAudio, destRefPath);
+            if (existsSync(astroPublicDir)) {
+              require('fs').copyFileSync(destRefPath, path.join(astroPublicDir, refAudioName));
+            }
+          } catch (_) {}
           refAudioMarkdown = `\n<div class="reference-audio-embed" style="margin: 0.75rem 0 1.25rem;">
   <p style="font-size: 0.85em; margin-bottom: 4px; opacity: 0.8;">🎧 <strong>Anchor Reference Audio (${refAudioName}):</strong></p>
   <audio controls src="/images/${refAudioName}"></audio>
 </div>\n`;
         }
 
-execSync(`bun run_yue.js ${runnerArgs.slice(1).map(a => `"${a}"`).join(' ')}`, { stdio: 'inherit' });
-const state = JSON.parse(await fs.readFile(stateFile, 'utf8'));
+        if (validStanzas.length > 0 && referenceAudio) {
+          runnerArgs.push('--stanza-files', JSON.stringify(validStanzas));
+          if (speechFirst) {
+            runnerArgs.push('--speech-first');
+          }
+        } else if (hasTtsGuide) {
+          runnerArgs.push('--tts-audio', ttsAudioPath);
+          if (!referenceAudio) {
+            refAudioName = `${path.basename(ttsAudioPath)} (Pure Kokoro Cadence Guide)`;
+          }
+        }
+
+        // spawnSync passes multi-line lyrics safely without shell quote breaking
+        spawnSync('bun', runnerArgs, { stdio: 'inherit' });
+
+        const state = JSON.parse(await fs.readFile(stateFile, 'utf8'));
         const rawFlacPath = state.savedFilePath;
         const actualDur = state.duration || duration;
-        const modeStamp = referenceAudio ? '' : 'text_to_music_';
+        const modeStamp = (referenceAudio || hasTtsGuide) ? '' : 'text_to_music_';
         const opusFilename = `yue2_${modeStamp}${slug}_${Date.now()}.opus`;
         const opusPath = path.join(IMAGES_DIR, opusFilename);
 
-        // Mirror Opus to Astro site/public/images
         await execFileAsync('ffmpeg', [
           '-y', '-i', rawFlacPath, 
           '-af', `afade=t=out:st=${Math.max(0, actualDur - 5)}:d=5`, 
           '-c:a', 'libopus', '-b:a', '128k', opusPath
         ]);
-        const astroPublicDir = path.join(process.cwd(), 'site/public/images');
-        if (require('fs').existsSync(astroPublicDir)) {
+        if (existsSync(astroPublicDir)) {
           require('fs').copyFileSync(opusPath, path.join(astroPublicDir, opusFilename));
         }
 
         await safeUnlink(rawFlacPath);
 
         return { 
-          success: true, 
-          filename: opusFilename, 
-          engine: "YuE2 3B (BF16)", 
+       success: true, 
+       filename: opusFilename,
+       duration: actualDur,
+       engine: "YuE2 3B (BF16)",
           refAudioName: refAudioName || 'None (Unconditioned)',
           refAudioMarkdown: refAudioMarkdown,
           abcScore: state.abcScore || '',
@@ -1342,19 +1373,33 @@ async function main() {
 
 const activeRefAudio = refAudioSetting ? await resolveReferenceAudio(refAudioSetting) : null;
     const parsedDuration = parseInt(parsed.musicDuration, 10) || generationDuration;
-    const finalDuration = (!activeRefAudio && !durArg && parsedDuration < 165)
+    const finalDuration = (!activeRefAudio && !useKokoroCover && !durArg && parsedDuration < 165)
       ? 165
       : parsedDuration;
+    const activeTtsPath = ttsRes.filename ? path.join(IMAGES_DIR, ttsRes.filename) : null;
 
     let audioRes;
     if (useGeminiAudio) {
       audioRes = await runGeminiAudio(safeMusicTagsString, parsed.musicLyrics, slugify(title));
     } else if (useYue) {
-      audioRes = await runYueGen(safeMusicTagsString, parsed.musicLyrics, slugify(title), finalDuration, activeRefAudio);
+      audioRes = await runYueGen(
+        safeMusicTagsString,
+        parsed.musicLyrics,
+        slugify(title),
+        finalDuration,
+        activeRefAudio,
+        activeTtsPath,
+        ttsRes.stanzaFiles
+      );
     } else {
       audioRes = await runAceStepGen(safeMusicTagsString, parsed.musicLyrics, slugify(title), finalDuration, activeRefAudio);
     }
     if (!useGeminiAudio) await freeComfyVRAM();
+
+    // Clean up temporary individual Kokoro stanza files after song generation
+    for (const stPath of (ttsRes.stanzaFiles || [])) {
+      await safeUnlink(stPath);
+    }
 
 // Assemble Score Embed Block for Markdown
     let scoreArtifactsMarkdown = '';
@@ -1558,7 +1603,7 @@ ${audioRes.refAudioMarkdown || ''}
 ##### Musical Score Vocal & Instrument Prompt Mapping
 <blockquote>
 <strong>Target Music Metadata Tags:</strong> <code>${safeMusicTagsString}</code><br>
-<strong>Target Score Audio Duration:</strong> ${finalDuration} seconds<br>
+<strong>Target Score Audio Duration:</strong> ${audioRes?.duration || finalDuration} seconds<br>
 <strong>Reference Anchor Conditioning:</strong> <code>${audioRes.refAudioName || 'None (Unconditioned)'}</code>
 </blockquote>
 
