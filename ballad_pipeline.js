@@ -35,6 +35,9 @@ const VOICE_CYCLE = [
   "Dramatic Soprano female vocals"
 ];
 
+const EARLY_MUSIC_REF_RE = /(tpgettys|bwv|hwv|twv|\brv\d|bach|handel|vivaldi|telemann|baroque|renaissance|early|lute|choir|aria|cantata|harpsichord|madrigal|consort|gamba|recorder|dowland|purcell|byrd|gibbons|coprario|hilton|ravenscroft|hingeston|oswald)/i;
+const ELECTRONIC_TAG_RE = /(synth|techno|house|electro|industrial|dubstep|trap|trance|edm|cyber|rave|phonk|glitch|ambient techno|darkwave|vapor|drum and bass|dnb|acid|breakcore|gabber|trip hop)/i;
+
 const LIMERICK_GENRE_CYCLE = [
   {
     label: "Celtic Tavern Folk",
@@ -42,7 +45,7 @@ const LIMERICK_GENRE_CYCLE = [
   },
   {
     label: "Baroque Harpsichord & Lute",
-    tags: "Classical, Folk, Baroque chamber song, harpsichord continuo, Renaissance lute, viola da gamba, 110 bpm, courtly wit"
+    tags: "Celtic Folk, Folk, Baroque lute ballad, harpsichord continuo, Renaissance lute, viola da gamba, 110 bpm, courtly wit"
   },
   {
     label: "Electro-Swing Cabaret",
@@ -90,7 +93,17 @@ const refAudioSetting = rawRefArg
   : null;
 
 const useKokoroCover = args.includes('--kokoro-cover');
-const speechFirst = args.includes('--speech-first');  
+const speechFirst = args.includes('--speech-first');
+const useEarlyMusic = args.includes('--early-music');
+const useRefPocket = args.includes('--ref-pocket');
+const useRawAudio = args.includes('--raw-audio');
+
+let yueCfgOverride = null;
+const yueCfgArg = args.find(a => /^--(yue-cfg|cfg)=/i.test(a));
+if (yueCfgArg) {
+  const parsedCfg = parseFloat(yueCfgArg.split('=')[1]);
+  if (!Number.isNaN(parsedCfg)) yueCfgOverride = parsedCfg;
+}  
 
 const slugify = (t) =>
   (t || 'ballad')
@@ -260,7 +273,7 @@ function parseBalladMarkdown(rawMd, filePath = '', genreCycleIdx = 0) {
   // Extract Style Tags
   let styleTags = isFifthLine
     ? limerickGenre.tags
-    : 'Folk, Classical, Baroque chamber ballad';
+    : 'Celtic Folk, Folk, Baroque lute ballad, Renaissance lute';
   const tagsMatch = body.match(/### Style & Instrumentation Tags\s+```(?:text)?\r?\n([\s\S]*?)```/i);
   if (tagsMatch && tagsMatch[1].trim()) {
     styleTags = tagsMatch[1].trim();
@@ -331,26 +344,40 @@ function parseBalladMarkdown(rawMd, filePath = '', genreCycleIdx = 0) {
   };
 }
 
-function sanitizeTagsForAceStep(rawTags, assignedVoice) {
+function sanitizeTagsForAceStep(rawTags, assignedVoice, earlyMusicMode = false) {
   const tokens = (rawTags || '')
     .replace(/[\[\]()]/g, '')
     .split(',')
     .map(t => t.trim())
     .filter(t => {
       if (!t) return false;
-      // Strip any pre-baked baritone/vocal tags from the exported markdown
+      // Strip any pre-baked vocal tags from exported markdown
       if (/baritone|tenor|soprano|mezzo|vocals|vocal|duet|male|female|instrumental/i.test(t)) return false;
+      if (earlyMusicMode && (/^classical$/i.test(t) || ELECTRONIC_TAG_RE.test(t))) return false;
       return true;
     });
 
   const matchedAce = tokens.filter(t =>
     RAW_ACE_STYLES.some(s => s.toLowerCase() === t.toLowerCase())
   );
+  let descriptive = tokens.filter(t => !matchedAce.includes(t));
 
-  const baseGenres = matchedAce.length > 0 ? matchedAce.slice(0, 3) : ['Folk', 'Classical'];
-  const descriptive = tokens.filter(t => !matchedAce.includes(t)).slice(0, 4);
+  let baseGenres;
+  if (earlyMusicMode) {
+    // Anchor early-music blending through Celtic Folk & Folk instead of Classical
+    const extraFolk = matchedAce.filter(t => !/^(celtic folk|folk)$/i.test(t));
+    baseGenres = ['Celtic Folk', 'Folk', ...extraFolk].slice(0, 3);
+    const hasEarlyDescriptor = descriptive.some(t =>
+      /baroque|renaissance|early|lute|harpsichord|chamber|aria|cantata|madrigal|continuo|acoustic|harp|gamba|recorder|ballad/i.test(t)
+    );
+    if (!hasEarlyDescriptor) {
+      descriptive = ['Baroque folk ballad', 'Renaissance lute', 'warm chamber strings', ...descriptive];
+    }
+  } else {
+    baseGenres = matchedAce.length > 0 ? matchedAce.slice(0, 3) : ['Celtic Folk', 'Folk'];
+  }
 
-  return [...baseGenres, ...descriptive, assignedVoice].join(', ');
+  return [...new Set([...baseGenres, ...descriptive.slice(0, 4), assignedVoice])].join(', ');
 }
 
 // =========================================================================
@@ -501,7 +528,7 @@ async function runVideoGen(videoPrompt, anchorImageName) {
   }
 }
 
-async function runSongWorker(tags, lyrics, slug, duration, referenceAudio, ttsAudioPath = null, stanzaFiles = []) {
+async function runSongWorker(tags, lyrics, slug, duration, referenceAudio, ttsAudioPath = null, stanzaFiles = [], earlyMusicMode = false) {
   const stateFile = path.join(os.tmpdir(), `ballad-song-${Date.now()}.json`);
   const scriptName = useYue ? 'run_yue.js' : 'run_acestep.js';
   const prefix = useYue ? 'yue2' : 'acestep';
@@ -516,10 +543,16 @@ async function runSongWorker(tags, lyrics, slug, duration, referenceAudio, ttsAu
       '--duration', duration.toString()
     ];
 
+    if (useYue) {
+      if (earlyMusicMode) runnerArgs.push('--early-music');
+      if (useRefPocket) runnerArgs.push('--ref-pocket');
+      if (yueCfgOverride !== null) runnerArgs.push('--cfg', yueCfgOverride.toString());
+    }
+
     let refAudioName = null;
     let refAudioMarkdown = '';
-    const hasTtsGuide = Boolean(useYue && ttsAudioPath && existsSync(ttsAudioPath));
-    const validStanzas = (stanzaFiles || []).filter(p => p && existsSync(p));
+    const hasTtsGuide = Boolean(useYue && useKokoroCover && ttsAudioPath && existsSync(ttsAudioPath));
+    const validStanzas = (useYue && useKokoroCover) ? (stanzaFiles || []).filter(p => p && existsSync(p)) : [];
 
     if (referenceAudio) {
       runnerArgs.push('--ref-audio', referenceAudio);
@@ -535,18 +568,23 @@ async function runSongWorker(tags, lyrics, slug, duration, referenceAudio, ttsAu
 </div>\n`;
     }
 
-   if (useYue && validStanzas.length > 0) {
-   runnerArgs.push('--stanza-files', JSON.stringify(validStanzas));
-   if (speechFirst) {
-     runnerArgs.push('--speech-first');
-   }
- } else if (hasTtsGuide) {
-   runnerArgs.push('--tts-audio', ttsAudioPath);
-   if (!referenceAudio) {
-     refAudioName = `${path.basename(ttsAudioPath)} (Pure Kokoro Cadence Guide)`;
-   }
- }
- 
+    // Gate Kokoro stanza/TTS interleaving strictly behind --kokoro-cover so pure musical covers sing cleanly
+    if (useYue && useKokoroCover && validStanzas.length > 0 && referenceAudio) {
+      console.log(`🎙️ [YuE2 Cover] --kokoro-cover enabled: interleaving ${validStanzas.length} Kokoro stanzas over ducked reference audio.`);
+      runnerArgs.push('--stanza-files', JSON.stringify(validStanzas));
+      if (speechFirst) {
+        runnerArgs.push('--speech-first');
+      }
+    } else if (useYue && useKokoroCover && hasTtsGuide) {
+      console.log(`🎙️ [YuE2 Cover] --kokoro-cover enabled: using pure Kokoro TTS cadence guide.`);
+      runnerArgs.push('--tts-audio', ttsAudioPath);
+      if (!referenceAudio) {
+        refAudioName = `${path.basename(ttsAudioPath)} (Pure Kokoro Cadence Guide)`;
+      }
+    } else if (useYue && referenceAudio) {
+      console.log(`🎶 [YuE2 Pure Musical Cover] Bypassing Kokoro interleaving (pass --kokoro-cover to enable spoken guide).`);
+    }
+
     // spawnSync passes multi-line lyrics safely without shell quote breaking
     spawnSync('bun', runnerArgs, { stdio: 'inherit' });
 
@@ -557,9 +595,14 @@ async function runSongWorker(tags, lyrics, slug, duration, referenceAudio, ttsAu
     const opusFilename = `${prefix}_${modeStamp}${slug}_${Date.now()}.opus`;
     const opusPath = path.join(IMAGES_DIR, opusFilename);
 
+    // Apply gentle upper-mid de-harshing & high-shelf smoothing to YuE2 output (bypass with --raw-audio)
+    const outputAf = (useYue && !useRawAudio)
+      ? `equalizer=f=3200:t=q:w=1.2:g=-2,highshelf=f=9000:g=-2,alimiter=limit=-1.2dB,afade=t=out:st=${Math.max(0, actualDur - 5)}:d=5`
+      : `afade=t=out:st=${Math.max(0, actualDur - 5)}:d=5`;
+
     await execFileAsync('ffmpeg', [
       '-y', '-i', rawFlacPath,
-      '-af', `afade=t=out:st=${Math.max(0, actualDur - 5)}:d=5`,
+      '-af', outputAf,
       '-c:a', 'libopus', '-b:a', '128k', opusPath
     ]);
     mirrorToAstroPublic(opusPath, opusFilename);
@@ -676,7 +719,16 @@ const defaultBalladDuration = (!refAudioSetting && !useKokoroCover) ? 165 : 128;
     let vidRes = { success: false, filename: '', engine: 'Skipped', markdown: '' };
     let ttsRes = { success: false, filename: '', engine: 'Existing/Skipped', markdown: '' };
     let audioRes = { success: false, filename: '', engine: 'Existing/Skipped', markdown: '', refAudioMarkdown: '' };
-    const safeTags = sanitizeTagsForAceStep(parsed.styleTags, assignedVoice);
+
+    const activeRef = (!backfillMetaOnly && !skipSong && parsed.structuredLyrics && (!parsed.hasSongEmbed || forceReprocess))
+      ? await resolveReferenceAudio(refAudioSetting)
+      : null;
+    const refLooksEarlyMusic = Boolean(activeRef && EARLY_MUSIC_REF_RE.test(path.basename(activeRef)));
+    const genreLooksEarlyMusic = /baroque|renaissance|early|lute|harpsichord|madrigal|cantata|celtic|gamba|recorder|consort/i.test(
+      `${parsed.musicGenre} ${parsed.styleTags}`
+    );
+    const isEarlyMusicRun = useEarlyMusic || (useYue && (refLooksEarlyMusic || genreLooksEarlyMusic));
+    const safeTags = sanitizeTagsForAceStep(parsed.styleTags, assignedVoice, isEarlyMusicRun);
 
     if (!backfillMetaOnly) {
       console.log(`\n======================================================================`);
@@ -703,21 +755,24 @@ const defaultBalladDuration = (!refAudioSetting && !useKokoroCover) ? 165 : 128;
         console.log(`⏭️  Kokoro TTS already embedded in ${path.basename(filePath)}, skipping TTS...`);
       }
 
-if (!skipSong && parsed.structuredLyrics && (!parsed.hasSongEmbed || forceReprocess)) {
-     const activeRef = await resolveReferenceAudio(refAudioSetting);
-     const ttsFile = ttsRes.filename || parsed.existingTtsFilename;
-     const activeTtsPath = ttsFile ? path.join(IMAGES_DIR, ttsFile) : null;
-     audioRes = await runSongWorker(
-       safeTags,
-       parsed.structuredLyrics,
-       slug,
-       activeDuration,
-       activeRef,
-       activeTtsPath,
-       ttsRes.stanzaFiles
-     );
-     await freeComfyVRAM();
-   }
+      if (!skipSong && parsed.structuredLyrics && (!parsed.hasSongEmbed || forceReprocess)) {
+        const ttsFile = ttsRes.filename || parsed.existingTtsFilename;
+        const activeTtsPath = ttsFile ? path.join(IMAGES_DIR, ttsFile) : null;
+        if (isEarlyMusicRun) {
+          console.log(`🎻 [Early-Music Conditioning Active] Tags anchored in Celtic Folk / Folk: "${safeTags}"`);
+        }
+        audioRes = await runSongWorker(
+          safeTags,
+          parsed.structuredLyrics,
+          slug,
+          activeDuration,
+          activeRef,
+          activeTtsPath,
+          ttsRes.stanzaFiles,
+          isEarlyMusicRun
+        );
+        await freeComfyVRAM();
+      }
 
    // Clean up temporary individual Kokoro stanza files after song generation
    for (const stPath of (ttsRes.stanzaFiles || [])) {

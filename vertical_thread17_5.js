@@ -29,16 +29,10 @@ const RAW_ACE_STYLES = [
   "Acid House", "Acid Techno", "Afro House", "Afro Tech", "Afrobesats", "Alternative / Indie", "Alternative Rock", "Amapiano", "Ambient", "Ambient Techno", "Americana", "Andean Music", "Arrocha", "Axe", "Bachata", "Banda Music", "Bass House", "Bassline", "Big Room", "Bluegrass", "Blues", "Bolero", "Bossa Nova", "Bounce", "Brazilian Bass", "Brazilian Popular Music", "Breakbeat", "Breakcore", "Brega", "Brega Funk", "Brega Funk (Recife)", "Brostep", "Celtic Folk", "Children", "Chillhop", "Chillstep", "Chillwave", "Choro", "City Pop", "Classical", "Coldwave", "Corridos", "Country", "Coupe Decale", "Cuarteto", "Cumbia", "Cyber-Punk", "Cyberpunk", "Dance", "Dancehall", "Dark Ambient", "Darkstep", "Darksynth", "Darkwave", "Deep House", "Dembow", "Detroit Techno", "Disco", "Downtempo", "Dream Pop", "Drill Funk", "Drone", "Drum and Bass", "Drumstep", "Dubstep", "Dubstep (Deep)", "Electro", "Electro House", "Electro-Funk", "Electro-Jazz", "Electro-Swing", "Electroacoustic", "Electroclash", "Electronic", "Electronica", "Electropop", "Emocore", "Eurobeat", "Eurodance", "Experimental", "Experimental Electronic", "Fado", "Flamenco / Bulerias", "Folk", "Forro", "Forró Eletrônico", "French House", "Funk", "Future Bass", "Future Funk", "Future Garage", "Future Rave", "Futurepop", "G-House", "Gabber", "Glitch", "Glitch Hop", "Goa Trance", "Gospel / Religious", "Gothic", "Gqom", "Grime", "Grunge", "Guarania", "Hands Up", "Hard Rock", "Hardcore", "Hardstyle", "Hardtechno", "Heavy Metal", "Highlife", "Hip Hop / Rap", "House", "Hybrid Trap", "Hyperpop", "IDM", "Indie Folk", "Industrial", "Industrial Techno", "Instrumental", "International Funk", "Irish Folk", "Italo Disco", "J-Pop / J-Rock", "Jazz", "Jersey Club", "Jovem Guarda", "Juke / Footwork", "Jungle", "K-Pop", "Kizomba", "Kuduro", "Liquid Drum and Bass", "Liquid Funk", "Lo-Fi Hip Hop", "Lofi House", "Mambo", "Marches / Anthems", "Mariachi", "Math Rock", "Melodic Techno", "Merengue", "Metal", "Micro House", "Microhouse", "Midwest Emo", "Minimal / Deep Tech", "Minimal Techno", "Moombahton", "Nativist Folk", "Neurofunk", "New Age", "New Retro Wave", "New Wave", "Nu-Funk", "Old Guard Samba", "Organic House", "Pagode", "Pagotrap", "Philly Soul", "Phonk", "Phonk House", "Piseiro", "Pop", "Pop Rock", "Post-Hardcore", "Post-Punk", "Post-Rock", "Power-Pop", "Progressive Electronic", "Progressive House", "Progressive Rock", "Psychedelia", "Psytrance", "Punk Rap / Emo Rap", "Punk Rock", "R&B", "Ragga Jungle", "Ranchera", "Rave", "Reggae", "Reggaeton", "Regional", "Retrowave", "Riddim", "Rock", "Rock and Roll", "Rockabilly", "Romantic", "Salsa", "Samba", "Samba Enredo", "Schranz", "Sertanejo", "Sertanejo Universitário", "Shoegaze", "Ska", "Soft Rock", "Soul", "Soulful House", "Surf Music", "Synthpop", "Synthwave", "Synthwave-Darkwave", "Tango", "Tech House", "Tech Trance", "Tech-Funk", "Techno", "Technopop", "Trance", "Trap", "Trip Hop", "Trova", "Turreo RKT", "UK Drill", "UK Garage", "Uplifting Trance", "Vallenato", "Vapor-Trap", "Vaporwave", "Vocal Trance", "Wave", "World Music", "Xote", "Zamba", "Zouk", "Zouk Bass"
 ];
 
-// const EXCLUDED_STYLES = [
-//   "Amapiano", "Arrocha", "Axe", "Banda Music", "Brega", "Brega Funk", "Brega Funk (Recife)", 
-//   "Children", "Choro", "Corridos", "Coupe Decale", "Cuarteto", "Forro", "Forró Eletrônico", 
-//   "Gabber", "Gospel / Religious", "Gqom", "Guarania", "Hands Up", "Jovem Guarda", "Kizomba", 
-//   "Kuduro", "Marches / Anthems", "Mariachi", "Nativist Folk", "Old Guard Samba", "Pagode", 
-//   "Pagotrap", "Piseiro", "Ranchera", "Regional", "Samba Enredo", "Schranz", "Sertanejo", 
-//   "Sertanejo Universitário", "Turreo RKT", "Vallenato", "Xote", "Zamba", "Zouk", "Zouk Bass"
-// ];
-
 const EXCLUDED_STYLES = [];
+
+const EARLY_MUSIC_REF_RE = /(tpgettys|bwv|hwv|twv|\brv\d|bach|handel|vivaldi|telemann|baroque|renaissance|early|lute|choir|aria|cantata|harpsichord|madrigal|consort|gamba|recorder|dowland|purcell|byrd|gibbons|coprario|hilton|ravenscroft|hingeston|oswald)/i;
+const ELECTRONIC_TAG_RE = /(synth|techno|house|electro|industrial|dubstep|trap|trance|edm|cyber|rave|phonk|glitch|ambient techno|darkwave|vapor|drum and bass|dnb|acid|breakcore|gabber|trip hop)/i;
 
 const DEFAULT_REF_POOL_DIR = path.join(__dirname, 'ref_audio_pool');
 
@@ -112,8 +106,8 @@ if (t2iArgIndex !== -1 && args[t2iArgIndex + 1]) {
   } else if (modelArg === "lens") {
     t2iModel = "lens";
   } else if (["krea", "krea2", "krea-2"].includes(modelArg)) {
-  t2iModel = "krea";
-} else if (["zturbo", "z-turbo", "z_turbo"].includes(modelArg)) {
+    t2iModel = "krea";
+  } else if (["zturbo", "z-turbo", "z_turbo"].includes(modelArg)) {
     t2iModel = "z_turbo";
   } else {
     t2iModel = modelArg;
@@ -134,6 +128,9 @@ const useGrokImagine = args.includes('--grok-imagine');
 const useLimericks = args.includes('--limericks');   
 const useCanonical = args.includes('--canonical');   
 const useFortune = args.includes('--fortune');       
+const useEarlyMusic = args.includes('--early-music');
+const useRefPocket = args.includes('--ref-pocket');
+const useRawAudio = args.includes('--raw-audio');
 
 let customIdea = null;
 const ideaArg = args.find(a => a.startsWith('--idea='));
@@ -147,6 +144,13 @@ const refAudioSetting = rawRefArg
   : null;
 const useKokoroCover = args.includes('--kokoro-cover');
 const speechFirst = args.includes('--speech-first');  
+
+let yueCfgOverride = null;
+const yueCfgArg = args.find(a => /^--(yue-cfg|cfg)=/i.test(a));
+if (yueCfgArg) {
+  const parsedCfg = parseFloat(yueCfgArg.split('=')[1]);
+  if (!Number.isNaN(parsedCfg)) yueCfgOverride = parsedCfg;
+}
 
 let actualModelUsed = "";
 let generationDuration = 128; 
@@ -430,7 +434,7 @@ function parseUnifiedOutput(text) {
     forecast: '',           
     hypothesis: '', 
     hypothesis_limerick: '',
-    diagram: '', // <-- 1. ADD DIAGRAM TARGET
+    diagram: '',
     narrative_synthesis: '',
     image: '', 
     t2v: '', 
@@ -447,7 +451,7 @@ function parseUnifiedOutput(text) {
         current = 'forecast';
     } else if (l.match(/^(#+|\*\*|__|-)*\s*(hypothesis|paradigm)\s*limerick/i)) {
         current = 'hypothesis_limerick';
-    } else if (l.match(/^(#+|\*\*|__|-)*\s*(semantic (architecture )?diagram|mermaid( diagram)?)/i)) { // <-- 2. MATCH DIAGRAM HEADER
+    } else if (l.match(/^(#+|\*\*|__|-)*\s*(semantic (architecture )?diagram|mermaid( diagram)?)/i)) {
         current = 'diagram';
     } else if (l.match(/^(#+|\*\*|__|-)*\s*(image|visual)( generation)? prompt/i)) {
         current = 'image';
@@ -469,7 +473,6 @@ function parseUnifiedOutput(text) {
   const hypothesis = sections.hypothesis.replace(/```[a-z]*\n?/gi, '').replace(/```/g, '').replace(/\*\*|__|###/g, '').trim();
   const hypothesisLimerick = cleanVerseText(sections.hypothesis_limerick);
 
-  // 3. CLEAN & NORMALIZE MERMAID BLOCK
   let rawDiagram = sections.diagram.trim();
   let diagram = '';
   if (rawDiagram) {
@@ -483,7 +486,7 @@ function parseUnifiedOutput(text) {
 
   let rawMusic = sections.music.trim().replace(/```[a-z]*\n?/gi, '').replace(/```/g, '');
   
-  let tags = "Folk, Americana, Bluegrass, Country, Acoustic Guitar";
+  let tags = "Celtic Folk, Folk, Baroque lute ballad";
   let duration = "128"; 
   let lyrics = "";
   
@@ -501,12 +504,12 @@ function parseUnifiedOutput(text) {
   const durMatch = metaText.match(/DURATION:\s*(\d+)/i);
   if (durMatch) duration = durMatch[1].trim();
 
-return {
+  return {
     verse: verse,
     forecast: forecast,                    
     hypothesis: hypothesis,
     hypothesisLimerick: hypothesisLimerick,
-    diagram: diagram, // <-- 4. EXPORT DIAGRAM
+    diagram: diagram,
     narrative_synthesis: sections.narrative_synthesis.trim(),
     image: sections.image.trim(),
     t2v: sections.t2v.trim(), 
@@ -660,13 +663,13 @@ async function runImageGen(prompt) {
                  (useLens ? ['run_lens.js'] :
                  (useQwen ? ['run_qwen.js'] : ['run_z_turbo.js']));
 
-await execFileAsync('bun', [...runnerArgs, '--state-file', stateFile]);
-const state = JSON.parse(await fs.readFile(stateFile, 'utf8'));
-const finalFilename = state.filename;
+    await execFileAsync('bun', [...runnerArgs, '--state-file', stateFile]);
+    const state = JSON.parse(await fs.readFile(stateFile, 'utf8'));
+    const finalFilename = state.filename;
 
-const engineName = runnerArgs[0] === 'run_krea.js' ? 'Krea 2 Turbo' :
-                   (runnerArgs[0] === 'run_qwen.js' ? 'Qwen-Image 2.1' :
-                   (runnerArgs[0] === 'run_lens.js' ? 'Lens' : 'Z-Turbo'));
+    const engineName = runnerArgs[0] === 'run_krea.js' ? 'Krea 2 Turbo' :
+                       (runnerArgs[0] === 'run_qwen.js' ? 'Qwen-Image 2.1' :
+                       (runnerArgs[0] === 'run_lens.js' ? 'Lens' : 'Z-Turbo'));
 
     return { 
       success: true, 
@@ -789,7 +792,7 @@ async function runAceStepGen(tags, lyrics, slug, duration, referenceAudio = null
 </div>\n`;
         }
 
-await execFileAsync('bun', runnerArgs);
+        await execFileAsync('bun', runnerArgs);
         const state = JSON.parse(await fs.readFile(stateFile, 'utf8'));
         const rawFlacPath = state.savedFilePath;
         const modeStamp = referenceAudio ? '' : 'text_to_music_';
@@ -815,7 +818,7 @@ await execFileAsync('bun', runnerArgs);
     }
 }
 
-async function runYueGen(tags, lyrics, slug, duration, referenceAudio = null, ttsAudioPath = null, stanzaFiles = []) {
+async function runYueGen(tags, lyrics, slug, duration, referenceAudio = null, ttsAudioPath = null, stanzaFiles = [], earlyMusicMode = false) {
     const stateFile = path.join(os.tmpdir(), `yue-state-${Date.now()}.json`);
     try {
         let runnerArgs = [
@@ -825,11 +828,21 @@ async function runYueGen(tags, lyrics, slug, duration, referenceAudio = null, tt
           '--lyrics', lyrics, 
           '--duration', duration.toString()
         ];
+
+        if (earlyMusicMode) {
+          runnerArgs.push('--early-music');
+        }
+        if (useRefPocket) {
+          runnerArgs.push('--ref-pocket');
+        }
+        if (yueCfgOverride !== null) {
+          runnerArgs.push('--cfg', yueCfgOverride.toString());
+        }
         
         let refAudioName = null;
         let refAudioMarkdown = '';
-        const hasTtsGuide = Boolean(ttsAudioPath && existsSync(ttsAudioPath));
-        const validStanzas = (stanzaFiles || []).filter(p => p && existsSync(p));
+        const hasTtsGuide = Boolean(useKokoroCover && ttsAudioPath && existsSync(ttsAudioPath));
+        const validStanzas = useKokoroCover ? (stanzaFiles || []).filter(p => p && existsSync(p)) : [];
         const astroPublicDir = path.join(process.cwd(), 'site/public/images');
 
         if (referenceAudio) {
@@ -848,16 +861,21 @@ async function runYueGen(tags, lyrics, slug, duration, referenceAudio = null, tt
 </div>\n`;
         }
 
-        if (validStanzas.length > 0 && referenceAudio) {
+        // Gate Kokoro stanza/TTS interleaving strictly behind --kokoro-cover so pure musical covers sing cleanly
+        if (useKokoroCover && validStanzas.length > 0 && referenceAudio) {
+          console.log(`🎙️ [YuE2 Cover] --kokoro-cover enabled: interleaving ${validStanzas.length} Kokoro stanzas over ducked reference audio.`);
           runnerArgs.push('--stanza-files', JSON.stringify(validStanzas));
           if (speechFirst) {
             runnerArgs.push('--speech-first');
           }
-        } else if (hasTtsGuide) {
+        } else if (useKokoroCover && hasTtsGuide) {
+          console.log(`🎙️ [YuE2 Cover] --kokoro-cover enabled: using pure Kokoro TTS cadence guide.`);
           runnerArgs.push('--tts-audio', ttsAudioPath);
           if (!referenceAudio) {
             refAudioName = `${path.basename(ttsAudioPath)} (Pure Kokoro Cadence Guide)`;
           }
+        } else if (referenceAudio) {
+          console.log(`🎶 [YuE2 Pure Musical Cover] Bypassing Kokoro interleaving (pass --kokoro-cover to enable spoken guide).`);
         }
 
         // spawnSync passes multi-line lyrics safely without shell quote breaking
@@ -870,9 +888,13 @@ async function runYueGen(tags, lyrics, slug, duration, referenceAudio = null, tt
         const opusFilename = `yue2_${modeStamp}${slug}_${Date.now()}.opus`;
         const opusPath = path.join(IMAGES_DIR, opusFilename);
 
+        // Gentle upper-mid de-harshing & soft high-shelf to tame YuE2 vocal glare (bypass with --raw-audio)
+        const yueOutputAf = useRawAudio
+          ? `afade=t=out:st=${Math.max(0, actualDur - 5)}:d=5`
+          : `equalizer=f=3200:t=q:w=1.2:g=-2,highshelf=f=9000:g=-2,alimiter=limit=-1.2dB,afade=t=out:st=${Math.max(0, actualDur - 5)}:d=5`;
         await execFileAsync('ffmpeg', [
           '-y', '-i', rawFlacPath, 
-          '-af', `afade=t=out:st=${Math.max(0, actualDur - 5)}:d=5`, 
+          '-af', yueOutputAf, 
           '-c:a', 'libopus', '-b:a', '128k', opusPath
         ]);
         if (existsSync(astroPublicDir)) {
@@ -882,10 +904,10 @@ async function runYueGen(tags, lyrics, slug, duration, referenceAudio = null, tt
         await safeUnlink(rawFlacPath);
 
         return { 
-       success: true, 
-       filename: opusFilename,
-       duration: actualDur,
-       engine: "YuE2 3B (BF16)",
+          success: true, 
+          filename: opusFilename,
+          duration: actualDur,
+          engine: "YuE2 3B (BF16)",
           refAudioName: refAudioName || 'None (Unconditioned)',
           refAudioMarkdown: refAudioMarkdown,
           abcScore: state.abcScore || '',
@@ -1139,6 +1161,16 @@ async function main() {
       continue;
     }
 
+    // Resolve reference audio up front so early-music refs inform LLM lyrics & tag conditioning
+    const activeRefAudio = refAudioSetting ? await resolveReferenceAudio(refAudioSetting) : null;
+    const refLooksEarlyMusic = Boolean(activeRefAudio && EARLY_MUSIC_REF_RE.test(path.basename(activeRefAudio)));
+    const promptIsAcoustic = /traditional|cantata|polyphony|opera|baroque|early/i.test(selPrompt.name);
+    const isEarlyMusicRun = useEarlyMusic || promptIsAcoustic || (useYue && refLooksEarlyMusic);
+
+    if (isEarlyMusicRun) {
+      console.log(`🎻 [Early-Music Conditioning Active] Acoustic vocal aria directives & tag preservation enabled.`);
+    }
+
     const title = payload.title || folder.toUpperCase();
     const originalThematicPoem = payload.grok_poem || '';
 
@@ -1227,7 +1259,6 @@ async function main() {
     }
     console.log(`======================================================================\n`);
 
-    // Hypothesis Compilation (Canonical claims are only merged when explicitly enabled)
     const mergedHypotheses = await loadAndMergeHypotheses(domain, cumulativeModel, isTraditional, useCanonical);
     let hypothesisBlock = '';
     
@@ -1254,9 +1285,13 @@ async function main() {
     // Prompt Synthesis
     let userPrompt = selPrompt.chat;
 
+    // Never inject "Instrumental" into the vocal TAGS example
+    const defaultTagExample = isEarlyMusicRun
+      ? `TAGS: Celtic Folk, Folk, Baroque folk ballad, Renaissance lute, ${assignedVoice}`
+      : `TAGS: Folk, Americana, ${assignedVoice}`;
     userPrompt = userPrompt.replace(
       /TAGS:\s*.*?(Bass-Baritone|Lyric Tenor|Mezzo-Soprano|Dramatic Soprano)\s*(male|female)?\s*vocals/gi,
-      `TAGS: Folk, Americana, Instrumental, ${assignedVoice}`
+      defaultTagExample
     );
     userPrompt = userPrompt.replace(/### SONIC GENRE WHITELIST[\s\S]*$/, '').trim();
     userPrompt = userPrompt.replace(
@@ -1286,11 +1321,16 @@ async function main() {
     }
 
     let stylisticEnforcement = "";
-    if (selPrompt.name.includes("traditional") || selPrompt.name.includes("cantata") || selPrompt.name.includes("polyphony") || selPrompt.name.includes("opera")) {
-      stylisticEnforcement = "\n\n--- CRITICAL SONIC DIRECTIVE ---\n" +
-                             "The music pipeline is currently configured for an ACOUSTIC UN-AMPLIFIED RUN. " +
-                             "You must strictly select tags representing acoustic, classical, vocal, or folk traditions. " +
-                             "Do not use electronic, dark, synth, or industrial tags under any circumstances.";
+    if (isEarlyMusicRun) {
+      stylisticEnforcement =
+        "\n\n--- CRITICAL SONIC & VOCAL DIRECTIVE (EARLY MUSIC SUNG BALLAD) ---\n" +
+        "The music pipeline is configured for an ACOUSTIC EARLY MUSIC VOCAL RUN. " +
+        "Anchor the genre tags in Celtic Folk, Folk, or Irish Folk blended with early-music acoustic instruments " +
+        "(e.g., Celtic Folk, Folk, Baroque folk ballad, Renaissance lute, harpsichord continuo, viola da gamba, acoustic harp). " +
+        "Do NOT use the tag \"Classical\" (it causes 20th-century chromatic drift in YuE2) and do NOT use electronic, synth, darksynth, techno, or industrial tags.\n" +
+        "For the LYRICS section, write rich, continuously singable stanzas structured with alternating " +
+        "[Intro], [Verse 1], [Chorus], [Verse 2], [Chorus], [Bridge], [Outro] markers. " +
+        "Keep lyric lines compact (6 to 10 syllables per line) with strong repeated refrain lines in [Chorus] so the singer sustains melodic phrases rather than speaking prose.";
     } else {
       stylisticEnforcement = "\n\n--- CRITICAL SONIC DIRECTIVE ---\n" +
                              "The music pipeline is configured for a SYNTHESIZED DRAMATIC RUN. " +
@@ -1317,25 +1357,43 @@ async function main() {
         forecastsProcessedThisRun++;
     }
 
-    // Programmatic Voice Enforcement & Tag Sanitization
+    // Programmatic Voice Enforcement & Tag Sanitization (preserving early-music descriptors)
     let rawTagsString = (parsed.musicTags || "").replace(/[\[\]()]/g, ''); 
-    let cleanTagsArray = rawTagsString
+    let rawTokens = rawTagsString
       .split(',')
       .map(t => t.trim())
       .filter(t => {
         if (!t) return false;
-     if (/baritone|tenor|soprano|mezzo|vocals|vocal|duet|male|female|instrumental/i.test(t)) return false;
-        return RAW_ACE_STYLES.some(style => style.toLowerCase() === t.toLowerCase());
+        if (/baritone|tenor|soprano|mezzo|vocals|vocal|duet|male|female|instrumental/i.test(t)) return false;
+        if (isEarlyMusicRun && (/^classical$/i.test(t) || ELECTRONIC_TAG_RE.test(t))) return false;
+        return true;
       });
 
-    if (cleanTagsArray.length === 0) {
-      cleanTagsArray = ["Folk", "Americana", "Bluegrass"];
+    let matchedAce = rawTokens.filter(t =>
+      RAW_ACE_STYLES.some(style => style.toLowerCase() === t.toLowerCase())
+    );
+    let descriptiveTokens = rawTokens.filter(t => !matchedAce.includes(t));
+
+    if (isEarlyMusicRun) {
+      // Anchor early-music blending through Celtic Folk & Folk instead of Classical
+      const folkSeed = ["Celtic Folk", "Folk"];
+      const extraFolk = matchedAce.filter(t => !/^(celtic folk|folk)$/i.test(t));
+      matchedAce = [...folkSeed, ...extraFolk].slice(0, 3);
+      const hasEarlyDescriptor = descriptiveTokens.some(t =>
+        /baroque|renaissance|early|lute|harpsichord|chamber|aria|cantata|madrigal|continuo|acoustic|harp|gamba|recorder|ballad/i.test(t)
+      );
+      if (!hasEarlyDescriptor) {
+        descriptiveTokens = ["Baroque folk ballad", "Renaissance lute", "warm chamber strings", ...descriptiveTokens];
+      }
+      var cleanTagsArray = [...matchedAce, ...descriptiveTokens.slice(0, 3), assignedVoice];
+    } else {
+      if (matchedAce.length === 0) matchedAce = ["Folk", "Americana", "Bluegrass"];
+      var cleanTagsArray = useYue
+        ? [...matchedAce.slice(0, 3), ...descriptiveTokens.slice(0, 2), assignedVoice]
+        : [...matchedAce.slice(0, 3), assignedVoice];
     }
 
-    cleanTagsArray = cleanTagsArray.slice(0, 3);
-    cleanTagsArray.push(assignedVoice);
-
-    const safeMusicTagsString = cleanTagsArray.join(', ');
+    const safeMusicTagsString = [...new Set(cleanTagsArray)].join(', ');
     console.log(`🎵 Sanitized Music Tags submitted to worker: "${safeMusicTagsString}"`);
 
     if (!noMemory) {
@@ -1371,7 +1429,6 @@ async function main() {
     const ttsRes = await runPoetryTTS(parsed.verse);
     await freeComfyVRAM();
 
-const activeRefAudio = refAudioSetting ? await resolveReferenceAudio(refAudioSetting) : null;
     const parsedDuration = parseInt(parsed.musicDuration, 10) || generationDuration;
     const finalDuration = (!activeRefAudio && !useKokoroCover && !durArg && parsedDuration < 165)
       ? 165
@@ -1389,7 +1446,8 @@ const activeRefAudio = refAudioSetting ? await resolveReferenceAudio(refAudioSet
         finalDuration,
         activeRefAudio,
         activeTtsPath,
-        ttsRes.stanzaFiles
+        ttsRes.stanzaFiles,
+        isEarlyMusicRun
       );
     } else {
       audioRes = await runAceStepGen(safeMusicTagsString, parsed.musicLyrics, slugify(title), finalDuration, activeRefAudio);
@@ -1401,7 +1459,7 @@ const activeRefAudio = refAudioSetting ? await resolveReferenceAudio(refAudioSet
       await safeUnlink(stPath);
     }
 
-// Assemble Score Embed Block for Markdown
+    // Assemble Score Embed Block for Markdown
     let scoreArtifactsMarkdown = '';
     if (audioRes && audioRes.abcScore) {
       const uniqueId = `score_${Date.now()}`;
@@ -1471,7 +1529,6 @@ ${audioRes.abcScore}
 `;
     }
 
-
     // Clean up raw audio intermediates
     const rawFlacDirScan = await fs.readdir(IMAGES_DIR);
     for (const file of rawFlacDirScan) {
@@ -1480,7 +1537,7 @@ ${audioRes.abcScore}
       }
     }
 
-// Build Astro Markdown Post
+    // Build Astro Markdown Post
     const postDate = new Date().toISOString();
     const frontMatter = [
       `title: ${JSON.stringify(`${title} - Transmuted Pass`)}`,

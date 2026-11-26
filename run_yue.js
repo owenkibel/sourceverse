@@ -10,30 +10,49 @@ const WORKFLOWS_DIR = "./workflows";
 
 const DEFAULT_TEXT_TO_MUSIC_DURATION = 165;
 const MAX_SAFE_VRAM_DURATION = 175;
-const DEFAULT_YUE_CFG_SCALE = 1.8; // Boosted from 1.0 so YuE2GenerateMusic adheres to lyrics & vocal style
+const DEFAULT_YUE_CFG_SCALE = 1.8;
+const DEFAULT_YUE_COVER_CFG_SCALE = 2.25; // Sweet spot: high sung-lyric adherence without 2.5+ harshness
+const DEFAULT_DUCK_LEVEL = 0.32;          // Continuous harmonic bed (~-10 dB) when Kokoro interleaving is explicitly enabled
+const DEFAULT_TTS_GAIN = 0.85;
 
-const CLASSICAL_VOICES = [
+// Warm, singing-forward vocal profiles (intentionally avoiding "classical" / "crystalline" cues that cause 20th-c. chromatic drift or glare)
+const VOCAL_PROFILES = [
   {
     name: "Bass-Baritone",
     gender: "male",
-    stylePrompt: "deep resonant bass-baritone male vocals, low male lead singer, clear sung lyrics, rich theatrical presence"
+    stylePrompt: "deep warm bass-baritone male lead singer, melodic legato singing, sustained vocal vowels, clear sung lyrics, rich intimate resonance"
   },
   {
     name: "Mezzo-Soprano",
     gender: "female",
-    stylePrompt: "warm dark contralto and mezzo female vocals, low alto female singer, clear sung lyrics, rich early music tone"
+    stylePrompt: "warm rich contralto and mezzo-soprano female lead singer, melodic legato singing, sustained vocal vowels, clear sung lyrics, intimate early music ballad tone"
   },
   {
     name: "Lyric Tenor",
     gender: "male",
-    stylePrompt: "bright lyric tenor male vocals, clear male lead singer, clear sung lyrics, elegant classical articulation"
+    stylePrompt: "warm lyric tenor male lead singer, melodic legato singing, sustained vocal vowels, clear sung lyrics, graceful acoustic ballad articulation"
   },
   {
     name: "Dramatic Soprano",
     gender: "female",
-    stylePrompt: "soaring dramatic soprano female vocals, clear sung lyrics, classical chamber performance, crystalline tone"
+    stylePrompt: "warm expressive soprano female lead singer, melodic legato singing, sustained vocal vowels, clear sung lyrics, lush resonant chamber tone"
   }
 ];
+
+function dedupeStyleTags(styleStr) {
+  const seen = new Set();
+  return styleStr
+    .split(',')
+    .map(t => t.trim())
+    .filter(t => {
+      if (!t) return false;
+      const key = t.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .join(', ');
+}
 
 function isValidAbc(text) {
   if (typeof text !== 'string') return false;
@@ -42,7 +61,7 @@ function isValidAbc(text) {
   return (/^X:\s*\d+/m.test(trimmed) || trimmed.includes('K:') || trimmed.includes('M:') || trimmed.includes('|'));
 }
 
-function sanitizeLyrics(lyrics, isCover = false) {
+function sanitizeLyrics(lyrics, { stripLeadingIntro = false, ensureIntroForCover = false } = {}) {
   if (!lyrics || !lyrics.trim()) return "[Instrumental]";
   let cleaned = lyrics
     .replace(/\\n/g, '\n')
@@ -55,10 +74,11 @@ function sanitizeLyrics(lyrics, isCover = false) {
     .map(line => {
       const t = line.trim();
       if (!t || t.startsWith('[')) return t;
-      if (t.length > 90) {
+      // Split long prose lines into shorter singable phrases (~6-10 syllables)
+      if (t.length > 64) {
         return t
-          .replace(/([.;!?—])\s+(?=[A-Z"'])/g, '$1\n')
-          .replace(/,\s+(?=[A-Z])/g, ',\n');
+          .replace(/([.;!?—])\s+(?=[A-Za-z"'])/g, '$1\n')
+          .replace(/,\s+(?=[A-Za-z"'])/g, ',\n');
       }
       return t;
     })
@@ -66,13 +86,20 @@ function sanitizeLyrics(lyrics, isCover = false) {
     .replace(/\n{3,}/g, '\n\n')
     .trim();
 
-  if (isCover) {
-    // Strip leading [Intro] in Cover mode so vocals begin immediately at t=0 with Kokoro
+  if (stripLeadingIntro) {
+    // Only strip leading [Intro] when vocals literally start at t=0 (e.g. --speech-first or pure Kokoro cover)
     cleaned = cleaned.replace(/^\s*\[(intro|instrumental)[^\]]*\]\s*/i, '').trim();
   }
+
   if (!cleaned.includes('[')) {
     cleaned = `[Verse 1]\n${cleaned}`;
   }
+
+  if (ensureIntroForCover && !/^\s*\[intro[^\]]*\]/i.test(cleaned)) {
+    // Keep a brief musical pickup so YuE2 locks onto key & meter before singing enters on [Verse 1]
+    cleaned = `[Intro]\n\n${cleaned}`;
+  }
+
   return cleaned;
 }
 
@@ -161,52 +188,86 @@ async function main() {
     };
 
     const stateFilePath = getArg('--state-file') || 'yue_state.json';
-    const tags = getArg('--tags') || "Folk, Americana";
+    const tags = getArg('--tags') || "Celtic Folk, Folk";
     const rawLyrics = getArg('--lyrics') || "";
     const requestedDuration = parseInt(getArg('--duration') || '128', 10);
 
-const refAudioPath = getArg('--ref-audio');
- const ttsAudioPath = getArg('--tts-audio');
- const stanzaFilesArg = getArg('--stanza-files');
+    const refAudioPath = getArg('--ref-audio');
+    const ttsAudioPath = getArg('--tts-audio');
+    const stanzaFilesArg = getArg('--stanza-files');
 
- let stanzaPaths = [];
- if (stanzaFilesArg) {
-   try {
-     const parsed = JSON.parse(stanzaFilesArg);
-     if (Array.isArray(parsed)) stanzaPaths = parsed.filter(p => p && fs.existsSync(p));
-   } catch (_) {
-     stanzaPaths = stanzaFilesArg.split(',').map(s => s.trim()).filter(p => p && fs.existsSync(p));
-   }
- }
+    let stanzaPaths = [];
+    if (stanzaFilesArg) {
+      try {
+        const parsed = JSON.parse(stanzaFilesArg);
+        if (Array.isArray(parsed)) stanzaPaths = parsed.filter(p => p && fs.existsSync(p));
+      } catch (_) {
+        stanzaPaths = stanzaFilesArg.split(',').map(s => s.trim()).filter(p => p && fs.existsSync(p));
+      }
+    }
 
- const ttsMode = (getArg('--tts-mode') || 'loop').toLowerCase(); // 'loop' | 'once'
+    const ttsMode = (getArg('--tts-mode') || 'loop').toLowerCase(); // 'loop' | 'once'
+    const speechFirst = args.includes('--speech-first');
+    const earlyMusicFlag = args.includes('--early-music');
+    const refPocket = args.includes('--ref-pocket');
 
- const speechFirst = args.includes('--speech-first');
+    const duckLevelArg = getArg('--duck-level');
+    const ttsGainArg = getArg('--tts-gain');
+    const duckLevel = duckLevelArg !== null ? Math.max(0.0, Math.min(1.0, parseFloat(duckLevelArg))) : DEFAULT_DUCK_LEVEL;
+    const ttsGain = ttsGainArg !== null ? Math.max(0.1, Math.min(1.5, parseFloat(ttsGainArg))) : DEFAULT_TTS_GAIN;
 
- const cfgArg = getArg('--cfg');
- const samplerCfgArg = getArg('--sampler-cfg');
- const cfgScale = cfgArg !== null ? parseFloat(cfgArg) : DEFAULT_YUE_CFG_SCALE;
- const samplerCfg = samplerCfgArg !== null ? parseFloat(samplerCfgArg) : null;
+    const hasInstRef = Boolean(refAudioPath && fs.existsSync(refAudioPath));
+    const hasTtsGuide = Boolean(ttsAudioPath && fs.existsSync(ttsAudioPath));
+    const hasStanzas = Boolean(hasInstRef && stanzaPaths.length > 0);
+    const isCover = hasInstRef || hasTtsGuide;
 
- const hasInstRef = Boolean(refAudioPath && fs.existsSync(refAudioPath));
- const hasTtsGuide = Boolean(ttsAudioPath && fs.existsSync(ttsAudioPath));
- const hasStanzas = Boolean(hasInstRef && stanzaPaths.length > 0);
- const isCover = hasInstRef || hasTtsGuide;
+    const cfgArg = getArg('--cfg');
+    const samplerCfgArg = getArg('--sampler-cfg');
+    const cfgScale = cfgArg !== null
+      ? parseFloat(cfgArg)
+      : (isCover ? DEFAULT_YUE_COVER_CFG_SCALE : DEFAULT_YUE_CFG_SCALE);
+    const samplerCfg = samplerCfgArg !== null ? parseFloat(samplerCfgArg) : null;
 
     const seed = Math.floor(Math.random() * 1000000000);
 
-    let selectedVoice = CLASSICAL_VOICES[1];
+    let selectedVoice = VOCAL_PROFILES[1];
     const lowerTags = tags.toLowerCase();
     if (lowerTags.includes('baritone') || lowerTags.includes('bass')) {
-      selectedVoice = CLASSICAL_VOICES[0];
+      selectedVoice = VOCAL_PROFILES[0];
     } else if (lowerTags.includes('dramatic soprano')) {
-      selectedVoice = CLASSICAL_VOICES[3];
+      selectedVoice = VOCAL_PROFILES[3];
     } else if (lowerTags.includes('tenor')) {
-      selectedVoice = CLASSICAL_VOICES[2];
+      selectedVoice = VOCAL_PROFILES[2];
     }
 
-    const compositeStyle = `${tags}, ${selectedVoice.stylePrompt}, masterfully mixed, 48kHz stereo, high fidelity`;
-    const formattedLyrics = sanitizeLyrics(rawLyrics, isCover);
+    const isEarlyMusic =
+      earlyMusicFlag ||
+      /\b(early music|baroque|renaissance|harpsichord|lute|madrigal|cantata|aria|chamber|celtic folk|irish folk|viola da gamba|continuo|recorder|consort)\b/i.test(tags);
+
+    // For early music, drop standalone "Classical" (which pulls YuE2 toward 20th-century chromaticism)
+    // and anchor genre blending through Celtic Folk & Folk with warm wooden chamber acoustics.
+    const cleanedTags = isEarlyMusic
+      ? tags
+          .split(',')
+          .map(t => t.trim())
+          .filter(t => t && !/^classical$/i.test(t))
+          .join(', ')
+      : tags;
+
+    const compositeStyle = dedupeStyleTags(
+      isEarlyMusic
+        ? `${selectedVoice.stylePrompt}, continuous melodic singing, lyrical sung early music ballad, Celtic Folk, Folk, modal acoustic melody, ${cleanedTags}, warm wooden chamber acoustics, rich stereo depth, natural hall resonance`
+        : `${selectedVoice.stylePrompt}, continuous melodic singing, clear sung vocal melody, ${cleanedTags}, warm balanced mix, rich stereo depth`
+    );
+
+    const vocalsStartAtZero = speechFirst || (hasTtsGuide && !hasInstRef);
+    const pureMusicalCover = hasInstRef && !hasStanzas && !speechFirst;
+    const formattedLyrics = sanitizeLyrics(rawLyrics, {
+      stripLeadingIntro: vocalsStartAtZero,
+      ensureIntroForCover: pureMusicalCover
+    });
+
+    console.log(`🎼 Composite Style Prompt: "${compositeStyle}"`);
 
     const workflowFile = isCover
       ? path.join(WORKFLOWS_DIR, 'yue2_cover_api.json')
@@ -229,20 +290,20 @@ const refAudioPath = getArg('--ref-audio');
     }
 
     const baseWorkflow = JSON.parse(fs.readFileSync(workflowFile, 'utf8'));
-    
 
-if (isCover) {
+    if (isCover) {
       conformedRefPath = path.join(os.tmpdir(), `yue_ref_${Date.now()}.flac`);
-      // Strips leading silence AND any internal dead-air pauses (>0.35s below -45dB) from the Bach reference track:
+      // Strips leading silence AND any internal dead-air pauses (>0.35s below -45dB) from the musical reference track:
       const bachCleanFilter =
         'silenceremove=start_periods=1:start_duration=0.05:start_threshold=-42dB:stop_periods=-1:stop_duration=0.35:stop_threshold=-45dB';
+      // Optional mild midrange pocket applied ONLY to temporary ComfyUI conditioning audio (leaves published example .opus rich & untouched):
+      const refPocketFilter = refPocket ? ',equalizer=f=1800:t=q:w=1.2:g=-2.5' : '';
       // Only strips leading silence on Kokoro speech so natural spoken cadence is untouched:
       const ttsSilenceStrip =
         'silenceremove=start_periods=1:start_duration=0.05:start_threshold=-42dB';
       const fadeStart = Math.max(5, effectiveDuration - 4.5);
 
-     if (hasStanzas) {
-        // Measure exact duration of each individual Kokoro stanza file
+      if (hasStanzas) {
         const stanzas = stanzaPaths.map(p => {
           const out = execSync(
             `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${p}"`,
@@ -253,9 +314,6 @@ if (isCover) {
 
         const N = stanzas.length;
         const totalSpeechDur = stanzas.reduce((acc, s) => acc + s.dur, 0);
-        // Leave 2.5s clean tail silence at the end for SheetSage2.
-        // If --speech-first is active, start Stanza 1 at 0.00s and divide remaining Bach into N gaps;
-        // otherwise start with Bach and divide into (N + 1) gaps.
         const usableDur = Math.max(totalSpeechDur + 4.0, effectiveDuration - 2.5);
         const gapDivisor = Math.max(1, speechFirst ? N : (N + 1));
         const bachGap = Math.max(1.5, (usableDur - totalSpeechDur) / gapDivisor);
@@ -269,36 +327,33 @@ if (isCover) {
         }
 
         console.log(
-          `🎚️  Interleaving ${windows.length} full-volume Kokoro stanzas over Bach (${speechFirst ? 'Speech-First @ 0.00s' : 'Bach-First'}, ${bachGap.toFixed(1)}s Bach intervals, zero overlap):`
+          `🎚️  Interleaving ${windows.length} Kokoro stanzas over CONTINUOUS ducked music (${speechFirst ? 'Speech-First @ 0.00s' : 'Music-First'}, bed duck=${duckLevel}, tts gain=${ttsGain}):`
         );
         windows.forEach((w, idx) => {
-          console.log(`   • Stanza ${idx + 1}: ${w.start.toFixed(2)}s – ${w.end.toFixed(2)}s (${w.dur.toFixed(2)}s) @ 100% volume`);
+          console.log(`   • Stanza ${idx + 1}: ${w.start.toFixed(2)}s – ${w.end.toFixed(2)}s (${w.dur.toFixed(2)}s)`);
         });
 
-        // Build FFmpeg filter_complex:
-        // 1. Input [0:a] is Bach at 100% volume, gated to 0.0 during every [start, end] stanza window (with 30ms click-free ramps)
-        // 2. Inputs [1:a]..[K:a] are each individual Kokoro stanza at 100% volume delayed to its exact start timestamp
         const inputs = [`-i "${refAudioPath}"`, ...windows.map(w => `-i "${w.path}"`)].join(' ');
-        const muteExprs = windows.map(w => `between(t,${w.start.toFixed(3)},${w.end.toFixed(3)})`).join('+');
+        const duckExprs = windows.map(w => `between(t,${w.start.toFixed(3)},${w.end.toFixed(3)})`).join('+');
 
-let fg = `[0:a]${bachCleanFilter},apad=whole_dur=${effectiveDuration},volume=0:enable='${muteExprs}':eval=frame[bach_gated];`;
-        const mixLabels = ['[bach_gated]'];
+        let fg = `[0:a]${bachCleanFilter}${refPocketFilter},apad=whole_dur=${effectiveDuration},volume=${duckLevel}:enable='${duckExprs}':eval=frame[bach_ducked];`;
+        const mixLabels = ['[bach_ducked]'];
 
         windows.forEach((w, idx) => {
           const inIdx = idx + 1;
           const delayMs = Math.round(w.start * 1000);
-          const fadeOutSt = Math.max(0, w.dur - 0.03).toFixed(3);
-          fg += `[${inIdx}:a]afade=t=in:st=0:d=0.03,afade=t=out:st=${fadeOutSt}:d=0.03,adelay=${delayMs}|${delayMs}[st${idx}];`;
+          const fadeOutSt = Math.max(0, w.dur - 0.08).toFixed(3);
+          fg += `[${inIdx}:a]volume=${ttsGain},afade=t=in:st=0:d=0.08,afade=t=out:st=${fadeOutSt}:d=0.08,adelay=${delayMs}|${delayMs}[st${idx}];`;
           mixLabels.push(`[st${idx}]`);
         });
 
-        fg += `${mixLabels.join('')}amix=inputs=${mixLabels.length}:duration=first:normalize=0,afade=t=out:st=${fadeStart}:d=2.5,apad=pad_dur=3,atrim=0:${effectiveDuration}`;
+        fg += `${mixLabels.join('')}amix=inputs=${mixLabels.length}:duration=first:normalize=0,alimiter=limit=-1.2dB,afade=t=out:st=${fadeStart}:d=2.5,apad=pad_dur=3,atrim=0:${effectiveDuration}`;
 
         execSync(
           `ffmpeg -y ${inputs} -filter_complex "${fg}" -ar 48000 -ac 2 -t ${effectiveDuration} "${conformedRefPath}"`,
           { stdio: 'ignore' }
         );
-     } else if (hasTtsGuide && !hasInstRef) {
+      } else if (hasTtsGuide && !hasInstRef) {
         const ttsFilter = ttsMode === 'once'
           ? `[0:a]${ttsSilenceStrip},apad=pad_dur=${effectiveDuration},atrim=0:${effectiveDuration}`
           : `[0:a]${ttsSilenceStrip},apad=pad_dur=1.5,aloop=loop=-1:size=2e+09,afade=t=out:st=${fadeStart}:d=2.5,apad=pad_dur=3,atrim=0:${effectiveDuration}`;
@@ -309,8 +364,8 @@ let fg = `[0:a]${bachCleanFilter},apad=whole_dur=${effectiveDuration},volume=0:e
           { stdio: 'ignore' }
         );
       } else {
-        const filterChain = `${bachCleanFilter},afade=t=out:st=${fadeStart}:d=2.5,apad=pad_dur=3,atrim=0:${effectiveDuration}`;
-        console.log(`⚡ Conforming reference track for [${selectedVoice.name}] (${effectiveDuration}s)...`);
+        const filterChain = `${bachCleanFilter}${refPocketFilter},afade=t=out:st=${fadeStart}:d=2.5,apad=pad_dur=3,atrim=0:${effectiveDuration}`;
+        console.log(`⚡ Conforming pure musical cover reference for [${selectedVoice.name}] (${effectiveDuration}s, cfg=${cfgScale}${refPocket ? ', temp ref-pocket ON' : ''})...`);
         execSync(
           `ffmpeg -y -i "${refAudioPath}" -af "${filterChain}" -ar 48000 -ac 2 -t ${effectiveDuration} "${conformedRefPath}"`,
           { stdio: 'ignore' }
@@ -352,7 +407,7 @@ let fg = `[0:a]${bachCleanFilter},apad=whole_dur=${effectiveDuration},volume=0:e
 
     if (!res.ok) throw new Error(`ComfyUI Error: ${await res.text()}`);
     const { prompt_id } = await res.json();
-    console.log(`Job Queued: ${prompt_id} [Mode: ${isCover ? 'Cover' : 'Text-to-Music'} | Max Duration: ${effectiveDuration}s]`);
+    console.log(`Job Queued: ${prompt_id} [Mode: ${isCover ? (hasStanzas ? 'Cover+Kokoro' : 'Pure Musical Cover') : 'Text-to-Music'} | CFG: ${cfgScale} | Max Duration: ${effectiveDuration}s]`);
 
     let success = false;
     let outputInfo = {};
