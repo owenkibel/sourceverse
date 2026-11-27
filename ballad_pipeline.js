@@ -35,8 +35,31 @@ const VOICE_CYCLE = [
   "Dramatic Soprano female vocals"
 ];
 
-const EARLY_MUSIC_REF_RE = /(tpgettys|bwv|hwv|twv|\brv\d|bach|handel|vivaldi|telemann|baroque|renaissance|early|lute|choir|aria|cantata|harpsichord|madrigal|consort|gamba|recorder|dowland|purcell|byrd|gibbons|coprario|hilton|ravenscroft|hingeston|oswald)/i;
+const EARLY_MUSIC_REF_RE = /(tpgettys|bwv|hwv|twv|\brv\d|bach|handel|vivaldi|telemann|baroque|renaissance|early|lute|choir|aria|cantata|harpsichord|madrigal|consort|gamba|recorder|dowland|purcell|byrd|gibbons|coprario|hilton|ravenscroft|hingeston|oswald|playford|ferrabosco|loeillet)/i;
 const ELECTRONIC_TAG_RE = /(synth|techno|house|electro|industrial|dubstep|trap|trance|edm|cyber|rave|phonk|glitch|ambient techno|darkwave|vapor|drum and bass|dnb|acid|breakcore|gabber|trip hop)/i;
+
+// Reference-track matching patterns for Schema v2 (ref_style, meter, milieu, tempo_bpm)
+const REF_STYLE_PATTERNS = {
+  'consort-choir': /(consort[_-]?choir|choir|kbh|vocal|madrigal|motet|chorale|cantata|consort)/i,
+  'aria': /(aria|solo|lute|ayre|harpsichord|sonata|dowland|handel|hwv|bwv|suite)/i,
+  'consort': /(consort|fantasia|fancy|gamba|recorder|pavan|pavane|galliard|coprario|hilton|gibbons|byrd|hingeston|purcell|ferrabosco)/i
+};
+
+const TRIPLE_METER_RE = /(6[_-]?8|3[_-]?4|3[_-]?8|triple|jig|gigue|galliard|gaillard|courante|coranto|saraband|minuet|menuet|branle|siciliana|saltarello|canary|hornpipe|reel|scots|oswald|waltz)/i;
+const DUPLE_METER_RE = /(4[_-]?4|2[_-]?4|duple|pavan|pavane|allemande|alman|fantasia|fancy|in[_-]?nomine|prelude|fugue|march|bourree|gavotte|ayre|air|chorale|sonata|madrigal)/i;
+
+const MILIEU_REF_PATTERNS = {
+  SCOTTISH_FLYTING: /(oswald|scots|scottish|celtic|irish|playford|ravenscroft|jig|reel|air)/i,
+  AUSTRALIAN_BUSH: /(jig|reel|hornpipe|galliard|playford|ballad|dance|oswald|folk|branle)/i,
+  RESTORATION_BROADSIDE: /(purcell|playford|dowland|byrd|gibbons|coprario|hilton|ravenscroft|hingeston|ferrabosco|fantasia|pavan|galliard)/i,
+  MARITIME_FORECASTLE: /(hornpipe|march|jig|shanty|playford|dance|ballad|reel|branle)/i,
+  FRONTIER_TALL_TALE: /(playford|dance|jig|reel|hornpipe|march|folk|ballad|oswald)/i,
+  CONTEMPORARY_DRY: /(bwv|bach|scarlatti|couperin|telemann|twv|sonata|fugue|harpsichord)/i
+};
+
+const FAST_MOVEMENT_RE = /(allegro|presto|vivace|gigue|jig|galliard|gaillard|courante|coranto|hornpipe|reel|bourree|gavotte|canary|saltarello)/i;
+const MODERATE_MOVEMENT_RE = /(moderato|andante|allemande|alman|minuet|menuet|air|ayre|fantasia|fancy|sonata|madrigal)/i;
+const SLOW_MOVEMENT_RE = /(adagio|largo|lento|pavan|pavane|saraband|lachrimae|lament|chorale|in[_-]?nomine)/i;
 
 const LIMERICK_GENRE_CYCLE = [
   {
@@ -97,20 +120,30 @@ const speechFirst = args.includes('--speech-first');
 const useEarlyMusic = args.includes('--early-music');
 const useRefPocket = args.includes('--ref-pocket');
 const useRawAudio = args.includes('--raw-audio');
+const forceRef = args.includes('--force-ref');
+const noPromoteVocals = args.includes('--no-promote-vocals');
+const noMidBreak = args.includes('--no-mid-break');
+
+const introSysArg = args.find(a => a.startsWith('--intro-systems='));
+const introSystemsOverride = introSysArg ? introSysArg.split('=')[1].trim() : null;
+
+const cotArg = args.find(a => a.startsWith('--cot='));
+const cotOverride = cotArg ? cotArg.split('=')[1].trim() : null;
 
 let yueCfgOverride = null;
 const yueCfgArg = args.find(a => /^--(yue-cfg|cfg)=/i.test(a));
 if (yueCfgArg) {
   const parsedCfg = parseFloat(yueCfgArg.split('=')[1]);
   if (!Number.isNaN(parsedCfg)) yueCfgOverride = parsedCfg;
-}  
+}
 
 const slugify = (t) =>
   (t || 'ballad')
     .toString()
     .toLowerCase()
-    .replace(/\s+/g, '-')
-    .replace(/[^\w\-]+/g, '')
+    .replace(/[\/_\s&]+/g, '-')
+    .replace(/[^a-z0-9-]+/g, '')
+    .replace(/-{2,}/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 48);
 
@@ -138,38 +171,195 @@ async function freeComfyVRAM() {
   } catch (_) {}
 }
 
-async function resolveReferenceAudio(refArgValue) {
+async function collectPoolAudioFiles(rootDir, maxDepth = 2, depth = 0) {
+  let results = [];
+  let entries;
+  try {
+    entries = await fs.readdir(rootDir, { withFileTypes: true });
+  } catch (_) {
+    return results;
+  }
+
+  for (const entry of entries) {
+    const fullPath = path.join(rootDir, entry.name);
+    if (entry.isDirectory() && depth < maxDepth) {
+      results = results.concat(await collectPoolAudioFiles(fullPath, maxDepth, depth + 1));
+    } else if (entry.isFile() && /\.(opus|mp4|wav|flac|mp3)$/i.test(entry.name)) {
+      results.push(fullPath);
+    }
+  }
+  return results;
+}
+
+function scoreReferenceCandidate(relPath, hints = {}) {
+  const target = (relPath || '').toLowerCase();
+  let score = 0;
+  const reasons = [];
+
+  const refStyle = (hints.refStyle || '').toLowerCase();
+  if (refStyle && REF_STYLE_PATTERNS[refStyle]) {
+    if (REF_STYLE_PATTERNS[refStyle].test(target)) {
+      score += 40;
+      reasons.push(`ref_style=${refStyle}`);
+    }
+    // Bonus if candidate lives in a subfolder named after refStyle (e.g. ref_audio_pool/consort-choir/)
+    const pathParts = target.split(/[\\/]/);
+    if (pathParts.slice(0, -1).some(seg => seg.replace(/_/g, '-') === refStyle)) {
+      score += 25;
+      reasons.push(`folder=${refStyle}`);
+    }
+  }
+
+  const meter = (hints.meter || '').trim();
+  if (meter === '6/8' || meter === '3/4' || meter === '3/8') {
+    if (TRIPLE_METER_RE.test(target)) {
+      score += 30;
+      reasons.push(`meter=${meter}(triple)`);
+    } else if (DUPLE_METER_RE.test(target)) {
+      score -= 8;
+    }
+  } else if (meter === '4/4' || meter === '2/4') {
+    if (DUPLE_METER_RE.test(target)) {
+      score += 24;
+      reasons.push(`meter=${meter}(duple)`);
+    } else if (TRIPLE_METER_RE.test(target)) {
+      score -= 8;
+    }
+  }
+
+  const milieu = (hints.milieu || '').toUpperCase();
+  if (milieu && MILIEU_REF_PATTERNS[milieu] && MILIEU_REF_PATTERNS[milieu].test(target)) {
+    score += 20;
+    reasons.push(`milieu=${milieu}`);
+  }
+
+  const genreLower = (hints.musicGenre || '').toLowerCase();
+  if (/baroque|harpsichord|lute/.test(genreLower) && /(bwv|bach|hwv|handel|twv|telemann|rv\d|vivaldi|lute|harpsichord|sonata|suite)/i.test(target)) {
+    score += 18;
+    reasons.push('genre=baroque');
+  } else if (/scottish|oswald|celtic/.test(genreLower) && /(oswald|scots|celtic|irish|jig|reel|playford|ravenscroft)/i.test(target)) {
+    score += 18;
+    reasons.push('genre=celtic/scots');
+  } else if (/consort|early english/.test(genreLower) && /(consort|fantasia|coprario|hilton|byrd|gibbons|dowland|purcell|hingeston|ferrabosco)/i.test(target)) {
+    score += 18;
+    reasons.push('genre=consort');
+  }
+
+  const tempoBpm = Number(hints.tempoBpm) || 0;
+  if (tempoBpm > 0) {
+    const bpmMatch = target.match(/(?:^|[^0-9])(\d{2,3})\s*bpm\b|\bbpm[_-]?(\d{2,3})\b/i);
+    if (bpmMatch) {
+      const fileBpm = parseInt(bpmMatch[1] || bpmMatch[2], 10);
+      const diff = Math.abs(fileBpm - tempoBpm);
+      if (diff <= 12) {
+        score += 15;
+        reasons.push(`bpm~${fileBpm}`);
+      } else if (diff <= 24) {
+        score += 8;
+        reasons.push(`bpm~${fileBpm}`);
+      }
+    } else if (tempoBpm >= 110 && FAST_MOVEMENT_RE.test(target)) {
+      score += 12;
+      reasons.push(`tempo>=110(fast)`);
+    } else if (tempoBpm >= 98 && tempoBpm < 110 && MODERATE_MOVEMENT_RE.test(target)) {
+      score += 10;
+      reasons.push(`tempo~${tempoBpm}(mod)`);
+    } else if (tempoBpm < 98 && SLOW_MOVEMENT_RE.test(target)) {
+      score += 12;
+      reasons.push(`tempo<98(slow)`);
+    }
+  }
+
+  if (hints.earlyMusicReady && EARLY_MUSIC_REF_RE.test(target)) {
+    score += 5;
+  }
+
+  return { score, reasons };
+}
+
+async function resolveReferenceAudio(refArgValue, hints = null, usedRefPaths = null) {
   if (!refArgValue) return null;
   let targetPoolDir = DEFAULT_REF_POOL_DIR;
 
   if (refArgValue !== 'true' && refArgValue !== 'pool' && refArgValue !== 'auto') {
     try {
       const stats = await fs.stat(refArgValue);
-      if (stats.isFile()) return refArgValue;
+      if (stats.isFile()) {
+        console.log(`🎧 [Ref-Audio] Explicit file locked: ${path.basename(refArgValue)}`);
+        return refArgValue;
+      }
       if (stats.isDirectory()) targetPoolDir = refArgValue;
     } catch (_) {}
   }
 
-  try {
-    const entries = await fs.readdir(targetPoolDir);
-    const audioFiles = entries.filter(f => /\.(opus|mp4|wav|flac|mp3)$/i.test(f));
-    if (audioFiles.length > 0) {
-      const chosen = audioFiles[Math.floor(Math.random() * audioFiles.length)];
-      return path.join(targetPoolDir, chosen);
-    }
-  } catch (_) {}
-  return null;
+  // Respect schema v2 ref_style: "none" (e.g., Electro-Swing) unless --force-ref is passed
+  if (hints && (hints.refStyle || '').toLowerCase() === 'none' && !forceRef) {
+    console.log(`⏭️  [Ref-Audio] Post specifies ref_style: "none" (${hints.musicGenre || 'modern'}) — running unconditioned Text-to-Music (pass --force-ref to override).`);
+    return null;
+  }
+
+  const audioPaths = await collectPoolAudioFiles(targetPoolDir, 2);
+  if (audioPaths.length === 0) return null;
+
+  const hasHints = Boolean(
+    hints && (hints.refStyle || hints.meter || hints.milieu || hints.tempoBpm || hints.earlyMusicReady)
+  );
+
+  if (!hasHints) {
+    const unused = usedRefPaths
+      ? audioPaths.filter(p => !usedRefPaths.has(p))
+      : audioPaths;
+    const pool = unused.length > 0 ? unused : audioPaths;
+    const chosen = pool[Math.floor(Math.random() * pool.length)];
+    if (usedRefPaths) usedRefPaths.add(chosen);
+    return chosen;
+  }
+
+  const scored = audioPaths.map(fullPath => {
+    const relPath = path.relative(targetPoolDir, fullPath);
+    const { score, reasons } = scoreReferenceCandidate(relPath, hints);
+    const alreadyUsedPenalty = usedRefPaths && usedRefPaths.has(fullPath) ? -25 : 0;
+    return {
+      fullPath,
+      relPath,
+      rawScore: score,
+      effectiveScore: score + alreadyUsedPenalty,
+      reasons
+    };
+  });
+
+  scored.sort((a, b) => b.effectiveScore - a.effectiveScore);
+  const bestScore = scored[0].effectiveScore;
+
+  // Pick randomly within a narrow top-scoring tier (within 8 pts of best) so batches retain musical variety
+  const topTier = scored.filter(c => c.effectiveScore >= bestScore - 8).slice(0, 5);
+  const pick = topTier[Math.floor(Math.random() * topTier.length)];
+  if (usedRefPaths) usedRefPaths.add(pick.fullPath);
+
+  const reasonStr = pick.reasons.length > 0 ? pick.reasons.join(', ') : 'pool fallback';
+  console.log(
+    `🎧 [Ref-Audio Match] Selected "${pick.relPath}" (score=${pick.rawScore} | ${reasonStr}) from ${audioPaths.length} pool track(s).`
+  );
+
+  return pick.fullPath;
 }
 
 // =========================================================================
-// MARKDOWN PARSER FOR EPISTEMIC BALLADEER & FIFTH-LINE-GEMINI EXPORTS
+// MARKDOWN PARSER FOR EPISTEMIC BALLADEER (v1 & v2) & FIFTH-LINE EXPORTS
 // =========================================================================
 const backfillMetaOnly = args.includes('--backfill-meta');
 
 function extractFmValue(fm, key, fallback = '') {
-  const regex = new RegExp(`^${key}:\\s*"?([^"\\n]+)"?`, 'm');
+  const regex = new RegExp(`^${key}:\\s*"?([^"\\r\\n]+)"?`, 'm');
   const m = fm.match(regex);
   return m ? m[1].replace(/\\"/g, '"').trim() : fallback;
+}
+
+function extractFmBool(fm, key) {
+  const regex = new RegExp(`^${key}:\\s*(true|false)\\b`, 'mi');
+  const m = fm.match(regex);
+  if (!m) return null;
+  return m[1].toLowerCase() === 'true';
 }
 
 function buildSingableLimerickLyrics(poemText, title) {
@@ -228,16 +418,18 @@ function parseBalladMarkdown(rawMd, filePath = '', genreCycleIdx = 0) {
     /^rendered:\s*true/m.test(frontMatterRaw) ||
     /^status:\s*"rendered"/m.test(frontMatterRaw);
 
+  const schemaVersion = parseInt(extractFmValue(frontMatterRaw, 'schema_version', '1'), 10) || 1;
+
   const title = extractFmValue(
     frontMatterRaw,
     'title',
     isFifthLine ? 'Fifth Line Limerick' : 'Epistemic Ballad'
   );
-  const modelUsed = extractFmValue(frontMatterRaw, 'model', 'gemini-3.5-flash-lite');
+  const modelUsed = extractFmValue(frontMatterRaw, 'model', 'gemini-4-hydrogen');
   const formUsed = extractFmValue(
     frontMatterRaw,
     'form',
-    isFifthLine ? 'ANAPESTIC_LIMERICK' : 'FOURTEENER_12'
+    isFifthLine ? 'ANAPESTIC_LIMERICK' : 'BALLAD_SHORT'
   );
   const strategyUsed = extractFmValue(
     frontMatterRaw,
@@ -245,11 +437,21 @@ function parseBalladMarkdown(rawMd, filePath = '', genreCycleIdx = 0) {
     isFifthLine ? 'AABBA_PROSODY' : 'AUTO'
   );
 
+  // Schema v2 orthogonal axes & Early Music reference hints
+  const milieu = extractFmValue(frontMatterRaw, 'milieu', '');
+  const pov = extractFmValue(frontMatterRaw, 'pov', '');
+  const foil = extractFmValue(frontMatterRaw, 'foil', '');
+  const meter = extractFmValue(frontMatterRaw, 'meter', '');
+  const tempoBpmRaw = extractFmValue(frontMatterRaw, 'tempo_bpm', '');
+  const tempoBpm = tempoBpmRaw ? parseInt(tempoBpmRaw, 10) || null : null;
+  const refStyle = extractFmValue(frontMatterRaw, 'ref_style', '');
+  const earlyMusicReadyExplicit = extractFmBool(frontMatterRaw, 'early_music_ready');
+
   const limerickGenre = LIMERICK_GENRE_CYCLE[genreCycleIdx % LIMERICK_GENRE_CYCLE.length];
   const musicGenre = extractFmValue(
     frontMatterRaw,
     'music_genre',
-    isFifthLine ? limerickGenre.label : 'Baroque Harpsichord & Lute'
+    isFifthLine ? limerickGenre.label : 'Early English Consort'
   );
 
   const seedLine =
@@ -321,12 +523,20 @@ function parseBalladMarkdown(rawMd, filePath = '', genreCycleIdx = 0) {
   return {
     sourceType: isFifthLine ? 'fifth-line' : 'balladeer',
     isFifthLine,
+    schemaVersion,
     frontMatterRaw,
     body,
     title,
     modelUsed,
     formUsed,
     strategyUsed,
+    milieu,
+    pov,
+    foil,
+    meter,
+    tempoBpm,
+    refStyle,
+    earlyMusicReadyExplicit,
     musicGenre,
     seedLine,
     punchline,
@@ -374,7 +584,7 @@ function sanitizeTagsForAceStep(rawTags, assignedVoice, earlyMusicMode = false) 
       descriptive = ['Baroque folk ballad', 'Renaissance lute', 'warm chamber strings', ...descriptive];
     }
   } else {
-    baseGenres = matchedAce.length > 0 ? matchedAce.slice(0, 3) : ['Celtic Folk', 'Folk'];
+    baseGenres = matchedAce.length > 0 ? matchedAce.slice(0, 3) : ['Folk', 'Celtic Folk'];
   }
 
   return [...new Set([...baseGenres, ...descriptive.slice(0, 4), assignedVoice])].join(', ');
@@ -484,13 +694,13 @@ async function runPoetryTTS(poemText) {
     mirrorToAstroPublic(finalOpusPath, finalOpusFilename);
     await safeUnlink(rawFlacPath);
 
-   return {
-   success: true,
-   filename: finalOpusFilename,
-   stanzaFiles: state.stanzaFiles || [],
-   engine: 'Kokoro TTS',
-   markdown: `\n<p><audio controls src="/images/${finalOpusFilename}"></audio></p>\n`
- };
+    return {
+      success: true,
+      filename: finalOpusFilename,
+      stanzaFiles: state.stanzaFiles || [],
+      engine: 'Kokoro TTS',
+      markdown: `\n<p><audio controls src="/images/${finalOpusFilename}"></audio></p>\n`
+    };
   } catch (e) {
     console.error(`❌ TTS synthesis failed: ${e.message}`);
     return { success: false, markdown: '' };
@@ -546,6 +756,10 @@ async function runSongWorker(tags, lyrics, slug, duration, referenceAudio, ttsAu
     if (useYue) {
       if (earlyMusicMode) runnerArgs.push('--early-music');
       if (useRefPocket) runnerArgs.push('--ref-pocket');
+      if (noPromoteVocals) runnerArgs.push('--no-promote-vocals');
+      if (noMidBreak) runnerArgs.push('--no-mid-break');
+      if (introSystemsOverride !== null) runnerArgs.push('--intro-systems', introSystemsOverride);
+      if (cotOverride) runnerArgs.push('--cot', cotOverride);
       if (yueCfgOverride !== null) runnerArgs.push('--cfg', yueCfgOverride.toString());
     }
 
@@ -684,6 +898,7 @@ async function main() {
     voiceIdx = (Number(vState.lastIndex) || 0) + 1;
   } catch (_) {}
 
+  const usedRefPaths = new Set();
   let enrichedCount = 0;
 
   for (const filePath of mdFiles) {
@@ -707,33 +922,61 @@ async function main() {
     );
     voiceIdx++;
 
-    // Scale default song duration: 60s for 5-line Fifth Line limericks,
-    // 165s for unconditioned text-to-music ballads, 128s fallback for cover mode
-const defaultBalladDuration = (!refAudioSetting && !useKokoroCover) ? 165 : 128;
-    const activeDuration =
-      explicitDuration || (parsed.isFifthLine ? 60 : defaultBalladDuration);
+    const isSingleLimerick = parsed.isFifthLine || parsed.formUsed === 'LIMERICK_SINGLE';
+    const refHints = {
+      refStyle: parsed.refStyle,
+      meter: parsed.meter,
+      tempoBpm: parsed.tempoBpm,
+      milieu: parsed.milieu,
+      musicGenre: parsed.musicGenre,
+      earlyMusicReady: parsed.earlyMusicReadyExplicit === true
+    };
 
-    console.log(`🎙️ Stateful Voice Assigned for ${parsed.isFifthLine ? 'Limerick' : 'Ballad'}: [${assignedVoice}]`);
+    const willGenerateSong = !backfillMetaOnly && !skipSong && Boolean(parsed.structuredLyrics) && (!parsed.hasSongEmbed || forceReprocess);
+    const activeRef = willGenerateSong
+      ? await resolveReferenceAudio(refAudioSetting, refHints, usedRefPaths)
+      : null;
+
+    // Scale default song duration: 60s for 5-line limericks,
+    // 165s for unconditioned text-to-music ballads, 128s fallback for cover mode
+    const defaultBalladDuration = (!activeRef && !useKokoroCover) ? 165 : 128;
+    const activeDuration =
+      explicitDuration || (isSingleLimerick ? 60 : defaultBalladDuration);
+
+    console.log(`🎙️ Stateful Voice Assigned for ${isSingleLimerick ? 'Limerick' : 'Ballad'}: [${assignedVoice}]`);
 
     let imgRes = { success: false, filename: '', engine: 'Existing/Skipped', markdown: '' };
     let vidRes = { success: false, filename: '', engine: 'Skipped', markdown: '' };
     let ttsRes = { success: false, filename: '', engine: 'Existing/Skipped', markdown: '' };
-    let audioRes = { success: false, filename: '', engine: 'Existing/Skipped', markdown: '', refAudioMarkdown: '' };
+    let audioRes = { success: false, filename: '', engine: 'Existing/Skipped', markdown: '', refAudioMarkdown: '', refAudioName: '' };
 
-    const activeRef = (!backfillMetaOnly && !skipSong && parsed.structuredLyrics && (!parsed.hasSongEmbed || forceReprocess))
-      ? await resolveReferenceAudio(refAudioSetting)
-      : null;
     const refLooksEarlyMusic = Boolean(activeRef && EARLY_MUSIC_REF_RE.test(path.basename(activeRef)));
-    const genreLooksEarlyMusic = /baroque|renaissance|early|lute|harpsichord|madrigal|cantata|celtic|gamba|recorder|consort/i.test(
+    const genreLooksEarlyMusic = /baroque|renaissance|early|lute|harpsichord|madrigal|cantata|celtic|gamba|recorder|consort|oswald|scots|shanty/i.test(
       `${parsed.musicGenre} ${parsed.styleTags}`
     );
-    const isEarlyMusicRun = useEarlyMusic || (useYue && (refLooksEarlyMusic || genreLooksEarlyMusic));
+
+    // Strictly honor explicit Schema v2 early_music_ready: false unless CLI --early-music is forced
+    const isEarlyMusicRun = useEarlyMusic
+      ? true
+      : parsed.earlyMusicReadyExplicit === false
+      ? false
+      : Boolean(useYue && (
+          parsed.earlyMusicReadyExplicit === true ||
+          refLooksEarlyMusic ||
+          genreLooksEarlyMusic
+        ));
+
     const safeTags = sanitizeTagsForAceStep(parsed.styleTags, assignedVoice, isEarlyMusicRun);
 
     if (!backfillMetaOnly) {
       console.log(`\n======================================================================`);
-      console.log(`🎭 [${parsed.isFifthLine ? 'FIFTH LINE' : 'BALLAD'} PIPELINE] Enriching: ${parsed.title} (${parsed.modelUsed})`);
+      console.log(`🎭 [${parsed.isFifthLine ? 'FIFTH LINE' : 'BALLAD'} PIPELINE v${parsed.schemaVersion}] Enriching: ${parsed.title} (${parsed.modelUsed})`);
       console.log(`   📂 File: ${path.relative(process.cwd(), filePath)}`);
+      if (parsed.milieu || parsed.pov || parsed.foil || parsed.refStyle) {
+        console.log(
+          `   🧭 Axes: milieu=${parsed.milieu || 'N/A'} | pov=${parsed.pov || 'N/A'} | foil=${parsed.foil || 'N/A'} | meter=${parsed.meter || 'N/A'} | bpm=${parsed.tempoBpm || 'N/A'} | ref_style=${parsed.refStyle || 'N/A'}`
+        );
+      }
       console.log(`======================================================================`);
 
       if (!parsed.hasImageEmbed || forceReprocess) {
@@ -755,7 +998,7 @@ const defaultBalladDuration = (!refAudioSetting && !useKokoroCover) ? 165 : 128;
         console.log(`⏭️  Kokoro TTS already embedded in ${path.basename(filePath)}, skipping TTS...`);
       }
 
-      if (!skipSong && parsed.structuredLyrics && (!parsed.hasSongEmbed || forceReprocess)) {
+      if (willGenerateSong) {
         const ttsFile = ttsRes.filename || parsed.existingTtsFilename;
         const activeTtsPath = ttsFile ? path.join(IMAGES_DIR, ttsFile) : null;
         if (isEarlyMusicRun) {
@@ -774,13 +1017,18 @@ const defaultBalladDuration = (!refAudioSetting && !useKokoroCover) ? 165 : 128;
         await freeComfyVRAM();
       }
 
-   // Clean up temporary individual Kokoro stanza files after song generation
-   for (const stPath of (ttsRes.stanzaFiles || [])) {
-     await safeUnlink(stPath);
-   }
+      // Clean up temporary individual Kokoro stanza files after song generation
+      for (const stPath of (ttsRes.stanzaFiles || [])) {
+        await safeUnlink(stPath);
+      }
     }
 
-    // Build Astro-compatible tags & author front matter based on sourceType
+    // Build Astro-compatible tags & author front matter (including Schema v2 milieu, pov, foil, early-music, meter, ref_style)
+    const meterTag = parsed.meter ? `meter-${slugify(parsed.meter)}` : '';
+    const refStyleTag = parsed.refStyle && parsed.refStyle !== 'none' ? `ref-${slugify(parsed.refStyle)}` : '';
+    const earlyMusicTag = (parsed.earlyMusicReadyExplicit === false && !useEarlyMusic) ? '' : ((parsed.earlyMusicReadyExplicit === true || isEarlyMusicRun) ? 'early-music' : '');
+    const workTypeTag = parsed.formUsed.startsWith('LIMERICK') ? 'limerick' : 'ballad';
+
     const tagList = parsed.isFifthLine
       ? [
           "limerick",
@@ -792,16 +1040,23 @@ const defaultBalladDuration = (!refAudioSetting && !useKokoroCover) ? 165 : 128;
         ]
       : [
           "balladeer",
+          workTypeTag,
           slugify(parsed.modelUsed),
           slugify(parsed.formUsed),
-          slugify(parsed.musicGenre),
           slugify(parsed.strategyUsed),
+          parsed.milieu ? slugify(parsed.milieu) : '',
+          parsed.pov ? slugify(parsed.pov) : '',
+          parsed.foil ? slugify(parsed.foil) : '',
+          slugify(parsed.musicGenre),
+          earlyMusicTag,
+          meterTag,
+          refStyleTag,
           parsed.afterHours ? "after-hours" : "parlor-satire"
         ];
     const uniqueTags = [...new Set(tagList.filter(Boolean))];
 
     let updatedFm = parsed.frontMatterRaw
-      .split('\n')
+      .split(/\r?\n/)
       .filter(l => !/^(author|domain|tags|media_enriched|rendered|status):/.test(l.trim()));
 
     if (!updatedFm.some(l => l.startsWith('pubDate:'))) {
@@ -837,9 +1092,17 @@ const defaultBalladDuration = (!refAudioSetting && !useKokoroCover) ? 165 : 128;
       updatedBody = scriptsHeader + updatedBody;
     }
 
-    // Inject visible Seed Premise & Model banner right below # TITLE for Balladeer posts
+    // Inject visible Seed Premise & Model banner right below # TITLE for Balladeer posts (if not already exported by app-v2.js)
     if (!parsed.isFifthLine && !updatedBody.includes('**Seed Premise:**') && parsed.seedLine) {
-      const banner = `\n> **Seed Premise:** *"${parsed.seedLine}"*  \n> **Model:** \`${parsed.modelUsed}\` • **Form:** \`${parsed.formUsed}\` • **Strategy:** \`${parsed.strategyUsed}\` • **Genre:** \`${parsed.musicGenre}\`\n`;
+      const v2Parts = [
+        parsed.milieu ? `**Milieu:** \`${parsed.milieu}\`` : '',
+        parsed.pov ? `**POV:** \`${parsed.pov}\`` : '',
+        parsed.foil ? `**Foil:** \`${parsed.foil}\`` : '',
+        parsed.meter ? `**Meter:** \`${parsed.meter}\`` : '',
+        parsed.tempoBpm ? `**Tempo:** \`${parsed.tempoBpm} bpm\`` : ''
+      ].filter(Boolean);
+      const extraLine = v2Parts.length > 0 ? ` • ${v2Parts.join(' • ')}` : '';
+      const banner = `\n> **Seed Premise:** *"${parsed.seedLine}"*  \n> **Model:** \`${parsed.modelUsed}\` • **Form:** \`${parsed.formUsed}\` • **Strategy:** \`${parsed.strategyUsed}\` • **Genre:** \`${parsed.musicGenre}\`${extraLine}\n`;
       updatedBody = updatedBody.replace(/^(#\s+[^\n]+\n+)/m, `$1${banner}\n`);
     }
 
@@ -873,15 +1136,34 @@ const defaultBalladDuration = (!refAudioSetting && !useKokoroCover) ? 165 : 128;
           .trimEnd();
 
         const scoreEmbed = buildScoreEmbed(audioRes);
-        updatedBody += `\n\n---\n\n## Generated Musical Score (${audioRes.engine})\n${audioRes.markdown}\n${audioRes.refAudioMarkdown || ''}\n<blockquote><strong>Sanitized Worker Tags:</strong> <code>${safeTags}</code></blockquote>\n${scoreEmbed}\n`;
+        const meterTempoMeta = [
+          parsed.meter ? `Meter: ${parsed.meter}` : '',
+          parsed.tempoBpm ? `Tempo: ${parsed.tempoBpm} bpm` : '',
+          parsed.refStyle ? `Preferred Ref Style: ${parsed.refStyle}` : ''
+        ].filter(Boolean).join(' • ');
+
+        updatedBody += `\n\n---\n\n## Generated Musical Score (${audioRes.engine})\n${audioRes.markdown}\n${audioRes.refAudioMarkdown || ''}\n<blockquote><strong>Sanitized Worker Tags:</strong> <code>${safeTags}</code>${meterTempoMeta ? `<br><strong>Schema v2 Musical Hints:</strong> <code>${meterTempoMeta}</code>` : ''}</blockquote>\n${scoreEmbed}\n`;
       }
     }
 
     // Append Pipeline & Debug Analytics footer if not present
     if (!updatedBody.includes('id="pipeline-and-debug-analytics"')) {
+      const v2AnalyticsLines = [
+        parsed.milieu ? `<strong>Satirical Milieu:</strong> <code>${parsed.milieu}</code><br>\n` : '',
+        parsed.pov ? `<strong>Point of View:</strong> <code>${parsed.pov}</code><br>\n` : '',
+        parsed.foil ? `<strong>Reality-Check Foil:</strong> <code>${parsed.foil}</code><br>\n` : '',
+        (parsed.meter || parsed.tempoBpm || parsed.refStyle)
+          ? `<strong>Musical Hints (Meter / BPM / Ref Style):</strong> <code>${parsed.meter || 'N/A'} / ${parsed.tempoBpm || 'N/A'} bpm / ${parsed.refStyle || 'N/A'}</code><br>\n`
+          : '',
+        audioRes.refAudioName
+          ? `<strong>Selected Reference Track:</strong> <code>${audioRes.refAudioName}</code><br>\n`
+          : ''
+      ].join('');
+
       updatedBody += `\n\n---\n\n<h2 id="pipeline-and-debug-analytics">Pipeline & Debug Analytics</h2>\n\n` +
         `<strong>Active Text Inference Core Platform:</strong> <code>${parsed.modelUsed}</code><br>\n` +
         `<strong>Poetic Architecture & Strategy:</strong> <code>${parsed.formUsed} (${parsed.strategyUsed})</code><br>\n` +
+        v2AnalyticsLines +
         `<strong>Musical Genre Profile:</strong> <code>${parsed.musicGenre}</code><br>\n` +
         `<strong>Seed Premise / Topic:</strong> <code>${parsed.seedLine || 'N/A'}</code>\n`;
     }

@@ -1,0 +1,121 @@
+❯ cp ~/Downloads/run_yue-v5.js ~/sourceverse/run_yue.js
+
+~/sourceverse main*
+❯ grep -n "Safely pruned" ~/sourceverse/run_yue.js
+541:        console.log(`🧹 Safely pruned ${pruned} Pass-1 SheetSage2 node(s) (preserving all audio/save nodes).`);
+
+~/sourceverse main*
+❯ cd ~/sourceverse
+  bun ballad_pipeline.js --dir=./posts/epistemic-ballads-2026-11-27 --krea --yue2 --ref-audio=/home/owen/sourceverse/ref_audio_pool
+🔍 Scanned /home/owen/sourceverse/posts/epistemic-ballads-2026-11-27: found 4 total .md files.
+🎧 [Ref-Audio Match] Selected "consort/tpgettys_08_62_the_widowes_myte.opus" (score=65 | ref_style=consort, folder=consort) from 24 pool track(s).
+🎙️ Stateful Voice Assigned for Ballad: [Bass-Baritone male vocals]
+
+======================================================================
+🎭 [BALLAD PIPELINE v2] Enriching: THE BALLAD OF CLANCY'S CAMEL (gemini-4-hydrogen)
+   📂 File: posts/epistemic-ballads-2026-11-27/the-ballad-of-clancy-s-camel.md
+   🧭 Axes: milieu=AUSTRALIAN_BUSH | pov=THIRD_PERSON_CHRONICLER | foil=ANIMAL_ENVIRONMENT | meter=6/8 | bpm=112 | ref_style=consort
+======================================================================
+🎨 [ComfyUI Image] Running run_krea.js...
+🧹 Releasing local ComfyUI VRAM nodes...
+🎙️ [ComfyUI TTS] Synthesizing spoken verse via run_kokoro_tts.js...
+🧹 Releasing local ComfyUI VRAM nodes...
+🎵 [ComfyUI Song] Running run_yue.js (128s)...
+🎶 [YuE2 Pure Musical Cover] Bypassing Kokoro interleaving (pass --kokoro-cover to enable spoken guide).
+--- Starting YuE2 3B Generation ---
+🎼 Composite Style Prompt: "deep warm bass-baritone male lead singer, melodic legato singing, sustained vocal vowels, clear sung lyrics, rich intimate resonance, continuous melodic singing, clear sung vocal melody, Folk, Celtic Folk, Australian bush ballad, acoustic guitar, button accordion, tin whistle, Bass-Baritone male vocals, warm balanced acoustic mix, rich stereo depth"
+⏱️ [Cover Mode] Locking duration to reference track length: 163s
+⚡ Conforming pure musical cover reference for [Bass-Baritone] (163s, cfg=1.7)...
+📡 Staging reference audio into ComfyUI...
+✅ Staged audio in ComfyUI: "yue_ref_1795768832719.wav"
+🔎 [Pass 1/2] Running SheetSage2AudioToABC (33:41) to transcribe reference melody...
+....
+🎤 [Vocal Promotion] V: Vocal bars: 0/51 -> 41/51 (promoted 41 bars from V: Ins | systems=13, intro=1, midBreak=9)
+🧹 Unloading SheetSage2 from VRAM before Pass 2...
+🎼 Injected promoted ABC directly into YuE2GenerateMusic (33:25).abc
+🧹 Safely pruned 4 Pass-1 SheetSage2 node(s) (preserving all audio/save nodes).
+🎛️  Set YuE2GenerateMusic.cfg_scale = 1.7
+🚀 [Pass 2/2] Queuing YuE2 [Mode: 2-Pass Promoted Vocal Cover | CFG: 1.7 | Max Duration: 163s]
+........................
+🎹 Generated Wind Duo MIDI: YuE2_cover_00022.mid
+🎼 Generated Full Trio ABC Score with Staff Labels: YuE2_cover_00022_trio.abc
+📡 Mirrored MIDI to site/public/images/YuE2_cover_00022.mid
+📡 Mirrored Trio ABC to site/public/images/YuE2_cover_00022_trio.abc
+🧹 Releasing local ComfyUI VRAM nodes...
+✅ Updated media & telemetry: the-ballad-of-clancy-s-camel.md
+🎧 [Ref-Audio Match] Selected "consort-choir/tpgettys_07_ravenscroftt-fantasia2-a5.opus" (score=110 | ref_style=consort-choir, folder=consort-choir, milieu=SCOTTISH_FLYTING, genre=celtic/scots, tempo~108(mod)) from 24 pool track(s).
+🎙️ Stateful Voice Assigned for Ballad: [Mezzo-Soprano female vocals]
+
+======================================================================
+🎭 [BALLAD PIPELINE v2] Enriching: THE BAILIE'S BRIDGE-VOTE (gemini-4-hydrogen)
+   📂 File: posts/epistemic-ballads-2026-11-27/the-bailie-s-bridge-vote.md
+   🧭 Axes: milieu=SCOTTISH_FLYTING | pov=THIRD_PERSON_CHRONICLER | foil=PHYSICAL_REALITY | meter=6/8 | bpm=108 | ref_style=consort-choir
+======================================================================
+🎨 [ComfyUI Image] Running run_krea.js...
+🧹 Releasing local ComfyUI VRAM nodes...
+🎙️ [ComfyUI TTS] Synthesizing spoken verse via run_kokoro_tts.js...
+🧹 Releasing local ComfyUI VRAM nodes...
+🎻 [Early-Music Conditioning Active] Tags anchored in Celtic Folk / Folk: "Celtic Folk, Folk, Scottish ballad air, wooden flute, acoustic fiddle, Celtic harp, Mezzo-Soprano female vocals"
+🎵 [ComfyUI Song] Running run_yue.js (128s)...
+🎶 [YuE2 Pure Musical Cover] Bypassing Kokoro interleaving (pass --kokoro-cover to enable spoken guide).
+--- Starting YuE2 3B Generation ---
+🎼 Composite Style Prompt: "warm rich contralto and mezzo-soprano female lead singer, melodic legato singing, sustained vocal vowels, clear sung lyrics, intimate ballad tone, continuous melodic singing, lyrical sung early music ballad, Celtic Folk, Folk, modal acoustic melody, Scottish ballad air, wooden flute, acoustic fiddle, Celtic harp, Mezzo-Soprano female vocals, warm wooden chamber acoustics, rich stereo depth, natural hall resonance"
+⏱️ [Cover Mode] Locking duration to reference track length: 163s
+⚡ Conforming pure musical cover reference for [Mezzo-Soprano] (163s, cfg=1.7)...
+📡 Staging reference audio into ComfyUI...
+✅ Staged audio in ComfyUI: "yue_ref_1795768962196.wav"
+🔎 [Pass 1/2] Running SheetSage2AudioToABC (33:41) to transcribe reference melody...
+....
+🎤 [Vocal Promotion] V: Vocal bars: 36/82 -> 76/82 (promoted 40 bars from V: Ins | systems=21, intro=1, midBreak=13)
+🧹 Unloading SheetSage2 from VRAM before Pass 2...
+🎼 Injected promoted ABC directly into YuE2GenerateMusic (33:25).abc
+🧹 Safely pruned 4 Pass-1 SheetSage2 node(s) (preserving all audio/save nodes).
+🎛️  Set YuE2GenerateMusic.cfg_scale = 1.7
+🚀 [Pass 2/2] Queuing YuE2 [Mode: 2-Pass Promoted Vocal Cover | CFG: 1.7 | Max Duration: 163s]
+.............................
+🎹 Generated Wind Duo MIDI: YuE2_cover_00023.mid
+🎼 Generated Full Trio ABC Score with Staff Labels: YuE2_cover_00023_trio.abc
+📡 Mirrored MIDI to site/public/images/YuE2_cover_00023.mid
+📡 Mirrored Trio ABC to site/public/images/YuE2_cover_00023_trio.abc
+🧹 Releasing local ComfyUI VRAM nodes...
+✅ Updated media & telemetry: the-bailie-s-bridge-vote.md
+🎧 [Ref-Audio Match] Selected "consort/tpgettys_01_eastm-fancy01.opus" (score=57 | ref_style=consort, folder=consort) from 24 pool track(s).
+🎙️ Stateful Voice Assigned for Ballad: [Lyric Tenor male vocals]
+
+======================================================================
+🎭 [BALLAD PIPELINE v2] Enriching: THE FLORIDIAN'S FLOURISH (gemini-4-hydrogen)
+   📂 File: posts/epistemic-ballads-2026-11-27/the-floridian-s-flourish.md
+   🧭 Axes: milieu=AUSTRALIAN_BUSH | pov=THIRD_PERSON_CHRONICLER | foil=INSTITUTIONAL_FRICTION | meter=6/8 | bpm=112 | ref_style=consort
+======================================================================
+🎨 [ComfyUI Image] Running run_krea.js...
+🧹 Releasing local ComfyUI VRAM nodes...
+🎙️ [ComfyUI TTS] Synthesizing spoken verse via run_kokoro_tts.js...
+🧹 Releasing local ComfyUI VRAM nodes...
+🎵 [ComfyUI Song] Running run_yue.js (128s)...
+🎶 [YuE2 Pure Musical Cover] Bypassing Kokoro interleaving (pass --kokoro-cover to enable spoken guide).
+--- Starting YuE2 3B Generation ---
+🎼 Composite Style Prompt: "warm lyric tenor male lead singer, melodic legato singing, sustained vocal vowels, clear sung lyrics, graceful acoustic ballad articulation, continuous melodic singing, clear sung vocal melody, Folk, Celtic Folk, Australian bush ballad, acoustic guitar, button accordion, tin whistle, Lyric Tenor male vocals, warm balanced acoustic mix, rich stereo depth"
+⏱️ [Cover Mode] Locking duration to reference track length: 163s
+⚡ Conforming pure musical cover reference for [Lyric Tenor] (163s, cfg=1.7)...
+📡 Staging reference audio into ComfyUI...
+✅ Staged audio in ComfyUI: "yue_ref_1795769110205.wav"
+🔎 [Pass 1/2] Running SheetSage2AudioToABC (33:41) to transcribe reference melody...
+....
+🎤 [Vocal Promotion] V: Vocal bars: 0/82 -> 73/82 (promoted 73 bars from V: Ins | systems=21, intro=1, midBreak=13)
+🧹 Unloading SheetSage2 from VRAM before Pass 2...
+🎼 Injected promoted ABC directly into YuE2GenerateMusic (33:25).abc
+🧹 Safely pruned 4 Pass-1 SheetSage2 node(s) (preserving all audio/save nodes).
+🎛️  Set YuE2GenerateMusic.cfg_scale = 1.7
+🚀 [Pass 2/2] Queuing YuE2 [Mode: 2-Pass Promoted Vocal Cover | CFG: 1.7 | Max Duration: 163s]
+.............................
+🎹 Generated Wind Duo MIDI: YuE2_cover_00024.mid
+🎼 Generated Full Trio ABC Score with Staff Labels: YuE2_cover_00024_trio.abc
+📡 Mirrored MIDI to site/public/images/YuE2_cover_00024.mid
+📡 Mirrored Trio ABC to site/public/images/YuE2_cover_00024_trio.abc
+🧹 Releasing local ComfyUI VRAM nodes...
+✅ Updated media & telemetry: the-floridian-s-flourish.md
+
+🎉 Pipeline complete! Enriched 3 post(s).
+
+~/sourceverse main* 7m 12s
+❯ 
