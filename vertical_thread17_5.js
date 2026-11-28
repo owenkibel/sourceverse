@@ -36,6 +36,26 @@ const ELECTRONIC_TAG_RE = /(synth|techno|house|electro|industrial|dubstep|trap|t
 
 const DEFAULT_REF_POOL_DIR = path.join(__dirname, 'ref_audio_pool');
 
+async function collectPoolAudioFiles(rootDir, maxDepth = 2, depth = 0) {
+  let results = [];
+  let entries;
+  try {
+    entries = await fs.readdir(rootDir, { withFileTypes: true });
+  } catch (_) {
+    return results;
+  }
+
+  for (const entry of entries) {
+    const fullPath = path.join(rootDir, entry.name);
+    if (entry.isDirectory() && depth < maxDepth) {
+      results = results.concat(await collectPoolAudioFiles(fullPath, maxDepth, depth + 1));
+    } else if (entry.isFile() && /\.(opus|mp4|wav|flac|mp3)$/i.test(entry.name)) {
+      results.push(fullPath);
+    }
+  }
+  return results;
+}
+
 async function resolveReferenceAudio(refArgValue) {
   let targetPoolDir = DEFAULT_REF_POOL_DIR;
 
@@ -58,16 +78,16 @@ async function resolveReferenceAudio(refArgValue) {
 
   try {
     await fs.mkdir(targetPoolDir, { recursive: true });
-    const entries = await fs.readdir(targetPoolDir);
-    const audioFiles = entries.filter(f => /\.(opus|mp4|wav|flac|mp3)$/i.test(f));
+    // Recursively scan pool + subfolders (e.g. aria/, consort/, consort-choir/)
+    const audioPaths = await collectPoolAudioFiles(targetPoolDir, 2);
 
-    if (audioFiles.length > 0) {
-      const chosen = audioFiles[Math.floor(Math.random() * audioFiles.length)];
-      const chosenPath = path.join(targetPoolDir, chosen);
-      
+    if (audioPaths.length > 0) {
+      const chosenPath = audioPaths[Math.floor(Math.random() * audioPaths.length)];
+      const relChosen = path.relative(targetPoolDir, chosenPath);
+
       console.log(`\n======================================================================`);
       console.log(`🎧 [REF-AUDIO POOL] ANCHOR REFERENCE CONDITIONING SELECTED:`);
-      console.log(`   👉 Selected File : ${chosen}`);
+      console.log(`   👉 Selected File : ${relChosen} (from ${audioPaths.length} pool track(s))`);
       console.log(`   👉 Pool Directory: ${targetPoolDir}`);
       console.log(`======================================================================\n`);
 
@@ -131,6 +151,14 @@ const useFortune = args.includes('--fortune');
 const useEarlyMusic = args.includes('--early-music');
 const useRefPocket = args.includes('--ref-pocket');
 const useRawAudio = args.includes('--raw-audio');
+const noPromoteVocals = args.includes('--no-promote-vocals');
+const noMidBreak = args.includes('--no-mid-break');
+
+const introSysArg = args.find(a => a.startsWith('--intro-systems='));
+const introSystemsOverride = introSysArg ? introSysArg.split('=')[1].trim() : null;
+
+const cotArg = args.find(a => a.startsWith('--cot='));
+const cotOverride = cotArg ? cotArg.split('=')[1].trim() : null;
 
 let customIdea = null;
 const ideaArg = args.find(a => a.startsWith('--idea='));
@@ -834,6 +862,18 @@ async function runYueGen(tags, lyrics, slug, duration, referenceAudio = null, tt
         }
         if (useRefPocket) {
           runnerArgs.push('--ref-pocket');
+        }
+        if (noPromoteVocals) {
+          runnerArgs.push('--no-promote-vocals');
+        }
+        if (noMidBreak) {
+          runnerArgs.push('--no-mid-break');
+        }
+        if (introSystemsOverride !== null) {
+          runnerArgs.push('--intro-systems', introSystemsOverride);
+        }
+        if (cotOverride) {
+          runnerArgs.push('--cot', cotOverride);
         }
         if (yueCfgOverride !== null) {
           runnerArgs.push('--cfg', yueCfgOverride.toString());
